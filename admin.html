@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
     <div class="app-container" id="login-container">
@@ -46,13 +47,12 @@
     <div class="app-container" id="admin-container" style="display: none;">
         <header class="top-nav">
             <div class="nav-brand">
-                <img src="logo.png" alt="MyClassHub Logo">
                 <h1 style="color: var(--accent-color);">Admin Panel</h1>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <span id="user-role-badge" class="time-badge">Role: Teacher</span>
-                <button id="logout-btn" class="icon-button" aria-label="Logout">Logout</button>
-                <a href="index.html" class="icon-button" aria-label="Home">Home</a>
+                <button id="logout-btn" class="icon-button" aria-label="Logout"><i class="ph ph-sign-out"></i></button>
+                <a href="index.html" class="icon-button" aria-label="Home"><i class="ph ph-house"></i></a>
             </div>
         </header>
 
@@ -60,7 +60,7 @@
             <!-- Add Announcement -->
             <section class="dashboard-card" id="add-announcement-section">
                 <div class="card-header">
-                    <h2>Post Announcement</h2>
+                    <h2><i class="ph ph-megaphone"></i> Post Announcement</h2>
                 </div>
                 <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
                     <input type="text" id="ann-title" placeholder="Title" class="form-input">
@@ -73,7 +73,7 @@
             <!-- Add Homework -->
             <section class="dashboard-card" id="add-homework-section">
                 <div class="card-header">
-                    <h2>Post Homework</h2>
+                    <h2><i class="ph ph-pencil-simple"></i> Post Homework</h2>
                 </div>
                 <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
                     <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
@@ -86,7 +86,7 @@
             <!-- Manage Announcements (Admin & Teacher) -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
-                    <h2>Manage Announcements</h2>
+                    <h2><i class="ph ph-list-bullets"></i> Manage Announcements</h2>
                 </div>
                 <div class="card-content">
                     <div id="announcements-list-admin" class="overflow-x-auto">
@@ -98,7 +98,7 @@
             <!-- Manage Homework (Admin & Teacher) -->
             <section class="dashboard-card span-2" id="manage-homework-section">
                 <div class="card-header">
-                    <h2>Manage Homework</h2>
+                    <h2><i class="ph ph-notebook"></i> Manage Homework</h2>
                 </div>
                 <div class="card-content">
                     <div id="homework-list-admin" class="overflow-x-auto">
@@ -110,7 +110,7 @@
             <!-- Manage Schedule (Admin Only) -->
             <section class="dashboard-card span-2" id="manage-schedule-section" style="display: none;">
                 <div class="card-header">
-                    <h2>Manage Schedule (Admin Only)</h2>
+                    <h2><i class="ph ph-calendar"></i> Manage Schedule (Admin Only)</h2>
                 </div>
                 <div class="card-content">
                     <div id="schedule-form-container" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
@@ -132,7 +132,7 @@
             <!-- Manage Users (Admin Only) -->
             <section class="dashboard-card span-2" id="manage-users-section" style="display: none;">
                 <div class="card-header">
-                    <h2>Manage Users (Admin Only)</h2>
+                    <h2><i class="ph ph-users"></i> Manage Users (Admin Only)</h2>
                 </div>
                 <div class="card-content">
                     <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
