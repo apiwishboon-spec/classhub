@@ -240,7 +240,7 @@ body {
 .schedule-table thead th {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: 35;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
     min-width: 150px;
