@@ -408,7 +408,13 @@ async function loadSchedule() {
         });
         
         // Sort by time
-        scheduleData.sort((a, b) => a.time.localeCompare(b.time));
+        scheduleData.sort((a, b) => {
+            const timeA = a.time.split('-')[0].trim();
+            const timeB = b.time.split('-')[0].trim();
+            const [hA, mA] = timeA.split(/[:.]/).map(Number);
+            const [hB, mB] = timeB.split(/[:.]/).map(Number);
+            return (hA * 60 + (mA || 0)) - (hB * 60 + (mB || 0));
+        });
         
         let html = `
         <table class="schedule-table">

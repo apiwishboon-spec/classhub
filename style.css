@@ -339,6 +339,11 @@ body {
 .announcement-title, .hw-title {
     font-weight: 700;
     font-size: 1.05rem;
+    white-space: pre-wrap;
+}
+
+.announcement-message {
+    white-space: pre-wrap;
 }
 
 .hw-finished {

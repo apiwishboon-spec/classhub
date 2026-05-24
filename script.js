@@ -60,7 +60,13 @@ function fetchDashboardData() {
         onSnapshot(collection(db, "schedule"), (snap) => {
             if (!snap.empty) {
                 dashboardData.schedule = snap.docs.map(doc => doc.data());
-                dashboardData.schedule.sort((a, b) => a.time.localeCompare(b.time));
+                dashboardData.schedule.sort((a, b) => {
+                    const timeA = a.time.split('-')[0].trim();
+                    const timeB = b.time.split('-')[0].trim();
+                    const [hA, mA] = timeA.split(/[:.]/).map(Number);
+                    const [hB, mB] = timeB.split(/[:.]/).map(Number);
+                    return (hA * 60 + (mA || 0)) - (hB * 60 + (mB || 0));
+                });
             } else {
                 dashboardData.schedule = [];
             }
@@ -288,25 +294,23 @@ function highlightCurrentClass() {
     // Parse current time to minutes since midnight for easier comparison
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-    const timeCells = document.querySelectorAll('.time-col');
-    timeCells.forEach(cell => {
+    // Find all class cells for today
+    const classCells = document.querySelectorAll(`.class-cell[data-day="${currentDayStr}"]`);
+    classCells.forEach(cell => {
         const timeStr = cell.getAttribute('data-time'); // "08:00-08:50"
         if (!timeStr) return;
 
         const parts = timeStr.split('-');
         if (parts.length === 2) {
-            const startParts = parts[0].split(':');
-            const endParts = parts[1].split(':');
+            const startParts = parts[0].split(/[:.]/).map(Number);
+            const endParts = parts[1].split(/[:.]/).map(Number);
             
-            const startMins = parseInt(startParts[0]) * 60 + parseInt(startParts[1]);
-            const endMins = parseInt(endParts[0]) * 60 + parseInt(endParts[1]);
+            const startMins = startParts[0] * 60 + (startParts[1] || 0);
+            const endMins = endParts[0] * 60 + (endParts[1] || 0);
 
             if (currentMinutes >= startMins && currentMinutes <= endMins) {
-                // Find the corresponding cell for the current day
-                const row = cell.parentElement;
-                const classCell = row.querySelector(`.class-cell[data-day="${currentDayStr}"]`);
-                if (classCell && classCell.textContent.trim() !== '') {
-                    classCell.classList.add('active-class');
+                if (cell.textContent.trim() !== '') {
+                    cell.classList.add('active-class');
                 }
             }
         }
