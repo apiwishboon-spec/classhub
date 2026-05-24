@@ -13,6 +13,7 @@ const loginError = document.getElementById('login-error');
 const logoutBtn = document.getElementById('logout-btn');
 const userRoleBadge = document.getElementById('user-role-badge');
 const manageUsersSection = document.getElementById('manage-users-section');
+const manageScheduleSection = document.getElementById('manage-schedule-section');
 
 let currentUserRole = 'teacher';
 
@@ -41,9 +42,12 @@ onAuthStateChanged(auth, async (user) => {
             
             if (currentUserRole === 'admin') {
                 manageUsersSection.style.display = 'block';
+                manageScheduleSection.style.display = 'block';
                 loadUsers();
+                loadSchedule();
             } else {
                 manageUsersSection.style.display = 'none';
+                manageScheduleSection.style.display = 'none';
             }
         } catch (error) {
             console.error("Error fetching user role:", error);
@@ -186,6 +190,43 @@ document.getElementById('add-user-btn').addEventListener('click', async () => {
     }
 });
 
+// Add Schedule (Admin Only)
+document.getElementById('add-sched-btn').addEventListener('click', async () => {
+    if (currentUserRole !== 'admin') return alert("Unauthorized");
+    
+    const time = document.getElementById('sched-time').value.trim();
+    const monday = document.getElementById('sched-mon').value.trim();
+    const tuesday = document.getElementById('sched-tue').value.trim();
+    const wednesday = document.getElementById('sched-wed').value.trim();
+    const thursday = document.getElementById('sched-thu').value.trim();
+    const friday = document.getElementById('sched-fri').value.trim();
+    
+    if(!time) return alert("Time is required");
+    
+    const btn = document.getElementById('add-sched-btn');
+    btn.textContent = 'Adding...';
+    btn.disabled = true;
+    
+    try {
+        await setDoc(doc(db, "schedule", time), {
+            time, monday, tuesday, wednesday, thursday, friday
+        });
+        alert("Schedule added/updated!");
+        document.getElementById('sched-time').value = '';
+        document.getElementById('sched-mon').value = '';
+        document.getElementById('sched-tue').value = '';
+        document.getElementById('sched-wed').value = '';
+        document.getElementById('sched-thu').value = '';
+        document.getElementById('sched-fri').value = '';
+        loadSchedule();
+    } catch (error) {
+        alert("Error adding schedule: " + error.message);
+    } finally {
+        btn.textContent = 'Add Time Slot';
+        btn.disabled = false;
+    }
+});
+
 // Load Users
 async function loadUsers() {
     if (currentUserRole !== 'admin') return;
@@ -246,6 +287,80 @@ async function removeUser(uid) {
             loadUsers();
         } catch (error) {
             alert("Error removing user: " + error.message);
+        }
+    }
+}
+
+// Load Schedule
+async function loadSchedule() {
+    if (currentUserRole !== 'admin') return;
+    
+    const schedList = document.getElementById('schedule-list');
+    schedList.innerHTML = '<div style="text-align:center; padding: 1rem;"><div class="spinner"></div><p>Loading schedule...</p></div>';
+    
+    try {
+        const snap = await getDocs(collection(db, "schedule"));
+        let scheduleData = snap.docs.map(doc => doc.data());
+        
+        // Sort by time
+        scheduleData.sort((a, b) => a.time.localeCompare(b.time));
+        
+        let html = `
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        scheduleData.forEach(data => {
+            html += `
+            <tr>
+                <td class="time-col">${data.time}</td>
+                <td>${data.monday || ''}</td>
+                <td>${data.tuesday || ''}</td>
+                <td>${data.wednesday || ''}</td>
+                <td>${data.thursday || ''}</td>
+                <td>${data.friday || ''}</td>
+                <td>
+                    <button class="remove-sched-btn" data-id="${data.time}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        schedList.innerHTML = html;
+        
+        document.querySelectorAll('.remove-sched-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = e.target.closest('.remove-sched-btn').getAttribute('data-id');
+                removeSchedule(id);
+            });
+        });
+        
+    } catch (error) {
+        schedList.innerHTML = `<p style="color:var(--danger)">Error loading schedule: ${error.message}</p>`;
+    }
+}
+
+// Remove Schedule Function
+async function removeSchedule(id) {
+    if (currentUserRole !== 'admin') return;
+    
+    if(confirm("Remove this time slot from the schedule?")) {
+        try {
+            await deleteDoc(doc(db, "schedule", id));
+            alert("Time slot removed.");
+            loadSchedule();
+        } catch (error) {
+            alert("Error removing schedule: " + error.message);
         }
     }
 }

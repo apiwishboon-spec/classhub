@@ -59,6 +59,8 @@ async function fetchDashboardData() {
         const scheduleSnap = await getDocs(collection(db, "schedule"));
         if (!scheduleSnap.empty) {
             dashboardData.schedule = scheduleSnap.docs.map(doc => doc.data());
+            // Sort by time
+            dashboardData.schedule.sort((a, b) => a.time.localeCompare(b.time));
         }
 
         const announcementsSnap = await getDocs(query(collection(db, "announcements"), orderBy("timestamp", "desc")));

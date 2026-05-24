@@ -65,6 +65,27 @@
                 </div>
             </section>
 
+            <!-- Manage Schedule (Admin Only) -->
+            <section class="dashboard-card span-2" id="manage-schedule-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-calendar"></i> Manage Schedule (Admin Only)</h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <input type="text" id="sched-time" placeholder="Time (e.g. 08:00-08:50)" class="form-input" style="flex: 1; min-width: 120px;">
+                        <input type="text" id="sched-mon" placeholder="Mon" class="form-input" style="flex: 1; min-width: 100px;">
+                        <input type="text" id="sched-tue" placeholder="Tue" class="form-input" style="flex: 1; min-width: 100px;">
+                        <input type="text" id="sched-wed" placeholder="Wed" class="form-input" style="flex: 1; min-width: 100px;">
+                        <input type="text" id="sched-thu" placeholder="Thu" class="form-input" style="flex: 1; min-width: 100px;">
+                        <input type="text" id="sched-fri" placeholder="Fri" class="form-input" style="flex: 1; min-width: 100px;">
+                        <button id="add-sched-btn" class="btn-primary">Add Time Slot</button>
+                    </div>
+                    <div id="schedule-list" class="overflow-x-auto">
+                        <!-- List schedule here -->
+                    </div>
+                </div>
+            </section>
+
             <!-- Manage Users (Admin Only) -->
             <section class="dashboard-card span-2" id="manage-users-section" style="display: none;">
                 <div class="card-header">
