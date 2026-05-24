@@ -380,13 +380,62 @@ thead .time-col.sticky-header {
     .app-container {
         padding: 1rem;
     }
-    
-    .schedule-table {
-        min-width: 750px;
+
+    .dashboard-grid {
+        grid-template-columns: 1fr;
     }
-    
+
+    .span-2 {
+        grid-column: span 1;
+    }
+
+    .schedule-table {
+        min-width: 700px;
+    }
+
+    .schedule-table th, .schedule-table td {
+        padding: 0.35rem 0.3rem;
+        min-height: 40px;
+    }
+
+    .schedule-table thead th {
+        min-width: 70px;
+    }
+
+    .class-cell {
+        min-width: 80px;
+    }
+
+    .cell-subject {
+        font-size: 0.75rem;
+    }
+
+    .cell-teacher {
+        font-size: 0.6rem;
+    }
+
     .time-col {
-        min-width: 110px;
-        padding-left: 1rem !important;
+        min-width: 80px;
+        padding-left: 0.75rem !important;
+    }
+
+    .period-num {
+        font-size: 0.75rem;
+    }
+
+    .time-sub-header {
+        font-size: 0.6rem;
+    }
+
+    .day-label {
+        font-size: 0.8rem;
+    }
+
+    .card-header h2 {
+        font-size: 1rem;
+    }
+
+    #schedule-section {
+        min-height: 300px;
     }
 }
