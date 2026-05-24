@@ -251,7 +251,7 @@ body {
     text-align: left !important;
     padding-left: 1.25rem !important;
     white-space: nowrap;
-    min-width: 120px;
+    min-width: 100px;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color) !important;
 }
@@ -266,6 +266,11 @@ thead th.sticky-header {
     position: sticky;
     top: 0;
     z-index: 2;
+}
+
+/* Corner cell: sticky both directions, highest z-index */
+thead .time-col.sticky-header {
+    z-index: 3;
 }
 
 .period-num {
