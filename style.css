@@ -251,22 +251,21 @@ body {
     text-align: left !important;
     padding-left: 1.25rem !important;
     white-space: nowrap;
-    min-width: 160px;
-    position: sticky;
-    left: 0;
-    z-index: 1;
+    min-width: 120px;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color) !important;
 }
 
-thead .time-col,
-thead th:first-child {
-    z-index: 3 !important;
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
 }
 
-.sticky-header {
-    z-index: 2 !important;
+thead th.sticky-header {
+    position: sticky;
     top: 0;
+    z-index: 2;
 }
 
 .period-num {
