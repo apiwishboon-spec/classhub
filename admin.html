@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin & Teacher Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container" id="login-container">
+        <div class="dashboard-card" style="max-width: 400px; margin: 100px auto; padding: 2rem;">
+            <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
+            <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
+            <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 1.5rem;">
+            <button id="login-btn" class="btn-primary" style="width: 100%;">Login</button>
+            <p id="login-error" style="color: var(--danger); margin-top: 1rem; display: none; text-align: center;"></p>
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="index.html" style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem;">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="admin-container" style="display: none;">
+        <header class="top-nav">
+            <div class="nav-brand">
+                <i class="ph ph-shield-check"></i>
+                <h1>Admin Panel</h1>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="user-role-badge" class="time-badge">Role: Teacher</span>
+                <button id="logout-btn" class="icon-button" aria-label="Logout"><i class="ph ph-sign-out"></i></button>
+                <a href="index.html" class="icon-button" aria-label="Home"><i class="ph ph-house"></i></a>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Add Announcement -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="ph ph-megaphone"></i> Add Announcement</h2>
+                </div>
+                <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <input type="text" id="ann-title" placeholder="Title" class="form-input">
+                    <textarea id="ann-message" placeholder="Message" class="form-input" rows="3"></textarea>
+                    <input type="text" id="ann-author" placeholder="Author Name" class="form-input">
+                    <button id="add-ann-btn" class="btn-primary">Post Announcement</button>
+                </div>
+            </section>
+
+            <!-- Add Homework -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="ph ph-pencil-simple"></i> Add Homework</h2>
+                </div>
+                <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
+                    <input type="text" id="hw-task" placeholder="Task Description" class="form-input">
+                    <input type="text" id="hw-due" placeholder="Due Date (e.g., Tomorrow)" class="form-input">
+                    <button id="add-hw-btn" class="btn-primary">Post Homework</button>
+                </div>
+            </section>
+
+            <!-- Manage Users (Admin Only) -->
+            <section class="dashboard-card span-2" id="manage-users-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-users"></i> Manage Users (Admin Only)</h2>
+                </div>
+                <div class="card-content">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <input type="email" id="new-user-email" placeholder="New User Email" class="form-input" style="flex: 1; min-width: 200px;">
+                        <input type="password" id="new-user-pass" placeholder="Password" class="form-input" style="flex: 1; min-width: 200px;">
+                        <select id="new-user-role" class="form-input" style="flex: 1; min-width: 120px;">
+                            <option value="teacher">Teacher</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <button id="add-user-btn" class="btn-primary">Add User</button>
+                    </div>
+                    <div id="users-list" class="overflow-x-auto">
+                        <!-- List users here -->
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: var(--text-secondary); font-size: 0.85rem;">
+            &copy; 2026 Apiwish Anutaravanichkul. Released under the MIT License.
+        </footer>
+    </div>
+    
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

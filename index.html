@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classroom Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Using Inter font to give that Apple-inspired modern feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons for modern minimal icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div class="app-container">
+        <header class="top-nav">
+            <div class="nav-brand">
+                <i class="ph ph-books"></i>
+                <h1>Classroom Dashboard</h1>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <a href="admin.html" class="icon-button" aria-label="Admin Panel"><i class="ph ph-user-gear"></i></a>
+                <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode">
+                    <i class="ph ph-moon"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="dashboard-grid">
+            <!-- Schedule Section -->
+            <section id="schedule-section" class="dashboard-card span-2">
+                <div class="card-header">
+                    <h2><i class="ph ph-calendar"></i> Schedule</h2>
+                    <div id="current-time-display" class="time-badge">--:--</div>
+                </div>
+                <div class="card-content overflow-x-auto">
+                    <div id="schedule-container" class="loading-placeholder">
+                        <div class="spinner"></div>
+                        <p>Loading schedule...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Announcements Section -->
+            <section id="announcements-section" class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="ph ph-megaphone"></i> Announcements</h2>
+                </div>
+                <div class="card-content">
+                    <div id="announcements-container" class="loading-placeholder">
+                        <div class="spinner"></div>
+                        <p>Loading announcements...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Homework Section -->
+            <section id="homework-section" class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="ph ph-pencil-simple"></i> Homework</h2>
+                </div>
+                <div class="card-content">
+                    <div id="homework-container" class="loading-placeholder">
+                        <div class="spinner"></div>
+                        <p>Loading homework...</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer style="text-align: center; margin-top: 2rem; padding-bottom: 1rem; color: var(--text-secondary); font-size: 0.85rem;">
+            &copy; 2026 Apiwish Anutaravanichkul. Released under the MIT License.
+        </footer>
+    </div>
+    
+    <script type="module" src="script.js"></script>
+</body>
+</html>
