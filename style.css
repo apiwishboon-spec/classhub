@@ -277,6 +277,16 @@ body {
     font-size: 1.05rem;
 }
 
+.hw-finished {
+    opacity: 0.5;
+    filter: grayscale(100%);
+}
+
+.hw-finished .hw-title, 
+.hw-finished .hw-subject {
+    text-decoration: line-through;
+}
+
 /* Forms */
 .form-input {
     width: 100%;

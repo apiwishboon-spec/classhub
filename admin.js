@@ -25,6 +25,9 @@ const userRoleBadge = document.getElementById('user-role-badge');
 const manageUsersSection = document.getElementById('manage-users-section');
 const manageScheduleSection = document.getElementById('manage-schedule-section');
 const addAnnouncementSection = document.getElementById('add-announcement-section');
+const addHomeworkSection = document.getElementById('add-homework-section');
+const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
+const manageHomeworkSection = document.getElementById('manage-homework-section');
 
 // Email Link Elements
 const emailLinkInput = document.getElementById('email-link-input');
@@ -78,20 +81,38 @@ onAuthStateChanged(auth, async (user) => {
             const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
             userRoleBadge.textContent = `Role: ${displayRole}`;
             
+            // Manage Section Visibility based on Role
             if (currentUserRole === 'admin') {
                 manageUsersSection.style.display = 'block';
                 manageScheduleSection.style.display = 'block';
                 addAnnouncementSection.style.display = 'block';
+                addHomeworkSection.style.display = 'block';
+                manageAnnouncementsSection.style.display = 'block';
+                manageHomeworkSection.style.display = 'block';
+                
                 loadUsers();
                 loadSchedule();
+                loadAnnouncements();
+                loadHomework();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
                 addAnnouncementSection.style.display = 'block';
+                addHomeworkSection.style.display = 'block';
+                manageAnnouncementsSection.style.display = 'block';
+                manageHomeworkSection.style.display = 'block';
+                
+                loadAnnouncements();
+                loadHomework();
             } else if (currentUserRole === 'ta') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
                 addAnnouncementSection.style.display = 'none';
+                addHomeworkSection.style.display = 'block';
+                manageAnnouncementsSection.style.display = 'none';
+                manageHomeworkSection.style.display = 'block';
+                
+                loadHomework();
             }
         } catch (error) {
             console.error("Error fetching user role:", error);
@@ -188,6 +209,7 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
         document.getElementById('ann-title').value = '';
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
+        loadAnnouncements();
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
@@ -217,6 +239,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
+        loadHomework();
     } catch (error) {
         alert("Error: " + error.message);
     } finally {
@@ -503,7 +526,6 @@ async function loadAnnouncements() {
 
 // Load Homework
 async function loadHomework() {
-    if (currentUserRole === 'ta') return;
     const list = document.getElementById('homework-list-admin');
     list.innerHTML = '<div class="spinner"></div>';
     
