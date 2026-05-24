@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -47,8 +47,8 @@ function updateClock() {
     highlightCurrentClass();
 }
 
-// Fetch Data
-async function fetchDashboardData() {
+// Fetch Data (Real-time Auto Refresh)
+function fetchDashboardData() {
     try {
         // Only fetch if not using mock config
         if (db.app.options.apiKey === "YOUR_API_KEY") {
@@ -56,43 +56,53 @@ async function fetchDashboardData() {
             return;
         }
 
-        const scheduleSnap = await getDocs(collection(db, "schedule"));
-        if (!scheduleSnap.empty) {
-            dashboardData.schedule = scheduleSnap.docs.map(doc => doc.data());
-            // Sort by time
-            dashboardData.schedule.sort((a, b) => a.time.localeCompare(b.time));
-        }
+        // Listen for Schedule changes
+        onSnapshot(collection(db, "schedule"), (snap) => {
+            if (!snap.empty) {
+                dashboardData.schedule = snap.docs.map(doc => doc.data());
+                dashboardData.schedule.sort((a, b) => a.time.localeCompare(b.time));
+            } else {
+                dashboardData.schedule = [];
+            }
+            renderDashboard();
+        }, (error) => {
+            console.error('Error fetching schedule:', error);
+            scheduleContainer.innerHTML = '<p style="color:var(--danger)">Failed to load schedule.</p>';
+        });
 
-        const announcementsSnap = await getDocs(query(collection(db, "announcements"), orderBy("timestamp", "desc")));
-        if (!announcementsSnap.empty) {
-            dashboardData.announcements = announcementsSnap.docs.map(doc => doc.data());
-        }
+        // Listen for Announcements changes
+        onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), (snap) => {
+            if (!snap.empty) {
+                dashboardData.announcements = snap.docs.map(doc => doc.data());
+            } else {
+                dashboardData.announcements = [];
+            }
+            renderDashboard();
+        }, (error) => {
+            console.error('Error fetching announcements:', error);
+            announcementsContainer.innerHTML = '<p style="color:var(--danger)">Failed to load announcements.</p>';
+        });
 
-        const homeworkSnap = await getDocs(query(collection(db, "homework"), orderBy("timestamp", "desc")));
-        if (!homeworkSnap.empty) {
-            dashboardData.homework = homeworkSnap.docs.map(doc => {
-                const data = doc.data();
-                data.id = doc.id;
-                return data;
-            });
-        }
-        
-        // If everything is empty but we successfully connected, maybe render mock data for demo purposes, 
-        // or just render the empty dashboard.
-        if (scheduleSnap.empty && announcementsSnap.empty && homeworkSnap.empty) {
-            console.log("No data found in Firebase, rendering mock data for demo.");
-            renderMockData();
-            return;
-        }
+        // Listen for Homework changes
+        onSnapshot(query(collection(db, "homework"), orderBy("timestamp", "desc")), (snap) => {
+            if (!snap.empty) {
+                dashboardData.homework = snap.docs.map(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    return data;
+                });
+            } else {
+                dashboardData.homework = [];
+            }
+            renderDashboard();
+        }, (error) => {
+            console.error('Error fetching homework:', error);
+            homeworkContainer.innerHTML = '<p style="color:var(--danger)">Failed to load homework.</p>';
+        });
 
-        renderDashboard();
     } catch (error) {
-        console.error('Error fetching data from Firebase:', error);
-        scheduleContainer.innerHTML = '<p style="color:var(--danger)">Failed to load data. Please check Firebase config.</p>';
-        announcementsContainer.innerHTML = '<p style="color:var(--danger)">Failed to load announcements.</p>';
-        homeworkContainer.innerHTML = '<p style="color:var(--danger)">Failed to load homework.</p>';
-        
-        // Fallback to mock data for demonstration
+        console.error('Error setting up Firebase listeners:', error);
+        scheduleContainer.innerHTML = '<p style="color:var(--danger)">Failed to connect. Please check Firebase config.</p>';
         setTimeout(renderMockData, 2000);
     }
 }
