@@ -129,8 +129,8 @@ body {
 }
 
 .nav-brand h1 {
-    font-size: 4rem; /* Even bigger brand title */
-    font-weight: 900;
+    font-size: 1.75rem; /* Reduced from 4rem */
+    font-weight: 700; /* Reduced from 900 */
 }
 
 .icon-button {
