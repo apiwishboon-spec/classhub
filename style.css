@@ -221,10 +221,10 @@ body {
 
 /* Schedule Table (Carbon Data Table) */
 .schedule-table {
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 850px; /* Reduced from 1000px */
 }
 
 .schedule-table thead th {
@@ -243,7 +243,7 @@ body {
     border-right: 1px solid var(--border-color);
     min-height: 80px;
     vertical-align: middle;
-    min-width: 140px; /* Ensure all columns have space */
+    min-width: 140px; /* Force minimum width for all columns */
 }
 
 .schedule-table th {
@@ -260,12 +260,14 @@ body {
     text-align: left !important;
     padding-left: 1.25rem !important;
     white-space: nowrap;
-    min-width: 140px;
+    min-width: 160px; /* Slightly wider for the labels */
     position: sticky;
     left: 0;
     z-index: 30 !important;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color);
+    background-clip: padding-box;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
 }
 
 .sticky-header {
