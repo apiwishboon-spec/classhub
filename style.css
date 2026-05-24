@@ -227,15 +227,6 @@ body {
     border-spacing: 0;
 }
 
-.schedule-table thead th {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background-color: var(--bg-color);
-    border-bottom: 2px solid var(--border-color);
-    padding: 1rem 0.75rem;
-}
-
 .schedule-table th, .schedule-table td {
     padding: 1rem 0.75rem;
     text-align: center;
@@ -243,16 +234,16 @@ body {
     border-right: 1px solid var(--border-color);
     min-height: 80px;
     vertical-align: middle;
-    min-width: 140px; /* Force minimum width for all columns */
+    background-color: var(--card-bg);
 }
 
-.schedule-table th {
-    font-weight: 600;
-    color: var(--text-main);
-    font-size: 1rem;
+.schedule-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     background-color: var(--bg-color);
-    text-align: center;
-    z-index: 10;
+    border-bottom: 2px solid var(--border-color);
+    min-width: 150px;
 }
 
 .time-col {
@@ -260,20 +251,17 @@ body {
     text-align: left !important;
     padding-left: 1.25rem !important;
     white-space: nowrap;
-    min-width: 160px; /* Slightly wider for the labels */
+    min-width: 160px;
     position: sticky;
     left: 0;
     z-index: 30 !important;
     background-color: var(--bg-color) !important;
-    border-right: 2px solid var(--border-color);
-    background-clip: padding-box;
-    box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+    border-right: 2px solid var(--border-color) !important;
 }
 
 .sticky-header {
     z-index: 40 !important;
     top: 0;
-    left: 0;
 }
 
 .period-num {
@@ -296,7 +284,7 @@ body {
 }
 
 .class-cell {
-    min-width: 140px;
+    min-width: 150px;
     transition: background-color 0.2s ease;
 }
 
