@@ -143,27 +143,45 @@ function renderSchedule() {
     }
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    
+    const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
+
+    // Helper: strip 4-digit room numbers and format as two lines
+    function formatCell(text) {
+        if (!text || text.trim() === '') return '';
+        // Remove 4-digit numbers (room numbers like 5307, 3203, 3207, 8002)
+        const cleaned = text.replace(/\b\d{4}\b/g, '').trim();
+        // Split on last whitespace run: subject code + teacher name
+        const match = cleaned.match(/^(\S+)\s+(.+)$/);
+        if (match) {
+            return `<span class="cell-subject">${match[1]}</span><span class="cell-teacher">${match[2].trim()}</span>`;
+        }
+        return `<span class="cell-subject">${cleaned}</span>`;
+    }
+
+    // Build period number header based on how many schedule rows exist
+    const periodNums = dashboardData.schedule.map((_, i) => i + 1);
+
     let html = `
         <table class="schedule-table">
             <thead>
                 <tr>
-                    <th>Time</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thu</th>
-                    <th>Fri</th>
+                    <th class="time-col" rowspan="2">วัน \ ชั่วโมง</th>
+                    ${periodNums.map(n => `<th>${n}</th>`).join('')}
+                </tr>
+                <tr>
+                    ${dashboardData.schedule.map(row => `<th class="time-sub-header">${row.time}</th>`).join('')}
                 </tr>
             </thead>
             <tbody>
     `;
 
-    dashboardData.schedule.forEach((row) => {
-        html += `<tr><td class="time-col" data-time="${row.time}">${row.time}</td>`;
-        days.forEach(day => {
-            const subject = row[day] || '';
-            html += `<td class="class-cell" data-day="${day}">${subject}</td>`;
+    // Render one row per day
+    days.forEach((day, di) => {
+        html += `<tr><td class="time-col day-label">${dayLabels[di]}</td>`;
+        dashboardData.schedule.forEach(col => {
+            const subject = col[day] || '';
+            const formatted = formatCell(subject);
+            html += `<td class="class-cell" data-day="${day}" data-time="${col.time}">${formatted}</td>`;
         });
         html += `</tr>`;
     });
