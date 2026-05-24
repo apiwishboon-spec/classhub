@@ -61,18 +61,21 @@ body {
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 .nav-brand img {
-    height: 100px; /* Further increased from 60px */
+    height: 150px; /* Even bigger */
     width: auto;
     border-radius: 12px;
+    background-color: #000000; /* Black background as requested */
+    padding: 10px; /* Space around logo on the black bg */
+    display: block;
 }
 
 .nav-brand h1 {
-    font-size: 3rem; /* Further increased from 2rem */
-    font-weight: 800;
+    font-size: 4rem; /* Even bigger brand title */
+    font-weight: 900;
 }
 
 .icon-button {
