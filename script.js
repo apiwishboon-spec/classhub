@@ -70,7 +70,11 @@ async function fetchDashboardData() {
 
         const homeworkSnap = await getDocs(query(collection(db, "homework"), orderBy("timestamp", "desc")));
         if (!homeworkSnap.empty) {
-            dashboardData.homework = homeworkSnap.docs.map(doc => doc.data());
+            dashboardData.homework = homeworkSnap.docs.map(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                return data;
+            });
         }
         
         // If everything is empty but we successfully connected, maybe render mock data for demo purposes, 
@@ -189,10 +193,20 @@ function renderHomework() {
         return;
     }
 
+    const finishedHw = JSON.parse(localStorage.getItem('finishedHomework') || '[]');
+
     let html = '<div class="homework-list">';
-    dashboardData.homework.forEach(hw => {
+    dashboardData.homework.forEach((hw, index) => {
+        const hwId = hw.id || `mock-${index}`;
+        const isFinished = finishedHw.includes(hwId);
+        const finishedClass = isFinished ? 'hw-finished' : '';
+        const checked = isFinished ? 'checked' : '';
+
         html += `
-            <div class="homework-item">
+            <div class="homework-item ${finishedClass}" data-id="${hwId}">
+                <div class="hw-checkbox">
+                    <input type="checkbox" class="hw-check-input" id="check-${hwId}" ${checked}>
+                </div>
                 <div class="hw-icon">
                     <i class="ph ph-book-open"></i>
                 </div>
@@ -206,6 +220,25 @@ function renderHomework() {
     });
     html += '</div>';
     homeworkContainer.innerHTML = html;
+
+    // Attach event listeners for checkboxes
+    document.querySelectorAll('.hw-check-input').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const hwItem = e.target.closest('.homework-item');
+            const hwId = hwItem.getAttribute('data-id');
+            let storedFinished = JSON.parse(localStorage.getItem('finishedHomework') || '[]');
+            
+            if (e.target.checked) {
+                hwItem.classList.add('hw-finished');
+                if (!storedFinished.includes(hwId)) storedFinished.push(hwId);
+            } else {
+                hwItem.classList.remove('hw-finished');
+                storedFinished = storedFinished.filter(id => id !== hwId);
+            }
+            
+            localStorage.setItem('finishedHomework', JSON.stringify(storedFinished));
+        });
+    });
 }
 
 function highlightCurrentClass() {
