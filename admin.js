@@ -333,7 +333,7 @@ async function loadUsers() {
     if (currentUserRole !== 'admin') return;
     
     const usersList = document.getElementById('users-list');
-    usersList.innerHTML = '<div style="text-align:center; padding: 1rem;"><div class="spinner"></div><p>Loading users...</p></div>';
+    usersList.innerHTML = '<div class="loading-placeholder"><div class="loader"></div><p>Loading users...</p></div>';
     
     try {
         const snap = await getDocs(collection(db, "users"));
@@ -397,7 +397,7 @@ async function loadSchedule() {
     if (currentUserRole === 'ta') return;
     
     const schedList = document.getElementById('schedule-list');
-    schedList.innerHTML = '<div style="text-align:center; padding: 1rem;"><div class="spinner"></div><p>Loading schedule...</p></div>';
+    schedList.innerHTML = '<div class="loading-placeholder"><div class="loader"></div><p>Loading schedule...</p></div>';
     
     try {
         const snap = await getDocs(collection(db, "schedule"));
@@ -478,7 +478,7 @@ async function loadSchedule() {
 async function loadAnnouncements() {
     if (currentUserRole === 'ta') return;
     const list = document.getElementById('announcements-list-admin');
-    list.innerHTML = '<div class="spinner"></div>';
+    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
     
     try {
         const snap = await getDocs(collection(db, "announcements"));
@@ -527,7 +527,7 @@ async function loadAnnouncements() {
 // Load Homework
 async function loadHomework() {
     const list = document.getElementById('homework-list-admin');
-    list.innerHTML = '<div class="spinner"></div>';
+    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
     
     try {
         const snap = await getDocs(collection(db, "homework"));

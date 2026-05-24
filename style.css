@@ -1,22 +1,22 @@
 :root {
-    /* Carbon Light Theme (White/Gray 10) */
-    --bg-color: #f4f4f4; /* ui-background */
-    --card-bg: #ffffff; /* ui-01 */
-    --text-main: #161616; /* text-01 */
-    --text-secondary: #525252; /* text-02 */
-    --accent-color: #0f62fe; /* interactive-01 */
-    --accent-hover: #0353e9; /* hover-primary */
-    --border-color: #e0e0e0; /* ui-03 */
-    --highlight-bg: #e5f0ff; /* hover-selected-ui */
+    /* IBM Enterprise Palette */
+    --bg-color: #f4f4f4;
+    --card-bg: #ffffff;
+    --text-main: #161616; /* Deep charcoal */
+    --text-secondary: #525252;
+    --accent-color: #0f62fe; /* IBM Blue */
+    --accent-hover: #0353e9;
+    --border-color: #e0e0e0;
+    --highlight-bg: #e5f0ff;
     --highlight-border: #0f62fe;
-    --danger: #da1e28; /* support-error */
-    --success: #24a148; /* support-success */
-    --warning: #f1c21b; /* support-warning */
+    --danger: #da1e28;
+    --success: #24a148;
+    --warning: #f1c21b;
+    --cyan-glow: rgba(0, 255, 255, 0.3);
 }
 
 [data-theme="dark"] {
-    /* Carbon Dark Theme (Gray 100) */
-    --bg-color: #161616;
+    --bg-color: #161616; /* Deep charcoal */
     --card-bg: #262626;
     --text-main: #f4f4f4;
     --text-secondary: #c6c6c6;
@@ -25,6 +25,61 @@
     --border-color: #393939;
     --highlight-bg: #353535;
     --highlight-border: #4589ff;
+}
+
+/* Custom IBM Loader */
+.loader {
+  width: 4px;
+  color: var(--accent-color);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 
+    19px -19px 0 0px, 38px -19px 0 0px, 57px -19px 0 0px,
+    19px 0     0 5px, 38px 0     0 5px, 57px 0     0 5px,
+    19px 19px  0 0px, 38px 19px  0 0px, 57px 19px  0 0px;
+  transform: translateX(-38px);
+  animation: l26 4s infinite linear; /* Slower 4s */
+  filter: drop-shadow(0 0 5px var(--cyan-glow));
+}
+
+@keyframes l26 {
+  12.5% {box-shadow: 
+    19px -19px 0 0px, 38px -19px 0 0px, 57px -19px 0 5px,
+    19px 0     0 5px, 38px 0     0 0px, 57px 0     0 5px,
+    19px 19px  0 0px, 38px 19px  0 0px, 57px 19px  0 0px}
+  25%   {box-shadow: 
+    19px -19px 0 5px, 38px -19px 0 0px, 57px -19px 0 5px,
+    19px 0     0 0px, 38px 0     0 0px, 57px 0     0 0px,
+    19px 19px  0 0px, 38px 19px  0 5px, 57px 19px  0 0px}
+  50%   {box-shadow: 
+    19px -19px 0 5px, 38px -19px 0 5px, 57px -19px 0 0px,
+    19px 0     0 0px, 38px 0     0 0px, 57px 0     0 0px,
+    19px 19px  0 0px, 38px 19px  0 0px, 57px 19px  0 5px}
+  62.5% {box-shadow: 
+    19px -19px 0 0px, 38px -19px 0 0px, 57px -19px 0 0px,
+    19px 0     0 5px, 38px 0     0 0px, 57px 0     0 0px,
+    19px 19px  0 0px, 38px 19px  0 5px, 57px 19px  0 5px}
+  75%   {box-shadow: 
+    19px -19px 0 0px, 38px -19px 0 5px, 57px -19px 0 0px,
+    19px 0     0 0px, 38px 0     0 0px, 57px 0     0 5px,
+    19px 19px  0 0px, 38px 19px  0 0px, 57px 19px  0 5px}
+  87.5% {box-shadow: 
+    19px -19px 0 0px, 38px -19px 0 5px, 57px -19px 0 0px,
+    19px 0     0 0px, 38px 0     0 5px, 57px 0     0 0px,
+    19px 19px  0 5px, 38px 19px  0 0px, 57px 19px  0 0px}
+}
+
+.spinner {
+    display: none; /* Hide old spinner */
+}
+
+.loading-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    gap: 2rem;
 }
 
 * {
