@@ -143,7 +143,7 @@ function renderSchedule() {
     }
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+    const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
 
     // Helper: strip 4-digit room numbers and format as two lines
     function formatCell(text) {
@@ -165,11 +165,13 @@ function renderSchedule() {
         <table class="schedule-table">
             <thead>
                 <tr>
-                    <th class="time-col sticky-header" rowspan="2">Day \\ Period</th>
-                    ${periodNums.map(n => `<th class="period-num">${n}</th>`).join('')}
-                </tr>
-                <tr>
-                    ${dashboardData.schedule.map(row => `<th class="time-sub-header">${row.time}</th>`).join('')}
+                    <th class="time-col sticky-header">วัน \\ คาบ</th>
+                    ${periodNums.map((n, i) => `
+                        <th>
+                            <div class="period-num">คาบที่ ${n}</div>
+                            <div class="time-sub-header">${dashboardData.schedule[i].time}</div>
+                        </th>
+                    `).join('')}
                 </tr>
             </thead>
             <tbody>
@@ -177,7 +179,7 @@ function renderSchedule() {
 
     // Render one row per day
     days.forEach((day, di) => {
-        html += `<tr><td class="time-col day-label">${dayLabels[di]}</td>`;
+        html += `<tr><td class="time-col day-label"><strong>${dayLabels[di]}</strong></td>`;
         dashboardData.schedule.forEach(col => {
             const subject = col[day] || '';
             const formatted = formatCell(subject);
