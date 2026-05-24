@@ -241,13 +241,9 @@ body {
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
-    min-height: 80px; /* Reduced from 120px */
+    min-height: 80px;
     vertical-align: middle;
-}
-
-.schedule-table th:last-child,
-.schedule-table td:last-child {
-    border-right: none;
+    min-width: 140px; /* Ensure all columns have space */
 }
 
 .schedule-table th {
@@ -256,11 +252,7 @@ body {
     font-size: 1rem;
     background-color: var(--bg-color);
     text-align: center;
-}
-
-.schedule-table td {
-    font-size: 0.9375rem;
-    background-color: var(--card-bg);
+    z-index: 10;
 }
 
 .time-col {
@@ -271,10 +263,9 @@ body {
     min-width: 140px;
     position: sticky;
     left: 0;
-    z-index: 30;
+    z-index: 30 !important;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color);
-    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
 }
 
 .sticky-header {
