@@ -550,6 +550,43 @@ thead .time-col.sticky-header {
     margin-left: auto;
 }
 
+/* Weekend / holiday message */
+.weekend-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.weekend-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.weekend-icon i {
+    font-size: 3rem;
+    color: var(--accent-color);
+}
+
+.weekend-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 0.5rem;
+}
+
+.weekend-day {
+    color: var(--accent-color);
+}
+
+.weekend-sub {
+    font-size: 1rem;
+    color: var(--text-secondary);
+}
+
 /* Countdown text on schedule items */
 .sched-countdown {
     font-size: 0.65rem;

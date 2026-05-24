@@ -271,7 +271,34 @@ function renderMobileSchedule() {
 
     const now = new Date();
     const currentDayIndex = now.getDay(); // 0=Sun
-    const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : 'monday';
+    const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : null;
+    
+    // Show weekend message if it's Saturday/Sunday
+    if (currentDayIndex === 0 || currentDayIndex === 6) {
+        const weekendLabel = currentDayIndex === 0 ? 'อาทิตย์' : 'เสาร์';
+        const dayTabsHtml = days.map((day, di) => {
+            const activeClass = day === selectedDay ? ' active' : '';
+            return `<button class="day-tab${activeClass}" data-day="${day}">${dayLabels[di]}</button>`;
+        }).join('');
+        
+        scheduleContainer.innerHTML = `
+            <div class="weekend-message">
+                <div class="weekend-icon"><i class="ph ph-beach-ball"></i></div>
+                <div class="weekend-title">วัน<span class="weekend-day">${weekendLabel}</span></div>
+                <div class="weekend-sub">พักผ่อนวันหยุด 🎉</div>
+            </div>
+            <div class="day-tabs">${dayTabsHtml}</div>
+        `;
+
+        // Attach day tab click events for weekend mode
+        document.querySelectorAll('.day-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                selectedDay = tab.getAttribute('data-day');
+                renderMobileSchedule();
+            });
+        });
+        return;
+    }
     
     if (!selectedDay) {
         selectedDay = defaultDay;
