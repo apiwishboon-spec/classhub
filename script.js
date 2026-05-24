@@ -13,6 +13,8 @@ let dashboardData = {
     announcements: [],
     homework: []
 };
+let selectedDay = null; // For mobile day selector
+let isMobileView = false;
 
 // Theme Management
 function initTheme() {
@@ -148,15 +150,98 @@ function renderSchedule() {
         return;
     }
 
+    isMobileView = window.innerWidth <= 768;
+
+    if (isMobileView) {
+        renderMobileSchedule();
+    } else {
+        renderDesktopSchedule();
+    }
+}
+
+function renderMobileSchedule() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
 
-    // Helper: strip 4-digit room numbers and format as two lines
+    const now = new Date();
+    const currentDayIndex = now.getDay(); // 0=Sun
+    const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : 'monday';
+    
+    if (!selectedDay) {
+        selectedDay = defaultDay;
+    }
+
+    // Format cell helper
     function formatCell(text) {
         if (!text || text.trim() === '') return '';
-        // Remove 4-digit numbers (room numbers like 5307, 3203, 3207, 8002)
         const cleaned = text.replace(/\b\d{4}\b/g, '').trim();
-        // Split on last whitespace run: subject code + teacher name
+        const match = cleaned.match(/^(\S+)\s+(.+)$/);
+        if (match) {
+            return { subject: match[1], teacher: match[2].trim() };
+        }
+        return { subject: cleaned, teacher: '' };
+    }
+
+    // Day selector tabs
+    let html = `<div class="day-tabs">`;
+    days.forEach((day, di) => {
+        const activeClass = day === selectedDay ? ' active' : '';
+        html += `<button class="day-tab${activeClass}" data-day="${day}">${dayLabels[di]}</button>`;
+    });
+    html += `</div>`;
+
+    // Vertical list for the selected day
+    html += `<div class="day-schedule-list">`;
+    
+    dashboardData.schedule.forEach((col, i) => {
+        const subject = col[selectedDay] || '';
+        const formatted = formatCell(subject);
+        const periodNum = i + 1;
+        
+        if (!formatted.subject) {
+            // Empty slot — show as free period
+            html += `
+                <div class="schedule-item schedule-empty">
+                    <div class="sched-time">${col.time}</div>
+                    <div class="sched-period">คาบที่ ${periodNum}</div>
+                    <div class="sched-free">ว่าง</div>
+                </div>
+            `;
+        } else {
+            html += `
+                <div class="schedule-item">
+                    <div class="sched-time">${col.time}</div>
+                    <div class="sched-period">คาบที่ ${periodNum}</div>
+                    <div class="sched-info">
+                        <span class="sched-subject">${formatted.subject}</span>
+                        ${formatted.teacher ? `<span class="sched-teacher">${formatted.teacher}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    });
+    
+    html += `</div>`;
+    scheduleContainer.innerHTML = html;
+
+    // Attach day tab click events
+    document.querySelectorAll('.day-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            selectedDay = tab.getAttribute('data-day');
+            renderMobileSchedule();
+        });
+    });
+}
+
+function renderDesktopSchedule() {
+    selectedDay = null; // Reset mobile selection
+
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
+
+    function formatCell(text) {
+        if (!text || text.trim() === '') return '';
+        const cleaned = text.replace(/\b\d{4}\b/g, '').trim();
         const match = cleaned.match(/^(\S+)\s+(.+)$/);
         if (match) {
             return `<span class="cell-subject">${match[1]}</span><span class="cell-teacher">${match[2].trim()}</span>`;
@@ -164,7 +249,6 @@ function renderSchedule() {
         return `<span class="cell-subject">${cleaned}</span>`;
     }
 
-    // Build period number header based on how many schedule rows exist
     const periodNums = dashboardData.schedule.map((_, i) => i + 1);
 
     let html = `
@@ -183,7 +267,6 @@ function renderSchedule() {
             <tbody>
     `;
 
-    // Render one row per day
     days.forEach((day, di) => {
         html += `<tr><td class="time-col day-label"><strong>${dayLabels[di]}</strong></td>`;
         dashboardData.schedule.forEach(col => {
@@ -316,6 +399,14 @@ function highlightCurrentClass() {
         }
     });
 }
+
+// Listen for resize to switch between desktop and mobile views
+window.addEventListener('resize', () => {
+    const nowMobile = window.innerWidth <= 768;
+    if (nowMobile !== isMobileView && dashboardData.schedule.length > 0) {
+        renderSchedule();
+    }
+});
 
 // Initialization
 function init() {
