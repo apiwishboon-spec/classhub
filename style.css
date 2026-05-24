@@ -433,6 +433,22 @@ thead .time-col.sticky-header {
 }
 
 /* Mobile Schedule — Vertical List */
+/* Slide-in animation for mobile day transitions */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.day-schedule-list.slide-in {
+    animation: slideIn 0.25s ease-out;
+}
+
 .day-schedule-list {
     display: flex;
     flex-direction: column;

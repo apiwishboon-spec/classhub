@@ -168,6 +168,60 @@ function renderDashboard() {
     highlightCurrentClass();
 }
 
+// Auto-updating countdown on mobile
+let countdownInterval = null;
+
+function startCountdownTimer() {
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (!isMobileView) return;
+    
+    countdownInterval = setInterval(() => {
+        // Update countdown texts without full re-render
+        document.querySelectorAll('.schedule-item[id^="period-"]').forEach(item => {
+            const timeStrEl = item.querySelector('.sched-time');
+            if (!timeStrEl) return;
+            const timeStr = timeStrEl.textContent.trim();
+            if (!timeStr) return;
+            
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const parts = timeStr.split('-');
+            if (parts.length !== 2) return;
+            const startParts = parts[0].split(/[:.]/).map(Number);
+            const endParts = parts[1].split(/[:.]/).map(Number);
+            const startMins = startParts[0] * 60 + (startParts[1] || 0);
+            const endMins = endParts[0] * 60 + (endParts[1] || 0);
+            
+            const countdownEl = item.querySelector('.sched-countdown');
+            const banner = document.querySelector('.countdown-banner');
+            
+            if (currentMinutes >= startMins && currentMinutes <= endMins) {
+                const minsLeft = endMins - currentMinutes;
+                if (countdownEl) {
+                    countdownEl.textContent = `เหลือ ${minsLeft} นาที`;
+                    countdownEl.className = 'sched-countdown countdown-active-text';
+                }
+                if (banner) {
+                    const strong = banner.querySelector('strong');
+                    if (strong) {
+                        banner.className = 'countdown-banner countdown-active';
+                        banner.innerHTML = `<i class="ph ph-chalkboard-teacher"></i><span>กำลังเรียน <strong>${strong.textContent}</strong> — เหลือ ${minsLeft} นาที</span>`;
+                    }
+                }
+            } else if (currentMinutes < startMins) {
+                const minsUntil = startMins - currentMinutes;
+                if (countdownEl) {
+                    countdownEl.textContent = `จะเริ่มใน ${minsUntil} นาที`;
+                    countdownEl.className = 'sched-countdown countdown-upcoming-text';
+                }
+            } else if (countdownEl) {
+                countdownEl.textContent = '';
+                countdownEl.className = 'sched-countdown';
+            }
+        });
+    }, 60000);
+}
+
 function renderSchedule() {
     if (!dashboardData.schedule || dashboardData.schedule.length === 0) {
         scheduleContainer.innerHTML = '<p>No schedule available.</p>';
@@ -328,6 +382,15 @@ function renderMobileSchedule() {
     html += `</div>`;
     scheduleContainer.innerHTML = html;
 
+    // Animate in
+    const listContainer = document.getElementById('day-schedule-list');
+    if (listContainer) {
+        listContainer.classList.remove('slide-in');
+        // Force reflow
+        void listContainer.offsetWidth;
+        listContainer.classList.add('slide-in');
+    }
+
     // Auto-scroll to current period
     if (activePeriodId) {
         setTimeout(() => {
@@ -335,6 +398,8 @@ function renderMobileSchedule() {
             if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 200);
     }
+
+    startCountdownTimer();
 
     // Attach day tab click events
     document.querySelectorAll('.day-tab').forEach(tab => {
@@ -479,16 +544,19 @@ function renderHomework() {
         const finishedClass = isFinished ? 'hw-finished' : '';
         const checked = isFinished ? 'checked' : '';
 
+        const hwColor = getSubjectColor(hw.subject);
         html += `
-            <div class="homework-item ${finishedClass}" data-id="${hwId}">
+            <div class="homework-item ${finishedClass}" data-id="${hwId}" style="border-left: 3px solid ${hwColor.text}44;">
                 <div class="hw-checkbox">
                     <input type="checkbox" class="hw-check-input" id="check-${hwId}" ${checked}>
                 </div>
-                <div class="hw-icon">
+                <div class="hw-icon" style="color:${hwColor.text};">
                     <i class="ph ph-book-open"></i>
                 </div>
                 <div class="hw-content">
-                    <div class="hw-subject">${hw.subject || 'Subject'}</div>
+                    <div class="hw-subject">
+                        <span class="subject-tag" style="background:${hwColor.bg};color:${hwColor.text};border:1px solid ${hwColor.text}33;font-size:0.7rem;">${hw.subject || 'Subject'}</span>
+                    </div>
                     <div class="hw-title">${hw.homework || 'Task'}</div>
                     <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${hw.due || ''}</div>
                 </div>
