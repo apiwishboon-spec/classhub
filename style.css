@@ -240,7 +240,7 @@ body {
 .schedule-table thead th {
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 2;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
     min-width: 150px;
@@ -254,13 +254,18 @@ body {
     min-width: 160px;
     position: sticky;
     left: 0;
-    z-index: 1 !important;
+    z-index: 1;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color) !important;
 }
 
+thead .time-col,
+thead th:first-child {
+    z-index: 3 !important;
+}
+
 .sticky-header {
-    z-index: 50 !important;
+    z-index: 2 !important;
     top: 0;
 }
 
