@@ -437,6 +437,14 @@ thead .time-col.sticky-header {
     opacity: 0.5;
 }
 
+/* Current class highlight */
+.schedule-item.schedule-current {
+    border-color: var(--accent-color);
+    border-width: 2px;
+    background: var(--highlight-bg);
+    box-shadow: 0 0 0 1px var(--accent-color);
+}
+
 .sched-time {
     font-size: 0.7rem;
     font-weight: 600;
@@ -476,6 +484,62 @@ thead .time-col.sticky-header {
     color: var(--text-secondary);
     font-style: italic;
     margin-left: auto;
+}
+
+/* Countdown text on schedule items */
+.sched-countdown {
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: auto;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+
+.countdown-active-text {
+    color: var(--success);
+    background: rgba(36, 161, 72, 0.1);
+}
+
+.countdown-upcoming-text {
+    color: var(--accent-color);
+    background: rgba(15, 98, 254, 0.1);
+}
+
+/* Countdown banner at top of schedule */
+.countdown-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.countdown-banner i {
+    font-size: 1.1rem;
+}
+
+.countdown-active {
+    background: rgba(36, 161, 72, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(36, 161, 72, 0.2);
+}
+
+.countdown-active strong {
+    color: var(--text-main);
+}
+
+.countdown-upcoming {
+    background: rgba(15, 98, 254, 0.08);
+    color: var(--accent-color);
+    border: 1px solid rgba(15, 98, 254, 0.2);
+}
+
+.countdown-upcoming strong {
+    color: var(--text-main);
 }
 
 /* Responsive */

@@ -171,6 +171,9 @@ function renderMobileSchedule() {
         selectedDay = defaultDay;
     }
 
+    // Calculate current time in minutes for highlighting
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
     // Format cell helper
     function formatCell(text) {
         if (!text || text.trim() === '') return '';
@@ -182,26 +185,99 @@ function renderMobileSchedule() {
         return { subject: cleaned, teacher: '' };
     }
 
+    // Countdown helper
+    function getCountdown(timeStr) {
+        const parts = timeStr.split('-');
+        if (parts.length !== 2) return null;
+        const startParts = parts[0].split(/[:.]/).map(Number);
+        const endParts = parts[1].split(/[:.]/).map(Number);
+        const startMins = startParts[0] * 60 + (startParts[1] || 0);
+        const endMins = endParts[0] * 60 + (endParts[1] || 0);
+
+        if (currentMinutes >= startMins && currentMinutes <= endMins) {
+            const minsLeft = endMins - currentMinutes;
+            return { type: 'active', text: `เหลือ ${minsLeft} นาที`, minsLeft };
+        }
+        if (currentMinutes < startMins) {
+            const minsUntil = startMins - currentMinutes;
+            return { type: 'upcoming', text: `จะเริ่มใน ${minsUntil} นาที`, minsUntil };
+        }
+        return { type: 'past', text: '' };
+    }
+
+    // Check if showing today
+    const isToday = selectedDay === defaultDay;
+
     // Day selector tabs
-    let html = `<div class="day-tabs">`;
+    let html = `<div class="day-tabs" id="day-tabs">`;
     days.forEach((day, di) => {
         const activeClass = day === selectedDay ? ' active' : '';
         html += `<button class="day-tab${activeClass}" data-day="${day}">${dayLabels[di]}</button>`;
     });
     html += `</div>`;
 
+    // Countdown banner for today
+    if (isToday && !(currentDayIndex === 0 || currentDayIndex === 6)) {
+        let nextClassCountdown = null;
+        let currentClassFound = null;
+        
+        for (const col of dashboardData.schedule) {
+            const subject = col[selectedDay] || '';
+            const formatted = formatCell(subject);
+            if (!formatted.subject) continue;
+            
+            const countdown = getCountdown(col.time);
+            if (countdown && countdown.type === 'active') {
+                currentClassFound = { subject: formatted.subject, time: col.time, ...countdown };
+                break;
+            }
+            if (countdown && countdown.type === 'upcoming' && !nextClassCountdown) {
+                nextClassCountdown = { subject: formatted.subject, time: col.time, ...countdown };
+            }
+        }
+
+        if (currentClassFound) {
+            html += `<div class="countdown-banner countdown-active">
+                <i class="ph ph-chalkboard-teacher"></i>
+                <span>กำลังเรียน <strong>${currentClassFound.subject}</strong> — ${currentClassFound.text}</span>
+            </div>`;
+        } else if (nextClassCountdown) {
+            html += `<div class="countdown-banner countdown-upcoming">
+                <i class="ph ph-alarm"></i>
+                <span>คาบต่อไป: <strong>${nextClassCountdown.subject}</strong> — ${nextClassCountdown.text}</span>
+            </div>`;
+        }
+    }
+
     // Vertical list for the selected day
-    html += `<div class="day-schedule-list">`;
+    html += `<div class="day-schedule-list" id="day-schedule-list">`;
+    let activePeriodId = null;
     
     dashboardData.schedule.forEach((col, i) => {
         const subject = col[selectedDay] || '';
         const formatted = formatCell(subject);
         const periodNum = i + 1;
+        let itemClasses = 'schedule-item';
+        let countdownHtml = '';
+        
+        // Check if this is the current class (only when viewing today)
+        if (isToday && formatted.subject) {
+            const countdown = getCountdown(col.time);
+            if (countdown) {
+                if (countdown.type === 'active') {
+                    itemClasses += ' schedule-current';
+                    activePeriodId = `period-${i}`;
+                    countdownHtml = `<span class="sched-countdown countdown-active-text">${countdown.text}</span>`;
+                } else if (countdown.type === 'upcoming') {
+                    countdownHtml = `<span class="sched-countdown countdown-upcoming-text">${countdown.text}</span>`;
+                }
+            }
+        }
         
         if (!formatted.subject) {
-            // Empty slot — show as free period
+            itemClasses += ' schedule-empty';
             html += `
-                <div class="schedule-item schedule-empty">
+                <div class="${itemClasses}" id="period-${i}">
                     <div class="sched-time">${col.time}</div>
                     <div class="sched-period">คาบที่ ${periodNum}</div>
                     <div class="sched-free">ว่าง</div>
@@ -209,13 +285,14 @@ function renderMobileSchedule() {
             `;
         } else {
             html += `
-                <div class="schedule-item">
+                <div class="${itemClasses}" id="period-${i}">
                     <div class="sched-time">${col.time}</div>
                     <div class="sched-period">คาบที่ ${periodNum}</div>
                     <div class="sched-info">
                         <span class="sched-subject">${formatted.subject}</span>
                         ${formatted.teacher ? `<span class="sched-teacher">${formatted.teacher}</span>` : ''}
                     </div>
+                    ${countdownHtml}
                 </div>
             `;
         }
@@ -224,6 +301,14 @@ function renderMobileSchedule() {
     html += `</div>`;
     scheduleContainer.innerHTML = html;
 
+    // Auto-scroll to current period
+    if (activePeriodId) {
+        setTimeout(() => {
+            const el = document.getElementById(activePeriodId);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 200);
+    }
+
     // Attach day tab click events
     document.querySelectorAll('.day-tab').forEach(tab => {
         tab.addEventListener('click', () => {
@@ -231,6 +316,48 @@ function renderMobileSchedule() {
             renderMobileSchedule();
         });
     });
+
+    // Swipe between days
+    const listEl = document.getElementById('day-schedule-list');
+    if (listEl) {
+        let startX = 0;
+        let startY = 0;
+        let distX = 0;
+        let isSwiping = false;
+
+        listEl.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isSwiping = false;
+        }, { passive: true });
+
+        listEl.addEventListener('touchmove', (e) => {
+            if (!isSwiping) {
+                distX = e.touches[0].clientX - startX;
+                const distY = e.touches[0].clientY - startY;
+                // Only trigger if horizontal swipe
+                if (Math.abs(distX) > Math.abs(distY) && Math.abs(distX) > 30) {
+                    isSwiping = true;
+                }
+            }
+        }, { passive: true });
+
+        listEl.addEventListener('touchend', () => {
+            if (!isSwiping) return;
+            const dayIdx = days.indexOf(selectedDay);
+            if (distX < -50 && dayIdx < days.length - 1) {
+                // Swipe left → next day
+                selectedDay = days[dayIdx + 1];
+                renderMobileSchedule();
+            } else if (distX > 50 && dayIdx > 0) {
+                // Swipe right → previous day
+                selectedDay = days[dayIdx - 1];
+                renderMobileSchedule();
+            }
+            distX = 0;
+            isSwiping = false;
+        }, { passive: true });
+    }
 }
 
 function renderDesktopSchedule() {
