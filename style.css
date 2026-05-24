@@ -240,10 +240,15 @@ body {
 .schedule-table thead th {
     position: sticky;
     top: 0;
-    z-index: 35;
+    z-index: 25;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
     min-width: 150px;
+}
+
+.schedule-table thead th:not(.time-col) {
+    position: relative;
+    z-index: 45;
 }
 
 .time-col {
