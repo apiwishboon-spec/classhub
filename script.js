@@ -16,6 +16,30 @@ let dashboardData = {
 let selectedDay = null; // For mobile day selector
 let isMobileView = false;
 
+// Subject color mapping — consistent colors per subject
+const subjectColors = [
+    { bg: '#e8f5e9', text: '#2e7d32' },
+    { bg: '#e3f2fd', text: '#1565c0' },
+    { bg: '#fce4ec', text: '#c62828' },
+    { bg: '#fff3e0', text: '#e65100' },
+    { bg: '#f3e5f5', text: '#6a1b9a' },
+    { bg: '#e0f7fa', text: '#00838f' },
+    { bg: '#fff8e1', text: '#f9a825' },
+    { bg: '#fbe9e7', text: '#bf360c' },
+    { bg: '#e8eaf6', text: '#283593' },
+    { bg: '#fce4ec', text: '#ad1457' },
+];
+
+function getSubjectColor(subject) {
+    if (!subject) return subjectColors[0];
+    let hash = 0;
+    for (let i = 0; i < subject.length; i++) {
+        hash = subject.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const idx = Math.abs(hash) % subjectColors.length;
+    return subjectColors[idx];
+}
+
 // Theme Management
 function initTheme() {
     const savedTheme = localStorage.getItem('theme');
@@ -284,12 +308,15 @@ function renderMobileSchedule() {
                 </div>
             `;
         } else {
+            const color = getSubjectColor(formatted.subject);
             html += `
                 <div class="${itemClasses}" id="period-${i}">
                     <div class="sched-time">${col.time}</div>
                     <div class="sched-period">คาบที่ ${periodNum}</div>
                     <div class="sched-info">
-                        <span class="sched-subject">${formatted.subject}</span>
+                        <span class="sched-subject">
+                            <span class="subject-tag" style="background:${color.bg};color:${color.text};border:1px solid ${color.text}33;">${formatted.subject}</span>
+                        </span>
                         ${formatted.teacher ? `<span class="sched-teacher">${formatted.teacher}</span>` : ''}
                     </div>
                     ${countdownHtml}
@@ -399,7 +426,11 @@ function renderDesktopSchedule() {
         dashboardData.schedule.forEach(col => {
             const subject = col[day] || '';
             const formatted = formatCell(subject);
-            html += `<td class="class-cell" data-day="${day}" data-time="${col.time}">${formatted}</td>`;
+            const color = getSubjectColor(subject);
+            html += `<td class="class-cell" data-day="${day}" data-time="${col.time}" style="background:linear-gradient(135deg,${color.bg}22 0%,var(--card-bg) 100%);">
+                ${formatted}
+                <span class="cell-color-dot" style="background:${color.text};"></span>
+            </td>`;
         });
         html += `</tr>`;
     });

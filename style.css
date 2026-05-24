@@ -328,6 +328,27 @@ thead .time-col.sticky-header {
 }
 
 /* Announcements & Homework */
+/* Subject color tag (mobile) */
+.subject-tag {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+/* Color dot indicator (desktop table) */
+.cell-color-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    margin-left: 0.25rem;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
 .announcement-card, .homework-item {
     padding: 1.25rem 0;
     border-bottom: 1px solid var(--border-color);
