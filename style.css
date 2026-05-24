@@ -254,13 +254,13 @@ body {
     min-width: 160px;
     position: sticky;
     left: 0;
-    z-index: 30 !important;
+    z-index: 1 !important;
     background-color: var(--bg-color) !important;
     border-right: 2px solid var(--border-color) !important;
 }
 
 .sticky-header {
-    z-index: 60 !important;
+    z-index: 50 !important;
     top: 0;
 }
 
