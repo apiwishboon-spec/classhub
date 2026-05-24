@@ -58,7 +58,7 @@
             <!-- Add Announcement -->
             <section class="dashboard-card" id="add-announcement-section">
                 <div class="card-header">
-                    <h2><i class="ph ph-megaphone"></i> Add Announcement</h2>
+                    <h2><i class="ph ph-megaphone"></i> Post Announcement</h2>
                 </div>
                 <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
                     <input type="text" id="ann-title" placeholder="Title" class="form-input">
@@ -71,7 +71,7 @@
             <!-- Add Homework -->
             <section class="dashboard-card" id="add-homework-section">
                 <div class="card-header">
-                    <h2><i class="ph ph-pencil-simple"></i> Add Homework</h2>
+                    <h2><i class="ph ph-pencil-simple"></i> Post Homework</h2>
                 </div>
                 <div class="card-content" style="display: flex; flex-direction: column; gap: 1rem;">
                     <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
@@ -81,20 +81,45 @@
                 </div>
             </section>
 
+            <!-- Manage Announcements (Admin & Teacher) -->
+            <section class="dashboard-card span-2" id="manage-announcements-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-list-bullets"></i> Manage Announcements</h2>
+                </div>
+                <div class="card-content">
+                    <div id="announcements-list-admin" class="overflow-x-auto">
+                        <!-- List announcements here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Manage Homework (Admin & Teacher) -->
+            <section class="dashboard-card span-2" id="manage-homework-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-notebook"></i> Manage Homework</h2>
+                </div>
+                <div class="card-content">
+                    <div id="homework-list-admin" class="overflow-x-auto">
+                        <!-- List homework here -->
+                    </div>
+                </div>
+            </section>
+
             <!-- Manage Schedule (Admin Only) -->
             <section class="dashboard-card span-2" id="manage-schedule-section" style="display: none;">
                 <div class="card-header">
                     <h2><i class="ph ph-calendar"></i> Manage Schedule (Admin Only)</h2>
                 </div>
                 <div class="card-content">
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                    <div id="schedule-form-container" style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                        <input type="hidden" id="sched-id">
                         <input type="text" id="sched-time" placeholder="Time (e.g. 08:00-08:50)" class="form-input" style="flex: 1; min-width: 120px;">
                         <input type="text" id="sched-mon" placeholder="Mon" class="form-input" style="flex: 1; min-width: 100px;">
                         <input type="text" id="sched-tue" placeholder="Tue" class="form-input" style="flex: 1; min-width: 100px;">
                         <input type="text" id="sched-wed" placeholder="Wed" class="form-input" style="flex: 1; min-width: 100px;">
                         <input type="text" id="sched-thu" placeholder="Thu" class="form-input" style="flex: 1; min-width: 100px;">
                         <input type="text" id="sched-fri" placeholder="Fri" class="form-input" style="flex: 1; min-width: 100px;">
-                        <button id="add-sched-btn" class="btn-primary">Add Time Slot</button>
+                        <button id="add-sched-btn" class="btn-primary">Save Time Slot</button>
                     </div>
                     <div id="schedule-list" class="overflow-x-auto">
                         <!-- List schedule here -->

@@ -371,14 +371,18 @@ async function removeUser(uid) {
 
 // Load Schedule
 async function loadSchedule() {
-    if (currentUserRole !== 'admin') return;
+    if (currentUserRole === 'ta') return;
     
     const schedList = document.getElementById('schedule-list');
     schedList.innerHTML = '<div style="text-align:center; padding: 1rem;"><div class="spinner"></div><p>Loading schedule...</p></div>';
     
     try {
         const snap = await getDocs(collection(db, "schedule"));
-        let scheduleData = snap.docs.map(doc => doc.data());
+        let scheduleData = snap.docs.map(doc => {
+            const data = doc.data();
+            data.id = doc.id;
+            return data;
+        });
         
         // Sort by time
         scheduleData.sort((a, b) => a.time.localeCompare(b.time));
@@ -408,8 +412,9 @@ async function loadSchedule() {
                 <td>${data.wednesday || ''}</td>
                 <td>${data.thursday || ''}</td>
                 <td>${data.friday || ''}</td>
-                <td>
-                    <button class="remove-sched-btn" data-id="${data.time}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
+                <td style="display: flex; gap: 0.5rem; justify-content: center;">
+                    <button class="edit-sched-btn" data-id="${data.id}" style="color:var(--accent-color); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-note-pencil"></i> Edit</button>
+                    <button class="remove-sched-btn" data-id="${data.id}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
                 </td>
             </tr>`;
         });
@@ -422,9 +427,127 @@ async function loadSchedule() {
                 removeSchedule(id);
             });
         });
+
+        document.querySelectorAll('.edit-sched-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const id = e.target.closest('.edit-sched-btn').getAttribute('data-id');
+                const docSnap = await getDoc(doc(db, "schedule", id));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('sched-id').value = id;
+                    document.getElementById('sched-time').value = data.time;
+                    document.getElementById('sched-mon').value = data.monday || '';
+                    document.getElementById('sched-tue').value = data.tuesday || '';
+                    document.getElementById('sched-wed').value = data.wednesday || '';
+                    document.getElementById('sched-thu').value = data.thursday || '';
+                    document.getElementById('sched-fri').value = data.friday || '';
+                    document.getElementById('schedule-form-container').scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
         
     } catch (error) {
         schedList.innerHTML = `<p style="color:var(--danger)">Error loading schedule: ${error.message}</p>`;
+    }
+}
+
+// Load Announcements
+async function loadAnnouncements() {
+    if (currentUserRole === 'ta') return;
+    const list = document.getElementById('announcements-list-admin');
+    list.innerHTML = '<div class="spinner"></div>';
+    
+    try {
+        const snap = await getDocs(collection(db, "announcements"));
+        let html = `
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            html += `
+            <tr>
+                <td>${data.title}</td>
+                <td>${data.author}</td>
+                <td>${data.date}</td>
+                <td>
+                    <button class="remove-ann-btn" data-id="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer;"><i class="ph ph-trash"></i> Delete</button>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        list.innerHTML = html;
+        
+        document.querySelectorAll('.remove-ann-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(confirm("Delete this announcement?")) {
+                    const id = e.target.closest('.remove-ann-btn').getAttribute('data-id');
+                    await deleteDoc(doc(db, "announcements", id));
+                    loadAnnouncements();
+                }
+            });
+        });
+    } catch (error) {
+        list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+    }
+}
+
+// Load Homework
+async function loadHomework() {
+    if (currentUserRole === 'ta') return;
+    const list = document.getElementById('homework-list-admin');
+    list.innerHTML = '<div class="spinner"></div>';
+    
+    try {
+        const snap = await getDocs(collection(db, "homework"));
+        let html = `
+        <table class="schedule-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Task</th>
+                    <th>Due</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        snap.forEach(doc => {
+            const data = doc.data();
+            html += `
+            <tr>
+                <td>${data.subject}</td>
+                <td>${data.homework}</td>
+                <td>${data.due}</td>
+                <td>
+                    <button class="remove-hw-btn" data-id="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer;"><i class="ph ph-trash"></i> Delete</button>
+                </td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        list.innerHTML = html;
+        
+        document.querySelectorAll('.remove-hw-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if(confirm("Delete this homework?")) {
+                    const id = e.target.closest('.remove-hw-btn').getAttribute('data-id');
+                    await deleteDoc(doc(db, "homework", id));
+                    loadHomework();
+                }
+            });
+        });
+    } catch (error) {
+        list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
     }
 }
 

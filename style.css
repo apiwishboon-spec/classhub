@@ -43,7 +43,7 @@ body {
 }
 
 .app-container {
-    max-width: 1600px; /* Even wider for better schedule visibility */
+    max-width: 1400px; /* Reduced from 1600px for a more balanced view */
     margin: 0 auto;
     padding: 2rem;
 }
@@ -53,7 +53,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
 }
@@ -65,7 +65,7 @@ body {
 }
 
 .nav-brand h1 {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
 }
 
@@ -73,8 +73,8 @@ body {
     background: transparent;
     border: none;
     color: var(--text-main);
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -94,7 +94,7 @@ body {
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
 .span-2 {
@@ -108,15 +108,15 @@ body {
     display: flex;
     flex-direction: column;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    min-height: 300px;
+    min-height: 200px;
 }
 
 #schedule-section {
-    min-height: 800px; /* Even taller to see everything */
+    min-height: 500px; /* Reduced from 800px */
 }
 
 .card-header {
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -124,7 +124,7 @@ body {
 }
 
 .card-header h2 {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -132,13 +132,13 @@ body {
 }
 
 .card-content {
-    padding: 1.5rem;
+    padding: 1.25rem;
     flex-grow: 1;
 }
 
 .card-scrollable .card-content {
     overflow-y: auto;
-    max-height: 600px;
+    max-height: 500px;
 }
 
 .overflow-x-auto {
@@ -150,7 +150,7 @@ body {
     background: var(--border-color);
     color: var(--text-main);
     padding: 0.25rem 0.75rem;
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 600;
     border-radius: 1rem;
 }
@@ -160,7 +160,7 @@ body {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 1000px;
+    min-width: 850px; /* Reduced from 1000px */
 }
 
 .schedule-table thead th {
@@ -169,15 +169,15 @@ body {
     z-index: 20;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.75rem;
 }
 
 .schedule-table th, .schedule-table td {
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.75rem;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
-    min-height: 120px;
+    min-height: 80px; /* Reduced from 120px */
     vertical-align: middle;
 }
 
@@ -189,29 +189,28 @@ body {
 .schedule-table th {
     font-weight: 600;
     color: var(--text-main);
-    font-size: 1.125rem;
+    font-size: 1rem;
     background-color: var(--bg-color);
     text-align: center;
 }
 
 .schedule-table td {
-    font-size: 1rem;
+    font-size: 0.9375rem;
     background-color: var(--card-bg);
 }
 
 .time-col {
     font-weight: 700;
     text-align: left !important;
-    padding-left: 1.5rem !important;
+    padding-left: 1.25rem !important;
     white-space: nowrap;
-    min-width: 160px;
+    min-width: 140px;
     position: sticky;
     left: 0;
     z-index: 30;
-    background-color: var(--bg-color) !important; /* Ensure it's visible against white cells */
-    border-right: 3px solid var(--border-color);
-    box-shadow: 4px 0 8px rgba(0,0,0,0.1);
-    color: var(--text-main) !important;
+    background-color: var(--bg-color) !important;
+    border-right: 2px solid var(--border-color);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
 }
 
 .sticky-header {
@@ -221,26 +220,26 @@ body {
 }
 
 .period-num {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--accent-color);
     font-weight: 700;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .time-sub-header {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     color: var(--text-secondary);
 }
 
 .day-label {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     color: var(--text-main);
     display: block;
 }
 
 .class-cell {
-    min-width: 160px;
+    min-width: 140px;
     transition: background-color 0.2s ease;
 }
 
@@ -251,51 +250,53 @@ body {
 .cell-subject {
     display: block;
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-main);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .cell-teacher {
     display: block;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
 .class-cell.active-class {
     background-color: var(--highlight-bg);
-    border-left: 6px solid var(--accent-color);
+    border-left: 4px solid var(--accent-color);
 }
 
 /* Announcements & Homework */
 .announcement-card, .homework-item {
-    padding: 1.5rem 0;
+    padding: 1.25rem 0;
     border-bottom: 1px solid var(--border-color);
 }
 
 .announcement-title, .hw-title {
     font-weight: 700;
-    font-size: 1.125rem;
+    font-size: 1.05rem;
 }
 
 /* Forms */
 .form-input {
     width: 100%;
-    padding: 1rem;
+    padding: 0.75rem;
     background-color: var(--bg-color);
     border: none;
-    border-bottom: 2px solid var(--text-secondary);
+    border-bottom: 1px solid var(--text-secondary);
     color: var(--text-main);
-    font-size: 1rem;
+    font-size: 0.9375rem;
 }
 
 .btn-primary {
     background: var(--accent-color);
     color: #fff;
-    padding: 1rem 2rem;
+    padding: 0.75rem 1.5rem;
     font-weight: 600;
-    font-size: 1rem;
-    min-height: 3.5rem;
+    font-size: 0.9375rem;
+    min-height: 3rem;
+    cursor: pointer;
+    border: none;
 }
 
 /* Responsive */
@@ -305,11 +306,11 @@ body {
     }
     
     .schedule-table {
-        min-width: 800px;
+        min-width: 750px;
     }
     
     .time-col {
-        min-width: 120px;
+        min-width: 110px;
         padding-left: 1rem !important;
     }
 }
