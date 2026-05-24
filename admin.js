@@ -14,6 +14,7 @@ const logoutBtn = document.getElementById('logout-btn');
 const userRoleBadge = document.getElementById('user-role-badge');
 const manageUsersSection = document.getElementById('manage-users-section');
 const manageScheduleSection = document.getElementById('manage-schedule-section');
+const addAnnouncementSection = document.getElementById('add-announcement-section');
 
 let currentUserRole = 'teacher';
 
@@ -43,11 +44,17 @@ onAuthStateChanged(auth, async (user) => {
             if (currentUserRole === 'admin') {
                 manageUsersSection.style.display = 'block';
                 manageScheduleSection.style.display = 'block';
+                addAnnouncementSection.style.display = 'block';
                 loadUsers();
                 loadSchedule();
-            } else {
+            } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
+                addAnnouncementSection.style.display = 'block';
+            } else if (currentUserRole === 'ta') {
+                manageUsersSection.style.display = 'none';
+                manageScheduleSection.style.display = 'none';
+                addAnnouncementSection.style.display = 'none';
             }
         } catch (error) {
             console.error("Error fetching user role:", error);
@@ -90,6 +97,8 @@ logoutBtn.addEventListener('click', () => {
 
 // Add Announcement
 document.getElementById('add-ann-btn').addEventListener('click', async () => {
+    if (currentUserRole === 'ta') return alert("Unauthorized. TAs can only post homework.");
+    
     const title = document.getElementById('ann-title').value.trim();
     const message = document.getElementById('ann-message').value.trim();
     const author = document.getElementById('ann-author').value.trim();
