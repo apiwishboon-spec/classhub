@@ -43,7 +43,7 @@ body {
 }
 
 .app-container {
-    max-width: 1200px;
+    max-width: 1400px; /* Increased from 1200px for a much wider view */
     margin: 0 auto;
     padding: 2rem;
 }
@@ -65,8 +65,8 @@ body {
 }
 
 .nav-brand h1 {
-    font-size: 1.5rem;
-    font-weight: 600;
+    font-size: 1.75rem; /* Slightly larger */
+    font-weight: 700;
 }
 
 .icon-button {
@@ -94,7 +94,7 @@ body {
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.5rem; /* Increased gap */
 }
 
 .span-2 {
@@ -108,6 +108,11 @@ body {
     display: flex;
     flex-direction: column;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-height: 300px; /* Base min-height for all cards */
+}
+
+#schedule-section {
+    min-height: 700px; /* Explicitly large min-height for the schedule box */
 }
 
 .card-header {
