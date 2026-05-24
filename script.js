@@ -143,7 +143,7 @@ function renderSchedule() {
     }
 
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
-    const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
+    const dayLabels = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     // Helper: strip 4-digit room numbers and format as two lines
     function formatCell(text) {
@@ -165,8 +165,8 @@ function renderSchedule() {
         <table class="schedule-table">
             <thead>
                 <tr>
-                    <th class="time-col" rowspan="2">วัน \ ชั่วโมง</th>
-                    ${periodNums.map(n => `<th>${n}</th>`).join('')}
+                    <th class="time-col sticky-header" rowspan="2">Day \\ Period</th>
+                    ${periodNums.map(n => `<th class="period-num">${n}</th>`).join('')}
                 </tr>
                 <tr>
                     ${dashboardData.schedule.map(row => `<th class="time-sub-header">${row.time}</th>`).join('')}

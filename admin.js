@@ -1,5 +1,14 @@
 import { db, auth, firebaseConfig } from './firebase-config.js';
-import { signInWithEmailAndPassword, signOut, onAuthStateChanged, createUserWithEmailAndPassword, getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+    signInWithEmailAndPassword, 
+    signOut, 
+    onAuthStateChanged, 
+    createUserWithEmailAndPassword, 
+    getAuth,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
@@ -10,13 +19,37 @@ const loginBtn = document.getElementById('login-btn');
 const emailInput = document.getElementById('email');
 const passInput = document.getElementById('password');
 const loginError = document.getElementById('login-error');
+const loginSuccess = document.getElementById('login-success');
 const logoutBtn = document.getElementById('logout-btn');
 const userRoleBadge = document.getElementById('user-role-badge');
 const manageUsersSection = document.getElementById('manage-users-section');
 const manageScheduleSection = document.getElementById('manage-schedule-section');
 const addAnnouncementSection = document.getElementById('add-announcement-section');
 
+// Email Link Elements
+const emailLinkInput = document.getElementById('email-link-input');
+const sendLinkBtn = document.getElementById('send-link-btn');
+
 let currentUserRole = 'teacher';
+
+// Check for Email Link Sign-in on load
+async function checkEmailLinkSignIn() {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Please provide your email for confirmation');
+        }
+        
+        try {
+            const result = await signInWithEmailLink(auth, email, window.location.href);
+            window.localStorage.removeItem('emailForSignIn');
+            console.log("Successfully signed in with email link!", result.user);
+        } catch (error) {
+            console.error("Error signing in with email link:", error);
+            alert("Error signing in with email link: " + error.message);
+        }
+    }
+}
 
 // Auth State Observer
 onAuthStateChanged(auth, async (user) => {
@@ -31,11 +64,15 @@ onAuthStateChanged(auth, async (user) => {
             if (userDoc.exists()) {
                 currentUserRole = userDoc.data().role || 'teacher';
             } else {
-                // First time login or role not set, default to admin if it's the very first user, otherwise teacher.
-                // For safety, defaulting to admin if they know the credentials but let's just use teacher, or let's say admin for testing purposes since user mentioned "admin can do everything".
-                // We'll default to admin just so the user can actually use it upon initial setup.
-                currentUserRole = 'admin';
-                await setDoc(doc(db, "users", user.uid), { role: 'admin', email: user.email });
+                // For the very first user ever, we might want to make them admin.
+                // But for safety in a shared environment, let's check if any users exist.
+                const usersSnap = await getDocs(collection(db, "users"));
+                if (usersSnap.empty) {
+                    currentUserRole = 'admin';
+                } else {
+                    currentUserRole = 'teacher'; // Default for new signups
+                }
+                await setDoc(doc(db, "users", user.uid), { role: currentUserRole, email: user.email });
             }
             
             const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
@@ -58,18 +95,19 @@ onAuthStateChanged(auth, async (user) => {
             }
         } catch (error) {
             console.error("Error fetching user role:", error);
-            // Ignore for now, might be permission issue if rules are strict
         }
     } else {
         // Logged out
         loginContainer.style.display = 'block';
         adminContainer.style.display = 'none';
+        checkEmailLinkSignIn();
     }
 });
 
-// Login
+// Password Login
 loginBtn.addEventListener('click', async () => {
     loginError.style.display = 'none';
+    loginSuccess.style.display = 'none';
     const email = emailInput.value.trim();
     const pass = passInput.value.trim();
     
@@ -86,7 +124,38 @@ loginBtn.addEventListener('click', async () => {
         loginError.textContent = error.message;
         loginError.style.display = 'block';
     } finally {
-        loginBtn.textContent = 'Login';
+        loginBtn.textContent = 'Login with Password';
+    }
+});
+
+// Email Link Login
+sendLinkBtn.addEventListener('click', async () => {
+    loginError.style.display = 'none';
+    loginSuccess.style.display = 'none';
+    const email = emailLinkInput.value.trim();
+    
+    if (!email) {
+        loginError.textContent = 'Please enter your email.';
+        loginError.style.display = 'block';
+        return;
+    }
+    
+    const actionCodeSettings = {
+        url: window.location.href, // Redirect back to this page
+        handleCodeInApp: true
+    };
+    
+    sendLinkBtn.textContent = 'Sending...';
+    try {
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', email);
+        loginSuccess.textContent = 'Login link sent! Please check your email.';
+        loginSuccess.style.display = 'block';
+    } catch (error) {
+        loginError.textContent = error.message;
+        loginError.style.display = 'block';
+    } finally {
+        sendLinkBtn.textContent = 'Send Login Link';
     }
 });
 

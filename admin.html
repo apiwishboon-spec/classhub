@@ -15,11 +15,27 @@
     <div class="app-container" id="login-container">
         <div class="dashboard-card" style="max-width: 400px; margin: 100px auto; padding: 2rem;">
             <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
-            <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
-            <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 1.5rem;">
-            <button id="login-btn" class="btn-primary" style="width: 100%;">Login</button>
+            
+            <div id="password-login-fields">
+                <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
+                <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 1.5rem;">
+                <button id="login-btn" class="btn-primary" style="width: 100%;">Login with Password</button>
+            </div>
+
+            <div style="margin: 1.5rem 0; text-align: center; position: relative;">
+                <hr style="border: none; border-top: 1px solid var(--border-color);">
+                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--card-bg); padding: 0 0.5rem; color: var(--text-secondary); font-size: 0.8rem;">OR</span>
+            </div>
+
+            <div id="email-link-login-fields">
+                <input type="email" id="email-link-input" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;">
+                <button id="send-link-btn" class="btn-primary" style="width: 100%;">Send Login Link</button>
+            </div>
+
             <p id="login-error" style="color: var(--danger); margin-top: 1rem; display: none; text-align: center;"></p>
-            <div style="text-align: center; margin-top: 1rem;">
+            <p id="login-success" style="color: var(--success); margin-top: 1rem; display: none; text-align: center;"></p>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
                 <a href="index.html" style="color: var(--accent-color); text-decoration: none; font-size: 0.9rem;">Back to Dashboard</a>
             </div>
         </div>
