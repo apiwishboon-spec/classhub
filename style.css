@@ -228,13 +228,18 @@ body {
 }
 
 .schedule-table th, .schedule-table td {
-    padding: 1rem 0.75rem;
+    padding: 0.5rem 0.4rem;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
-    min-height: 80px;
+    min-height: 50px;
     vertical-align: middle;
     background-color: var(--card-bg);
+}
+
+.schedule-table tbody td {
+    height: auto;
+    min-height: 50px;
 }
 
 .schedule-table thead th {
@@ -243,7 +248,9 @@ body {
     z-index: 2;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
-    min-width: 150px;
+    min-width: 100px;
+    white-space: nowrap;
+    height: auto;
 }
 
 .time-col {
@@ -274,26 +281,26 @@ thead .time-col.sticky-header {
 }
 
 .period-num {
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: var(--accent-color);
     font-weight: 700;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 
 .time-sub-header {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--text-secondary);
 }
 
 .day-label {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     color: var(--text-main);
     display: block;
 }
 
 .class-cell {
-    min-width: 150px;
+    min-width: 110px;
     transition: background-color 0.2s ease;
 }
 
@@ -304,14 +311,14 @@ thead .time-col.sticky-header {
 .cell-subject {
     display: block;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.85rem;
     color: var(--text-main);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.15rem;
 }
 
 .cell-teacher {
     display: block;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
 }
 
