@@ -1,10 +1,11 @@
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDGN83Fo7YSQYt6FbG1mj-J_fFAbFQ2rwI",
+  authDomain: "classhub-e1e8b.firebaseapp.com",
+  projectId: "classhub-e1e8b",
+  storageBucket: "classhub-e1e8b.firebasestorage.app",
+  messagingSenderId: "967849169380",
+  appId: "1:967849169380:web:347cd74ee21a2b4141b7f1",
+  measurementId: "G-300HW5WQC6"
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
