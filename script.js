@@ -43,10 +43,38 @@ function getSubjectColor(subject) {
 // Theme Management
 function initTheme() {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    if (savedTheme === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
         themeToggle.innerHTML = '<i class="ph ph-sun"></i>';
+    } else if (savedTheme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+        themeToggle.innerHTML = '<i class="ph ph-moon"></i>';
     } else {
+        // Auto: check time for sunset/sunrise
+        applySunsetTheme();
+    }
+}
+
+function applySunsetTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') return; // Manual override
+    
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+    
+    // Rough sunset ~18:30 (1110 min), sunrise ~6:00 (360 min) for Thailand
+    const sunsetMin = 18 * 60 + 30; // 18:30
+    const sunriseMin = 6 * 60;      // 6:00
+    
+    const shouldBeDark = totalMinutes >= sunsetMin || totalMinutes < sunriseMin;
+    const isDark = document.documentElement.hasAttribute('data-theme');
+    
+    if (shouldBeDark && !isDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        themeToggle.innerHTML = '<i class="ph ph-sun"></i>';
+    } else if (!shouldBeDark && isDark) {
         document.documentElement.removeAttribute('data-theme');
         themeToggle.innerHTML = '<i class="ph ph-moon"></i>';
     }
@@ -286,6 +314,35 @@ function renderMobileSchedule() {
     // Check if showing today
     const isToday = selectedDay === defaultDay;
 
+    // Today's progress bar (weekday only)
+    let progressHtml = '';
+    if (isToday && !(currentDayIndex === 0 || currentDayIndex === 6) && dashboardData.schedule.length > 0) {
+        // Find first and last period times
+        const firstTime = dashboardData.schedule[0].time.split('-')[0].trim();
+        const lastTime = dashboardData.schedule[dashboardData.schedule.length - 1].time.split('-')[1].trim();
+        const firstParts = firstTime.split(/[:.]/).map(Number);
+        const lastParts = lastTime.split(/[:.]/).map(Number);
+        const firstMins = firstParts[0] * 60 + (firstParts[1] || 0);
+        const lastMins = lastParts[0] * 60 + (lastParts[1] || 0);
+        const totalSchoolMins = lastMins - firstMins;
+        
+        let progressPercent = 0;
+        if (currentMinutes >= firstMins && currentMinutes <= lastMins) {
+            progressPercent = ((currentMinutes - firstMins) / totalSchoolMins) * 100;
+        } else if (currentMinutes > lastMins) {
+            progressPercent = 100;
+        }
+        
+        progressHtml = `
+            <div class="day-progress-container">
+                <div class="day-progress-bar">
+                    <div class="day-progress-fill" style="width:${progressPercent}%"></div>
+                </div>
+                <div class="day-progress-label">${Math.round(progressPercent)}% ของวันเรียน</div>
+            </div>
+        `;
+    }
+
     // Day selector tabs
     let html = `<div class="day-tabs" id="day-tabs">`;
     days.forEach((day, di) => {
@@ -293,6 +350,9 @@ function renderMobileSchedule() {
         html += `<button class="day-tab${activeClass}" data-day="${day}">${dayLabels[di]}</button>`;
     });
     html += `</div>`;
+
+    // Progress bar + countdown
+    html += progressHtml;
 
     // Countdown banner for today
     if (isToday && !(currentDayIndex === 0 || currentDayIndex === 6)) {
@@ -640,8 +700,11 @@ function init() {
     updateClock();
     fetchDashboardData();
     
-    // Update clock every minute
-    setInterval(updateClock, 60000);
+    // Update clock every minute + check sunset theme
+    setInterval(() => {
+        updateClock();
+        applySunsetTheme();
+    }, 60000);
     
     // Fetch data every 5 minutes
     setInterval(fetchDashboardData, 5 * 60 * 1000);
