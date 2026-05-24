@@ -36,7 +36,8 @@ onAuthStateChanged(auth, async (user) => {
                 await setDoc(doc(db, "users", user.uid), { role: 'admin', email: user.email });
             }
             
-            userRoleBadge.textContent = `Role: ${currentUserRole}`;
+            const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
+            userRoleBadge.textContent = `Role: ${displayRole}`;
             
             if (currentUserRole === 'admin') {
                 manageUsersSection.style.display = 'block';
@@ -208,10 +209,11 @@ async function loadUsers() {
         
         snap.forEach(doc => {
             const data = doc.data();
+            const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
             html += `
             <tr>
                 <td>${data.email}</td>
-                <td><span class="time-badge">${data.role}</span></td>
+                <td><span class="time-badge">${listRole}</span></td>
                 <td>
                     <button class="remove-user-btn" data-uid="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
                 </td>
