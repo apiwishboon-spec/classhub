@@ -129,8 +129,8 @@ body {
 }
 
 .nav-brand h1 {
-    font-size: 1.75rem; /* Reduced from 4rem */
-    font-weight: 700; /* Reduced from 900 */
+    font-size: 1.25rem; /* Further reduced from 1.75rem */
+    font-weight: 600; /* Further reduced from 700 */
 }
 
 .icon-button {
