@@ -179,7 +179,7 @@ body {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 800px;
+    min-width: 900px; /* Increased slightly for bigger look */
 }
 
 .schedule-table thead th {
@@ -188,14 +188,15 @@ body {
     z-index: 15;
     background-color: var(--bg-color);
     border-bottom: 2px solid var(--border-color);
+    padding: 1.25rem 1rem; /* Increased padding */
 }
 
 .schedule-table th, .schedule-table td {
-    padding: 1rem 0.75rem;
+    padding: 1.25rem 1rem; /* Increased padding */
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     border-right: 1px solid var(--border-color);
-    min-height: 80px;
+    min-height: 100px; /* Increased from 80px */
     vertical-align: middle;
 }
 
@@ -207,22 +208,22 @@ body {
 .schedule-table th {
     font-weight: 600;
     color: var(--text-main);
-    font-size: 0.875rem;
+    font-size: 1rem; /* Increased from 0.875rem */
     background-color: var(--bg-color);
     text-align: center;
     white-space: nowrap;
 }
 
 .schedule-table td {
-    font-size: 0.875rem;
+    font-size: 0.9375rem; /* Increased from 0.875rem */
 }
 
 .time-col {
     font-weight: 600;
     text-align: left !important;
-    padding-left: 1.5rem !important;
+    padding-left: 2rem !important; /* Increased padding */
     white-space: nowrap;
-    min-width: 120px;
+    min-width: 140px; /* Increased from 120px */
     position: sticky;
     left: 0;
     z-index: 10;
@@ -240,12 +241,12 @@ body {
 
 .period-num {
     background-color: var(--bg-color);
-    font-size: 1rem;
+    font-size: 1.125rem; /* Increased */
     color: var(--accent-color);
 }
 
 .class-cell {
-    min-width: 120px;
+    min-width: 140px; /* Increased from 120px */
     transition: background-color 0.2s ease;
 }
 
@@ -256,23 +257,23 @@ body {
 /* Multi-line subject + teacher format */
 .cell-subject {
     display: block;
-    font-weight: 600;
-    font-size: 0.9375rem;
+    font-weight: 700; /* Bolder */
+    font-size: 1.0625rem; /* Increased from 0.9375rem */
     color: var(--text-main);
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.4rem; /* Increased spacing */
     line-height: 1.2;
 }
 
 .cell-teacher {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.875rem; /* Increased from 0.75rem */
     color: var(--text-secondary);
     line-height: 1.2;
 }
 
 .time-sub-header {
-    font-size: 0.7rem;
-    font-weight: 400;
+    font-size: 0.8rem; /* Increased from 0.7rem */
+    font-weight: 500; /* Slightly bolder */
     color: var(--text-secondary);
     white-space: nowrap;
     background-color: var(--bg-color);
@@ -281,7 +282,7 @@ body {
 
 .day-label {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.125rem; /* Increased from 1rem */
     color: var(--text-main);
 }
 
