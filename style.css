@@ -246,6 +246,10 @@ body {
     min-width: 150px;
 }
 
+.schedule-table thead th:not(.time-col) {
+    z-index: 50 !important;
+}
+
 .time-col {
     font-weight: 700;
     text-align: left !important;
