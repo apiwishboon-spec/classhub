@@ -185,6 +185,36 @@ logoutBtn.addEventListener('click', () => {
     signOut(auth);
 });
 
+// Homework Quick Add Parser
+document.getElementById('hw-quick-add').addEventListener('input', (e) => {
+    const text = e.target.value.trim();
+    if (!text) return;
+    
+    // Pattern: "Subject: Task due Date" or "Subject: Task"
+    const regex = /^([^:]+):\s*(.+?)(?:\s+due\s+(.+))?$/i;
+    const match = text.match(regex);
+    
+    if (match) {
+        document.getElementById('hw-subject').value = match[1].trim();
+        document.getElementById('hw-task').value = match[2].trim();
+        if (match[3]) {
+            const dueStr = match[3].trim().toLowerCase();
+            const dueInput = document.getElementById('hw-due');
+            
+            // Try to set date input if it's a date string
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dueStr)) {
+                dueInput.value = dueStr;
+            } else if (dueStr === 'tomorrow') {
+                const tom = new Date();
+                tom.setDate(tom.getDate() + 1);
+                dueInput.value = tom.toISOString().split('T')[0];
+            } else if (dueStr === 'today') {
+                dueInput.value = new Date().toISOString().split('T')[0];
+            }
+        }
+    }
+});
+
 // Add Announcement
 document.getElementById('add-ann-btn').addEventListener('click', async () => {
     if (currentUserRole === 'ta') return alert("Unauthorized. TAs can only post homework.");
@@ -236,6 +266,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
             timestamp: new Date()
         });
         alert("Homework added!");
+        document.getElementById('hw-quick-add').value = '';
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';

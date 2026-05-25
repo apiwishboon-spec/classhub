@@ -6,13 +6,19 @@ const currentTimeDisplay = document.getElementById('current-time-display');
 const scheduleContainer = document.getElementById('schedule-container');
 const announcementsContainer = document.getElementById('announcements-container');
 const homeworkContainer = document.getElementById('homework-container');
+const notesContainer = document.getElementById('notes-container');
+const globalSearch = document.getElementById('global-search');
+const addNoteBtn = document.getElementById('add-note-btn');
 
 // State
 let dashboardData = {
     schedule: [],
     announcements: [],
-    homework: []
+    homework: [],
+    notes: []
 };
+let hwFilter = 'all'; // all, soon, overdue, completed
+let searchTerm = '';
 let selectedDay = null; // For mobile day selector
 let isMobileView = false;
 
@@ -261,7 +267,22 @@ function renderDashboard() {
     renderSchedule();
     renderAnnouncements();
     renderHomework();
+    renderNotes();
     highlightCurrentClass();
+}
+
+// Search Logic
+function handleSearch(e) {
+    searchTerm = e.target.value.toLowerCase();
+    renderDashboard();
+}
+
+globalSearch.addEventListener('input', handleSearch);
+
+// Helper to check if item matches search
+function matchesSearch(text) {
+    if (!searchTerm) return true;
+    return text.toLowerCase().includes(searchTerm);
 }
 
 // Auto-updating countdown on mobile
@@ -337,12 +358,18 @@ function renderMobileSchedule() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
 
+    const filteredSchedule = dashboardData.schedule.filter(col => {
+        if (!searchTerm) return true;
+        const subjects = [col.monday, col.tuesday, col.wednesday, col.thursday, col.friday].join(' ').toLowerCase();
+        return subjects.includes(searchTerm);
+    });
+
     const now = new Date();
     const currentDayIndex = now.getDay(); // 0=Sun
     const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : null;
     
-    // Show weekend message if it's Saturday/Sunday
-    if (currentDayIndex === 0 || currentDayIndex === 6) {
+    // Show weekend message if it's Saturday/Sunday and no search
+    if (!searchTerm && (currentDayIndex === 0 || currentDayIndex === 6)) {
         const weekendLabel = currentDayIndex === 0 ? 'อาทิตย์' : 'เสาร์';
         const dayTabsHtml = days.map((day, di) => {
             const activeClass = day === selectedDay ? ' active' : '';
@@ -660,13 +687,17 @@ function renderDesktopSchedule() {
 }
 
 function renderAnnouncements() {
-    if (!dashboardData.announcements || dashboardData.announcements.length === 0) {
-        announcementsContainer.innerHTML = '<p>No announcements right now.</p>';
+    const filteredAnn = dashboardData.announcements.filter(ann => 
+        matchesSearch(ann.title || '') || matchesSearch(ann.message || '') || matchesSearch(ann.author || '')
+    );
+
+    if (filteredAnn.length === 0) {
+        announcementsContainer.innerHTML = searchTerm ? '<p>No results found.</p>' : '<p>No announcements right now.</p>';
         return;
     }
 
     let html = '<div class="announcement-list">';
-    dashboardData.announcements.forEach(ann => {
+    filteredAnn.forEach(ann => {
         html += `
             <div class="announcement-card">
                 <div class="announcement-header">
@@ -684,44 +715,112 @@ function renderAnnouncements() {
     announcementsContainer.innerHTML = html;
 }
 
+function getHwStatus(due) {
+    if (!due) return 'soon';
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    
+    let dueDate;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(due)) {
+        dueDate = new Date(due);
+    } else if (due.toLowerCase().includes('tomorrow')) {
+        dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 1);
+    } else if (due.toLowerCase().includes('today')) {
+        dueDate = new Date();
+    } else {
+        return 'soon'; // Default
+    }
+    
+    dueDate.setHours(0, 0, 0, 0);
+    
+    if (dueDate < now) return 'overdue';
+    const diff = (dueDate - now) / (1000 * 60 * 60 * 24);
+    if (diff <= 3) return 'soon';
+    return 'later';
+}
+
 function renderHomework() {
-    if (!dashboardData.homework || dashboardData.homework.length === 0) {
-        homeworkContainer.innerHTML = '<p>No homework! Enjoy your day.</p>';
+    const finishedHw = JSON.parse(localStorage.getItem('finishedHomework') || '[]');
+    
+    const filteredHw = dashboardData.homework.filter(hw => 
+        matchesSearch(hw.subject || '') || matchesSearch(hw.homework || '')
+    );
+
+    const categorized = {
+        soon: [],
+        overdue: [],
+        completed: [],
+        later: []
+    };
+
+    filteredHw.forEach(hw => {
+        const hwId = hw.id || hw.homework;
+        if (finishedHw.includes(hwId)) {
+            categorized.completed.push(hw);
+        } else {
+            const status = getHwStatus(hw.due);
+            categorized[status].push(hw);
+        }
+    });
+
+    const soonCount = categorized.soon.length;
+    const overdueCount = categorized.overdue.length;
+    const completedCount = categorized.completed.length;
+    const totalCount = filteredHw.length;
+
+    if (totalCount === 0) {
+        homeworkContainer.innerHTML = searchTerm ? '<p>No results found.</p>' : '<p>No homework! Enjoy your day.</p>';
         return;
     }
 
-    function formatDueDate(due) {
-        if (!due) return '';
-        // Check if it's a YYYY-MM-DD date
-        if (/^\d{4}-\d{2}-\d{2}$/.test(due)) {
-            const [y, m, d] = due.split('-');
-            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            return `${d} ${months[parseInt(m)-1]} ${y}`;
-        }
-        return due;
+    let html = `
+        <div class="hw-categories">
+            <button class="hw-cat-btn ${hwFilter === 'all' ? 'active' : ''}" data-filter="all">All <span class="hw-badge">${totalCount}</span></button>
+            <button class="hw-cat-btn ${hwFilter === 'soon' ? 'active' : ''}" data-filter="soon">Soon <span class="hw-badge">${soonCount}</span></button>
+            <button class="hw-cat-btn ${hwFilter === 'overdue' ? 'active' : ''}" data-filter="overdue">Overdue <span class="hw-badge">${overdueCount}</span></button>
+            <button class="hw-cat-btn ${hwFilter === 'completed' ? 'active' : ''}" data-filter="completed">Done <span class="hw-badge">${completedCount}</span></button>
+        </div>
+        <div class="homework-list">
+    `;
+
+    let displayItems = [];
+    if (hwFilter === 'all') {
+        displayItems = [...categorized.overdue, ...categorized.soon, ...categorized.later, ...categorized.completed];
+    } else {
+        displayItems = categorized[hwFilter] || [];
     }
 
-    const finishedHw = JSON.parse(localStorage.getItem('finishedHomework') || '[]');
+    if (displayItems.length === 0) {
+        html += `<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">No homework in this category.</p>`;
+    }
 
-    let html = '<div class="homework-list">';
-    dashboardData.homework.forEach((hw, index) => {
+    displayItems.forEach((hw, index) => {
         const hwId = hw.id || `mock-${index}`;
         const isFinished = finishedHw.includes(hwId);
         const finishedClass = isFinished ? 'hw-finished' : '';
         const checked = isFinished ? 'checked' : '';
+        const status = getHwStatus(hw.due);
+        
+        let statusTag = '';
+        if (!isFinished) {
+            if (status === 'overdue') statusTag = '<span style="color:var(--danger);font-size:0.7rem;font-weight:700;">OVERDUE</span>';
+            else if (status === 'soon') statusTag = '<span style="color:var(--warning);font-size:0.7rem;font-weight:700;">DUE SOON</span>';
+        }
 
         const hwColor = getSubjectColor(hw.subject);
         html += `
-            <div class="homework-item ${finishedClass}" data-id="${hwId}" style="border-left: 3px solid ${hwColor.text}44;">
+            <div class="homework-item ${finishedClass}" data-id="${hwId}" style="border-left: 3px solid ${isFinished ? 'var(--border-color)' : hwColor.text};">
                 <div class="hw-checkbox">
                     <input type="checkbox" class="hw-check-input" id="check-${hwId}" ${checked}>
                 </div>
-                <div class="hw-icon" style="color:${hwColor.text};">
+                <div class="hw-icon" style="color:${isFinished ? 'var(--text-secondary)' : hwColor.text};">
                     <i class="ph ph-book-open"></i>
                 </div>
                 <div class="hw-content">
                     <div class="hw-subject">
                         <span class="subject-tag" style="background:${hwColor.bg};color:${hwColor.text};border:1px solid ${hwColor.text}33;font-size:0.7rem;">${hw.subject || 'Subject'}</span>
+                        ${statusTag}
                     </div>
                     <div class="hw-title">${hw.homework || 'Task'}</div>
                     <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${formatDueDate(hw.due)}</div>
@@ -731,6 +830,24 @@ function renderHomework() {
     });
     html += '</div>';
     homeworkContainer.innerHTML = html;
+
+    // Attach event listeners
+    document.querySelectorAll('.hw-cat-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            hwFilter = btn.getAttribute('data-filter');
+            renderHomework();
+        });
+    });
+
+    function formatDueDate(due) {
+        if (!due) return '';
+        if (/^\d{4}-\d{2}-\d{2}$/.test(due)) {
+            const [y, m, d] = due.split('-');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${d} ${months[parseInt(m)-1]} ${y}`;
+        }
+        return due;
+    }
 
     // Attach event listeners for checkboxes
     document.querySelectorAll('.hw-check-input').forEach(checkbox => {
@@ -752,8 +869,117 @@ function renderHomework() {
     });
 }
 
+// Quick Notes Logic
+function fetchNotes() {
+    const notes = JSON.parse(localStorage.getItem('user_notes') || '[]');
+    dashboardData.notes = notes;
+}
+
+function saveNotes() {
+    localStorage.setItem('user_notes', JSON.stringify(dashboardData.notes));
+}
+
+function renderNotes() {
+    const filteredNotes = dashboardData.notes.filter(note => 
+        matchesSearch(note.content || '') || matchesSearch(note.type || '')
+    );
+    
+    // Sort: pinned first
+    filteredNotes.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+
+    if (filteredNotes.length === 0) {
+        notesContainer.innerHTML = `
+            <div class="empty-notes">
+                <i class="ph ph-pencil-line"></i>
+                <p>${searchTerm ? 'No results found.' : 'No notes yet. Click + to add one!'}</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    filteredNotes.forEach(note => {
+        const pinnedClass = note.pinned ? 'pinned' : '';
+        const pinActive = note.pinned ? 'pin-active' : '';
+        const typeIcon = note.type === 'formula' ? 'ph-function' : (note.type === 'task' ? 'ph-check-square' : 'ph-push-pin');
+        
+        html += `
+            <div class="note-card ${pinnedClass}" data-id="${note.id}">
+                <div class="note-header">
+                    <span class="note-type"><i class="ph ${typeIcon}"></i> ${note.type}</span>
+                    <div class="note-actions">
+                        <button class="note-btn toggle-pin ${pinActive}" title="Pin Note"><i class="ph ph-push-pin"></i></button>
+                        <button class="note-btn delete-note" title="Delete Note"><i class="ph ph-trash"></i></button>
+                    </div>
+                </div>
+                <div class="note-content" contenteditable="true" spellcheck="false">${note.content}</div>
+            </div>
+        `;
+    });
+    notesContainer.innerHTML = html;
+
+    // Attach listeners
+    document.querySelectorAll('.delete-note').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.closest('.note-card').getAttribute('data-id');
+            dashboardData.notes = dashboardData.notes.filter(n => n.id !== id);
+            saveNotes();
+            renderNotes();
+        });
+    });
+
+    document.querySelectorAll('.toggle-pin').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.target.closest('.note-card').getAttribute('data-id');
+            const note = dashboardData.notes.find(n => n.id === id);
+            if (note) note.pinned = !note.pinned;
+            saveNotes();
+            renderNotes();
+        });
+    });
+
+    document.querySelectorAll('.note-content').forEach(el => {
+        el.addEventListener('blur', (e) => {
+            const id = el.closest('.note-card').getAttribute('data-id');
+            const note = dashboardData.notes.find(n => n.id === id);
+            if (note) {
+                note.content = el.innerText;
+                saveNotes();
+            }
+        });
+    });
+}
+
+addNoteBtn.addEventListener('click', () => {
+    const types = ['reminder', 'formula', 'task'];
+    const type = types[Math.floor(Math.random() * types.length)];
+    const newNote = {
+        id: Date.now().toString(),
+        content: 'New note...',
+        type: type,
+        pinned: false,
+        timestamp: new Date()
+    };
+    dashboardData.notes.unshift(newNote);
+    saveNotes();
+    renderNotes();
+    
+    // Focus the new note
+    setTimeout(() => {
+        const firstNote = notesContainer.querySelector('.note-content');
+        if (firstNote) {
+            firstNote.focus();
+            const range = document.createRange();
+            range.selectNodeContents(firstNote);
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }
+    }, 0);
+});
+
 function highlightCurrentClass() {
-    const table = document.querySelector('.schedule-table');
+...    const table = document.querySelector('.schedule-table');
     if (!table) return;
 
     // Remove all previous highlights
@@ -805,7 +1031,19 @@ function init() {
     initTheme();
     updateClock();
     fetchDashboardData();
+    fetchNotes();
     
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('SW registered!', reg);
+            }).catch(err => {
+                console.log('SW registration failed: ', err);
+            });
+        });
+    }
+
     // Update clock every minute + check sunset theme
     setInterval(() => {
         updateClock();

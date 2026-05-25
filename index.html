@@ -25,6 +25,10 @@
                 <h1 style="color: var(--accent-color);">MyClassHub</h1>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="search-wrapper">
+                    <i class="ph ph-magnifying-glass search-icon"></i>
+                    <input type="text" id="global-search" placeholder="Search everything..." aria-label="Search">
+                </div>
                 <a href="admin.html" class="icon-button" aria-label="Admin Panel"><i class="ph ph-user-gear"></i></a>
                 <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode">
                     <i class="ph ph-moon"></i>
@@ -71,6 +75,22 @@
                     <div id="homework-container" class="loading-placeholder">
                         <div class="loader"></div>
                         <p>Loading homework...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Notes Section -->
+            <section id="notes-section" class="dashboard-card span-2">
+                <div class="card-header">
+                    <h2><i class="ph ph-note"></i> Quick Notes</h2>
+                    <button id="add-note-btn" class="icon-button" aria-label="Add Note"><i class="ph ph-plus"></i></button>
+                </div>
+                <div class="card-content">
+                    <div id="notes-container" class="notes-grid">
+                        <div class="empty-notes">
+                            <i class="ph ph-pencil-line"></i>
+                            <p>No notes yet. Click + to add one!</p>
+                        </div>
                     </div>
                 </div>
             </section>

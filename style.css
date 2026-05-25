@@ -111,6 +111,53 @@ body {
     margin-bottom: 2rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0 0.75rem;
+    width: 300px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-wrapper:focus-within {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 2px rgba(15, 98, 254, 0.1);
+}
+
+.search-icon {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+#global-search {
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    padding: 0.5rem;
+    width: 100%;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+#global-search::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+@media (max-width: 600px) {
+    .search-wrapper {
+        width: 100%;
+        order: 3;
+    }
 }
 
 .nav-brand {
@@ -327,15 +374,145 @@ thead .time-col.sticky-header {
     border-left: 4px solid var(--accent-color);
 }
 
-/* Announcements & Homework */
-/* Subject color tag (mobile) */
-.subject-tag {
-    display: inline-block;
-    padding: 0.15rem 0.5rem;
+/* Quick Notes */
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.note-card {
+    background: #fff8e1; /* Default sticky note yellow */
+    color: #333;
+    padding: 1rem;
     border-radius: 4px;
-    font-size: 0.85rem;
+    box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+    position: relative;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] .note-card {
+    background: #3a3321;
+    color: #f4f4f4;
+    border-color: rgba(255,255,255,0.1);
+}
+
+.note-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 4px 4px 10px rgba(0,0,0,0.15);
+}
+
+.note-card.pinned {
+    border: 2px solid var(--accent-color);
+}
+
+.note-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.note-type {
+    font-size: 0.65rem;
+    text-transform: uppercase;
     font-weight: 700;
-    line-height: 1.4;
+    opacity: 0.6;
+}
+
+.note-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.note-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: inherit;
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
+}
+
+.note-btn:hover {
+    opacity: 1;
+}
+
+.note-btn.pin-active {
+    color: var(--accent-color);
+    opacity: 1;
+}
+
+.note-content {
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    flex-grow: 1;
+    outline: none;
+    cursor: text;
+}
+
+.empty-notes {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.empty-notes i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+/* Homework Tabs/Categories */
+.hw-categories {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hw-cat-btn {
+    background: transparent;
+    border: none;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    position: relative;
+}
+
+.hw-cat-btn.active {
+    color: var(--accent-color);
+}
+
+.hw-cat-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent-color);
+}
+
+.hw-badge {
+    font-size: 0.7rem;
+    background: var(--border-color);
+    color: var(--text-main);
+    padding: 0.1rem 0.4rem;
+    border-radius: 10px;
+    margin-left: 0.25rem;
+}
+
+.hw-cat-btn.active .hw-badge {
+    background: var(--accent-color);
+    color: #fff;
 }
 
 /* Color dot indicator (desktop table) */

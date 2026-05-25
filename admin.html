@@ -76,10 +76,18 @@
                     <h2><i class="ph ph-pencil-simple"></i> Post Homework</h2>
                 </div>
                 <div class="card-content admin-form-stack">
-                    <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
-                    <textarea id="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
-                    <label style="font-size:0.8rem;color:var(--text-secondary);margin-top:-0.5rem;">Due Date</label>
-                    <input type="date" id="hw-due" class="form-input">
+                    <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                        <label style="font-size:0.75rem; font-weight:700; color:var(--accent-color); text-transform:uppercase;">⚡ Quick Add</label>
+                        <input type="text" id="hw-quick-add" placeholder="e.g. Math: Page 42 due Friday" class="form-input" style="border-bottom-color: var(--accent-color);">
+                        <p style="font-size:0.65rem; color:var(--text-secondary); margin-top:0.25rem;">Format: Subject: Task due Date</p>
+                    </div>
+
+                    <div id="manual-hw-fields">
+                        <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
+                        <textarea id="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
+                        <label style="font-size:0.8rem;color:var(--text-secondary);margin-top:-0.5rem;">Due Date</label>
+                        <input type="date" id="hw-due" class="form-input">
+                    </div>
                     <button id="add-hw-btn" class="btn-primary btn-full">Post Homework</button>
                 </div>
             </section>
