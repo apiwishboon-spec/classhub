@@ -517,12 +517,15 @@ function renderMobileSchedule() {
             progressPercent = 100;
         }
         
+        const reminderHtml = progressPercent >= 100 ? `<div style="color:var(--accent-color); font-weight:700; font-size:0.75rem; margin-top:0.25rem; text-align:center;">เลิกเรียนแล้ว! อย่าลืมทำการบ้านด้วยนะ 📚</div>` : '';
+        
         progressHtml = `
             <div class="day-progress-container">
                 <div class="day-progress-bar">
                     <div class="day-progress-fill" style="width:${progressPercent}%"></div>
                 </div>
                 <div class="day-progress-label">${Math.round(progressPercent)}% ของวันเรียน</div>
+                ${reminderHtml}
             </div>
         `;
     }
