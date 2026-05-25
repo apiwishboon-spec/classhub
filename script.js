@@ -812,6 +812,21 @@ function renderHomework() {
         matchesSearch(hw.subject || '') || matchesSearch(hw.homework || '')
     );
 
+    // Sort by actual due date first
+    function parseDate(due) {
+        if (!due) return new Date(8640000000000000); // Far future
+        if (/^\d{4}-\d{2}-\d{2}$/.test(due)) return new Date(due);
+        const now = new Date();
+        if (due.toLowerCase().includes('tomorrow')) {
+            now.setDate(now.getDate() + 1);
+            return now;
+        }
+        if (due.toLowerCase().includes('today')) return now;
+        return new Date(8640000000000000);
+    }
+
+    filteredHw.sort((a, b) => parseDate(a.due) - parseDate(b.due));
+
     const categorized = {
         soon: [],
         overdue: [],

@@ -30,6 +30,46 @@ const addHomeworkSection = document.getElementById('add-homework-section');
 const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
 const manageHomeworkSection = document.getElementById('manage-homework-section');
 
+// Notification system
+function showToast(message, icon, color) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<span class="toast-icon"><i class="ph ${icon || 'ph-info'}"></i></span><span class="toast-text">${message}</span>`;
+    toast.style.borderLeftColor = color || 'var(--accent-color)';
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4500);
+}
+
+// Custom Confirm Dialog
+function customConfirm(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl = document.getElementById('confirm-msg');
+        const okBtn = document.getElementById('confirm-ok');
+        const cancelBtn = document.getElementById('confirm-cancel');
+        
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.style.display = 'flex';
+        
+        const cleanup = () => {
+            modal.style.display = 'none';
+            okBtn.onclick = null;
+            cancelBtn.onclick = null;
+        };
+        
+        okBtn.onclick = () => { cleanup(); resolve(true); };
+        cancelBtn.onclick = () => { cleanup(); resolve(false); };
+    });
+}
+
 // Email Link Elements
 const emailLinkInput = document.getElementById('email-link-input');
 const sendLinkBtn = document.getElementById('send-link-btn');
@@ -74,7 +114,7 @@ async function checkEmailLinkSignIn() {
             console.log("Successfully signed in with email link!", result.user);
         } catch (error) {
             console.error("Error signing in with email link:", error);
-            alert("Error signing in with email link: " + error.message);
+            showToast("Error signing in with email link: " + error.message);
         }
     }
 }
@@ -265,13 +305,13 @@ document.getElementById('hw-quick-add').addEventListener('input', (e) => {
 
 // Add Announcement
 document.getElementById('add-ann-btn').addEventListener('click', async () => {
-    if (currentUserRole === 'ta') return alert("Unauthorized. TAs can only post homework.");
+    if (currentUserRole === 'ta') return showToast("Unauthorized. TAs can only post homework.");
     
     const title = document.getElementById('ann-title').value.trim();
     const message = document.getElementById('ann-message').value.trim();
     const author = document.getElementById('ann-author').value.trim();
     
-    if(!title || !message) return alert("Title and Message required");
+    if(!title || !message) return showToast("Title and Message required");
     
     const btn = document.getElementById('add-ann-btn');
     btn.textContent = 'Posting...';
@@ -283,13 +323,13 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             timestamp: new Date()
         });
-        alert("Announcement added!");
+        showToast("Announcement added!");
         document.getElementById('ann-title').value = '';
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
         loadAnnouncements();
     } catch (error) {
-        alert("Error: " + error.message);
+        showToast("Error: " + error.message);
     } finally {
         btn.textContent = 'Post Announcement';
         btn.disabled = false;
@@ -302,7 +342,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     const task = document.getElementById('hw-task').value.trim();
     const due = document.getElementById('hw-due').value.trim();
     
-    if(!subject || !task) return alert("Subject and Task required");
+    if(!subject || !task) return showToast("Subject and Task required");
     
     const btn = document.getElementById('add-hw-btn');
     btn.textContent = 'Posting...';
@@ -313,14 +353,14 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
             subject, homework: task, due,
             timestamp: new Date()
         });
-        alert("Homework added!");
+        showToast("Homework added!");
         document.getElementById('hw-quick-add').value = '';
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
         loadHomework();
     } catch (error) {
-        alert("Error: " + error.message);
+        showToast("Error: " + error.message);
     } finally {
         btn.textContent = 'Post Homework';
         btn.disabled = false;
@@ -329,13 +369,13 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
 
 // Add User (Admin Only)
 document.getElementById('add-user-btn').addEventListener('click', async () => {
-    if (currentUserRole !== 'admin') return alert("Unauthorized");
+    if (currentUserRole !== 'admin') return showToast("Unauthorized");
     
     const email = document.getElementById('new-user-email').value.trim();
     const pass = document.getElementById('new-user-pass').value.trim();
     const role = document.getElementById('new-user-role').value;
     
-    if(!email || !pass) return alert("Email and Password required");
+    if(!email || !pass) return showToast("Email and Password required");
     
     const btn = document.getElementById('add-user-btn');
     btn.textContent = 'Adding...';
@@ -358,12 +398,12 @@ document.getElementById('add-user-btn').addEventListener('click', async () => {
         // Sign out and delete the secondary app instance
         await signOut(secondaryAuth);
         
-        alert(`User ${email} added successfully as ${role}!`);
+        showToast(`User ${email} added successfully as ${role}!`);
         document.getElementById('new-user-email').value = '';
         document.getElementById('new-user-pass').value = '';
         loadUsers();
     } catch (error) {
-        alert("Error adding user: " + error.message);
+        showToast("Error adding user: " + error.message);
     } finally {
         btn.textContent = 'Add User';
         btn.disabled = false;
@@ -372,7 +412,7 @@ document.getElementById('add-user-btn').addEventListener('click', async () => {
 
 // Add Schedule (Admin Only)
 document.getElementById('add-sched-btn').addEventListener('click', async () => {
-    if (currentUserRole !== 'admin') return alert("Unauthorized");
+    if (currentUserRole !== 'admin') return showToast("Unauthorized");
     
     const time = document.getElementById('sched-time').value.trim();
     const monday = document.getElementById('sched-mon').value.trim();
@@ -381,7 +421,7 @@ document.getElementById('add-sched-btn').addEventListener('click', async () => {
     const thursday = document.getElementById('sched-thu').value.trim();
     const friday = document.getElementById('sched-fri').value.trim();
     
-    if(!time) return alert("Time is required");
+    if(!time) return showToast("Time is required");
     
     const btn = document.getElementById('add-sched-btn');
     btn.textContent = 'Adding...';
@@ -391,7 +431,7 @@ document.getElementById('add-sched-btn').addEventListener('click', async () => {
         await setDoc(doc(db, "schedule", time), {
             time, monday, tuesday, wednesday, thursday, friday
         });
-        alert("Schedule added/updated!");
+        showToast("Schedule added/updated!");
         document.getElementById('sched-time').value = '';
         document.getElementById('sched-mon').value = '';
         document.getElementById('sched-tue').value = '';
@@ -400,7 +440,7 @@ document.getElementById('add-sched-btn').addEventListener('click', async () => {
         document.getElementById('sched-fri').value = '';
         loadSchedule();
     } catch (error) {
-        alert("Error adding schedule: " + error.message);
+        showToast("Error adding schedule: " + error.message);
     } finally {
         btn.textContent = 'Add Time Slot';
         btn.disabled = false;
@@ -483,13 +523,13 @@ async function loadUsers() {
 async function removeUser(uid) {
     if (currentUserRole !== 'admin') return;
     
-    if(confirm("Remove this user's access? (Note: To completely delete the authentication account, you must use the Firebase Console or Admin SDK. This will remove their role and login privileges.)")) {
+    if(await customConfirm("Confirm Action", "Remove this user's access? (Note: To completely delete the authentication account, you must use the Firebase Console or Admin SDK. This will remove their role and login privileges.)")) {
         try {
             await deleteDoc(doc(db, "users", uid));
-            alert("User role removed.");
+            showToast("User role removed.");
             loadUsers();
         } catch (error) {
-            alert("Error removing user: " + error.message);
+            showToast("Error removing user: " + error.message);
         }
     }
 }
@@ -674,7 +714,7 @@ async function loadAnnouncements() {
         
         document.querySelectorAll('.remove-ann-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                if(confirm("Delete this announcement?")) {
+                if(await customConfirm("Confirm Action", "Delete this announcement?")) {
                     const id = e.target.closest('.remove-ann-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "announcements", id));
                     loadAnnouncements();
@@ -744,7 +784,7 @@ async function loadHomework() {
         
         document.querySelectorAll('.remove-hw-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                if(confirm("Delete this homework?")) {
+                if(await customConfirm("Confirm Action", "Delete this homework?")) {
                     const id = e.target.closest('.remove-hw-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "homework", id));
                     loadHomework();
@@ -760,13 +800,13 @@ async function loadHomework() {
 async function removeSchedule(id) {
     if (currentUserRole !== 'admin') return;
     
-    if(confirm("Remove this time slot from the schedule?")) {
+    if(await customConfirm("Confirm Action", "Remove this time slot from the schedule?")) {
         try {
             await deleteDoc(doc(db, "schedule", id));
-            alert("Time slot removed.");
+            showToast("Time slot removed.");
             loadSchedule();
         } catch (error) {
-            alert("Error removing schedule: " + error.message);
+            showToast("Error removing schedule: " + error.message);
         }
     }
 }
