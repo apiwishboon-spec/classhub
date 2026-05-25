@@ -337,31 +337,54 @@ async function loadUsers() {
     
     try {
         const snap = await getDocs(collection(db, "users"));
-        let html = `
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
+        const isMobile = window.innerWidth <= 768;
+        let html = '';
         
-        snap.forEach(doc => {
-            const data = doc.data();
-            const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
-            html += `
-            <tr>
-                <td>${data.email}</td>
-                <td><span class="time-badge">${listRole}</span></td>
-                <td>
+        if (isMobile) {
+            html = `<div class="admin-sched-cards">`;
+            snap.forEach(doc => {
+                const data = doc.data();
+                const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
+                html += `
+                    <div class="admin-sched-card">
+                        <div class="admin-sched-card-header">
+                            <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.email}</span>
+                            <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}"><i class="ph ph-trash"></i></button>
+                        </div>
+                        <div style="margin-top:0.25rem;">
+                            <span class="time-badge" style="font-size:0.7rem;">${listRole}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
+                html += `
+                <tr>
+                    <td>${data.email}</td>
+                    <td><span class="time-badge">${listRole}</span></td>
+                    <td>
                         <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}"><i class="ph ph-trash"></i> Remove</button>
-                </td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        }
         usersList.innerHTML = html;
         
         // Add event listeners to remove buttons
