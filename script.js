@@ -361,8 +361,12 @@ function renderSchedule() {
         return;
     }
 
-    isMobileView = window.innerWidth <= 768;
+    if (searchTerm) {
+        renderSearchSchedule();
+        return;
+    }
 
+    isMobileView = window.innerWidth <= 768;
     if (isMobileView) {
         renderMobileSchedule();
     } else {
@@ -370,22 +374,64 @@ function renderSchedule() {
     }
 }
 
+function renderSearchSchedule() {
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+    const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
+    let results = [];
+
+    dashboardData.schedule.forEach((col, periodIdx) => {
+        days.forEach((day, dayIdx) => {
+            const subject = col[day] || '';
+            if (subject.toLowerCase().includes(searchTerm)) {
+                results.push({
+                    day: dayLabels[dayIdx],
+                    time: col.time,
+                    subject: subject,
+                    period: periodIdx + 1
+                });
+            }
+        });
+    });
+
+    if (results.length === 0) {
+        scheduleContainer.innerHTML = `<div class="empty-notes"><i class="ph ph-magnifying-glass"></i><p>No classes matching "${searchTerm}"</p></div>`;
+        return;
+    }
+
+    let html = `<div class="day-schedule-list slide-in">`;
+    results.forEach(res => {
+        const color = getSubjectColor(res.subject);
+        html += `
+            <div class="schedule-item">
+                <div class="sched-time">${res.time}</div>
+                <div class="sched-period">${res.day} คาบที่ ${res.period}</div>
+                <div class="sched-info">
+                    <span class="sched-subject">
+                        <span class="subject-tag" style="background:${color.bg};color:${color.text};border:1px solid ${color.text}33;">${res.subject}</span>
+                    </span>
+                </div>
+            </div>
+        `;
+    });
+    html += `</div>`;
+    scheduleContainer.innerHTML = `
+        <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-secondary);">
+            Search results for "${searchTerm}":
+        </div>
+        ${html}
+    `;
+}
+
 function renderMobileSchedule() {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dayLabels = ['จันทร์', 'อังคาร', 'พุธ', 'พฤหัสฯ', 'ศุกร์'];
-
-    const filteredSchedule = dashboardData.schedule.filter(col => {
-        if (!searchTerm) return true;
-        const subjects = [col.monday, col.tuesday, col.wednesday, col.thursday, col.friday].join(' ').toLowerCase();
-        return subjects.includes(searchTerm);
-    });
 
     const now = new Date();
     const currentDayIndex = now.getDay(); // 0=Sun
     const defaultDay = (currentDayIndex >= 1 && currentDayIndex <= 5) ? days[currentDayIndex - 1] : null;
     
-    // Show weekend message if it's Saturday/Sunday and no search
-    if (!searchTerm && (currentDayIndex === 0 || currentDayIndex === 6)) {
+    // Show weekend message if it's Saturday/Sunday
+    if (currentDayIndex === 0 || currentDayIndex === 6) {
         const weekendLabel = currentDayIndex === 0 ? 'อาทิตย์' : 'เสาร์';
         const dayTabsHtml = days.map((day, di) => {
             const activeClass = day === selectedDay ? ' active' : '';
