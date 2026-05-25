@@ -995,7 +995,7 @@ addNoteBtn.addEventListener('click', () => {
 });
 
 function highlightCurrentClass() {
-...    const table = document.querySelector('.schedule-table');
+    const table = document.querySelector('.schedule-table');
     if (!table) return;
 
     // Remove all previous highlights
