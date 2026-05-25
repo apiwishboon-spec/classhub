@@ -16,6 +16,68 @@ let dashboardData = {
 let selectedDay = null; // For mobile day selector
 let isMobileView = false;
 
+// Notification system
+function showToast(message, icon, color) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<span class="toast-icon"><i class="ph ${icon}"></i></span><span class="toast-text">${message}</span>`;
+    toast.style.borderLeftColor = color || 'var(--accent-color)';
+    container.appendChild(toast);
+    
+    // Animate in
+    requestAnimationFrame(() => toast.classList.add('show'));
+    
+    // Auto remove after 4.5s
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4500);
+}
+
+function checkForUpdates(type, newData) {
+    const storageKey = `notif_${type}_last`;
+    const lastData = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    
+    if (lastData.length === 0) {
+        // First load — just store data, no notifications
+        localStorage.setItem(storageKey, JSON.stringify(newData));
+        return;
+    }
+    
+    // Find new items by ID or content hash
+    const newItems = newData.filter(item => {
+        const id = item.id || item.title || item.homework || '';
+        return !lastData.some(last => (last.id || last.title || last.homework || '') === id);
+    });
+    
+    // Show notifications for new items
+    newItems.forEach(item => {
+        const id = item.id || '';
+        if (type === 'homework') {
+            showToast(`New homework: ${item.subject} — ${item.homework}`, 'ph-book-open', 'var(--success)');
+        } else if (type === 'announcements') {
+            showToast(`New: ${item.title}`, 'ph-megaphone', 'var(--accent-color)');
+        }
+    });
+    
+    // Update stored data
+    localStorage.setItem(storageKey, JSON.stringify(newData));
+}
+
+// Check schedule changes
+let lastScheduleHash = '';
+
+function checkScheduleUpdates(scheduleData) {
+    const hash = JSON.stringify(scheduleData.map(s => s.time + (s.monday||'') + (s.tuesday||'') + (s.wednesday||'') + (s.thursday||'') + (s.friday||'')));
+    if (lastScheduleHash && lastScheduleHash !== hash) {
+        showToast('Schedule has been updated!', 'ph-calendar', 'var(--warning)');
+    }
+    lastScheduleHash = hash;
+}
+
 // Subject color mapping — consistent colors per subject
 const subjectColors = [
     { bg: '#e8f5e9', text: '#2e7d32' },
@@ -110,17 +172,19 @@ function fetchDashboardData() {
             return;
         }
 
-        // Listen for Schedule changes
+        // Listen for Schedule changes + notifications
         onSnapshot(collection(db, "schedule"), (snap) => {
             if (!snap.empty) {
-                dashboardData.schedule = snap.docs.map(doc => doc.data());
-                dashboardData.schedule.sort((a, b) => {
+                const schedData = snap.docs.map(doc => doc.data());
+                schedData.sort((a, b) => {
                     const timeA = a.time.split('-')[0].trim();
                     const timeB = b.time.split('-')[0].trim();
                     const [hA, mA] = timeA.split(/[:.]/).map(Number);
                     const [hB, mB] = timeB.split(/[:.]/).map(Number);
                     return (hA * 60 + (mA || 0)) - (hB * 60 + (mB || 0));
                 });
+                dashboardData.schedule = schedData;
+                checkScheduleUpdates(schedData);
             } else {
                 dashboardData.schedule = [];
             }
@@ -130,10 +194,12 @@ function fetchDashboardData() {
             scheduleContainer.innerHTML = '<p style="color:var(--danger)">Failed to load schedule.</p>';
         });
 
-        // Listen for Announcements changes
+        // Listen for Announcements changes + notifications
         onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), (snap) => {
             if (!snap.empty) {
-                dashboardData.announcements = snap.docs.map(doc => doc.data());
+                const annData = snap.docs.map(doc => doc.data());
+                dashboardData.announcements = annData;
+                checkForUpdates('announcements', annData);
             } else {
                 dashboardData.announcements = [];
             }
@@ -143,14 +209,16 @@ function fetchDashboardData() {
             announcementsContainer.innerHTML = '<p style="color:var(--danger)">Failed to load announcements.</p>';
         });
 
-        // Listen for Homework changes
+        // Listen for Homework changes + notifications
         onSnapshot(query(collection(db, "homework"), orderBy("timestamp", "desc")), (snap) => {
             if (!snap.empty) {
-                dashboardData.homework = snap.docs.map(doc => {
+                const hwData = snap.docs.map(doc => {
                     const data = doc.data();
                     data.id = doc.id;
                     return data;
                 });
+                dashboardData.homework = hwData;
+                checkForUpdates('homework', hwData);
             } else {
                 dashboardData.homework = [];
             }
