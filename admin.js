@@ -35,6 +35,30 @@ const sendLinkBtn = document.getElementById('send-link-btn');
 
 let currentUserRole = 'teacher';
 
+// Global Theme Management
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (savedTheme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        applySunsetTheme();
+    }
+}
+
+function applySunsetTheme() {
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const totalMinutes = hours * 60 + minutes;
+    const sunsetMin = 18 * 60 + 30; // 18:30
+    const sunriseMin = 6 * 60;      // 6:00
+    const shouldBeDark = totalMinutes >= sunsetMin || totalMinutes < sunriseMin;
+    if (shouldBeDark) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+}
+
 // Check for Email Link Sign-in on load
 async function checkEmailLinkSignIn() {
     if (isSignInWithEmailLink(auth, window.location.href)) {
@@ -722,3 +746,6 @@ async function removeSchedule(id) {
         }
     }
 }
+
+// Initialization
+document.addEventListener('DOMContentLoaded', initTheme);

@@ -1106,11 +1106,74 @@ function init() {
         });
     }
 
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // Show custom install banner after a short delay
+        if (!localStorage.getItem('pwa_prompt_dismissed')) {
+            setTimeout(() => {
+                showInstallBanner(deferredPrompt);
+            }, 5000);
+        }
+    });
+
+    // Request Notification Permission on first open
+    if ('Notification' in window && Notification.permission === 'default') {
+        if (!localStorage.getItem('notif_asked')) {
+            setTimeout(() => {
+                requestNotifPermission();
+            }, 3000);
+        }
+    }
+
     // Update clock every second
     setInterval(updateClock, 1000);
     
     // Fetch data every 5 minutes
     setInterval(fetchDashboardData, 5 * 60 * 1000);
+}
+
+function requestNotifPermission() {
+    Notification.requestPermission().then(permission => {
+        localStorage.setItem('notif_asked', 'true');
+        if (permission === 'granted') {
+            showToast('Notifications enabled!', 'ph-bell', 'var(--success)');
+        }
+    });
+}
+
+function showInstallBanner(prompt) {
+    const banner = document.createElement('div');
+    banner.className = 'pwa-install-banner';
+    banner.innerHTML = `
+        <div class="pwa-content">
+            <i class="ph ph-download-simple"></i>
+            <span>Add MyClassHub to your home screen for a better experience!</span>
+        </div>
+        <div class="pwa-actions">
+            <button id="pwa-install-btn" class="btn-primary" style="padding: 0.4rem 0.8rem; min-height: auto; font-size: 0.8rem;">Install</button>
+            <button id="pwa-close-btn" class="icon-button" style="width: 30px; height: 30px;"><i class="ph ph-x"></i></button>
+        </div>
+    `;
+    document.body.appendChild(banner);
+    
+    document.getElementById('pwa-install-btn').addEventListener('click', () => {
+        prompt.prompt();
+        prompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+                console.log('User accepted the install prompt');
+            }
+            banner.remove();
+        });
+    });
+    
+    document.getElementById('pwa-close-btn').addEventListener('click', () => {
+        localStorage.setItem('pwa_prompt_dismissed', 'true');
+        banner.remove();
+    });
 }
 
 // Run init on load
