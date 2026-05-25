@@ -60,5 +60,24 @@
             &copy; 2026 Apiwish Anutaravanichkul.
         </footer>
     </div>
+    <script>
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            } else if (savedTheme === 'light') {
+                document.documentElement.removeAttribute('data-theme');
+            } else {
+                const now = new Date();
+                const totalMinutes = now.getHours() * 60 + now.getMinutes();
+                const sunsetMin = 18 * 60 + 30;
+                const sunriseMin = 6 * 60;
+                if (totalMinutes >= sunsetMin || totalMinutes < sunriseMin) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', initTheme);
+    </script>
 </body>
 </html>

@@ -7,7 +7,8 @@ import {
     getAuth,
     sendSignInLinkToEmail,
     isSignInWithEmailLink,
-    signInWithEmailLink
+    signInWithEmailLink,
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -207,6 +208,29 @@ sendLinkBtn.addEventListener('click', async () => {
 // Logout
 logoutBtn.addEventListener('click', () => {
     signOut(auth);
+});
+
+// Forgot Password
+document.getElementById('forgot-pass-link').addEventListener('click', async (e) => {
+    e.preventDefault();
+    loginError.style.display = 'none';
+    loginSuccess.style.display = 'none';
+    
+    const email = emailInput.value.trim();
+    if (!email) {
+        loginError.textContent = 'Please enter your email address first.';
+        loginError.style.display = 'block';
+        return;
+    }
+    
+    try {
+        await sendPasswordResetEmail(auth, email);
+        loginSuccess.textContent = 'Password reset email sent! Check your inbox.';
+        loginSuccess.style.display = 'block';
+    } catch (error) {
+        loginError.textContent = error.message;
+        loginError.style.display = 'block';
+    }
 });
 
 // Homework Quick Add Parser
