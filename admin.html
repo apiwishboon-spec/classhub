@@ -27,37 +27,6 @@
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
-    <!-- Modals Overlay -->
-    <div id="modal-overlay" class="modal-overlay" style="display: none;">
-        <!-- Confirm Modal -->
-        <div id="confirm-modal-card" class="modal-card" style="display: none;">
-            <h3 id="confirm-title">Confirm Action</h3>
-            <p id="confirm-msg">Are you sure you want to proceed?</p>
-            <div class="modal-actions">
-                <button id="confirm-cancel" class="btn-secondary">Cancel</button>
-                <button id="confirm-ok" class="btn-danger">Confirm</button>
-            </div>
-        </div>
-
-        <!-- Schedule Modal (Keep for editing) -->
-        <div id="sched-modal-card" class="modal-card" style="display: none;">
-            <h3>Manage Time Slot</h3>
-            <div class="admin-form-stack">
-                <input type="hidden" id="sched-id">
-                <input type="text" id="sched-time" placeholder="Time (08:00-08:50)" class="form-input">
-                <input type="text" id="sched-mon" placeholder="Monday" class="form-input">
-                <input type="text" id="sched-tue" placeholder="Tuesday" class="form-input">
-                <input type="text" id="sched-wed" placeholder="Wednesday" class="form-input">
-                <input type="text" id="sched-thu" placeholder="Thursday" class="form-input">
-                <input type="text" id="sched-fri" placeholder="Friday" class="form-input">
-                <div class="modal-actions">
-                    <button class="btn-secondary close-modal">Cancel</button>
-                    <button id="add-sched-btn" class="btn-primary">Save Changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div class="app-container" id="login-container">
         <div class="dashboard-card admin-login-card">
             <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
@@ -199,6 +168,37 @@
         </footer>
     </div>
     
+    <!-- Modals Overlay (Moved to bottom) -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <!-- Confirm Modal -->
+        <div id="confirm-modal-card" class="modal-card" style="display: none;">
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-msg">Are you sure you want to proceed?</p>
+            <div class="modal-actions">
+                <button id="confirm-cancel" class="btn-secondary">Cancel</button>
+                <button id="confirm-ok" class="btn-danger">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Schedule Modal (Keep for editing) -->
+        <div id="sched-modal-card" class="modal-card" style="display: none;">
+            <h3>Manage Time Slot</h3>
+            <div class="admin-form-stack">
+                <input type="hidden" id="sched-id">
+                <input type="text" id="sched-time" placeholder="Time (08:00-08:50)" class="form-input">
+                <input type="text" id="sched-mon" placeholder="Monday" class="form-input">
+                <input type="text" id="sched-tue" placeholder="Tuesday" class="form-input">
+                <input type="text" id="sched-wed" placeholder="Wednesday" class="form-input">
+                <input type="text" id="sched-thu" placeholder="Thursday" class="form-input">
+                <input type="text" id="sched-fri" placeholder="Friday" class="form-input">
+                <div class="modal-actions">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button id="add-sched-btn" class="btn-primary">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="admin.js"></script>
 </body>
 </html>

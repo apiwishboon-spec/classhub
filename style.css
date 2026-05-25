@@ -15,6 +15,70 @@
     --cyan-glow: rgba(0, 255, 255, 0.3);
 }
 
+/* 🛑 CORE MODAL STYLES (High Priority) */
+.modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    display: none; /* Controlled by JS */
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 100000 !important;
+    padding: 20px;
+}
+
+.modal-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 2.5rem !important;
+    max-width: 500px !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.5) !important;
+    display: none; /* Controlled by JS */
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    color: var(--text-main) !important;
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-card h3 {
+    margin: 0 0 1rem 0 !important;
+    font-size: 1.6rem !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+}
+
+.modal-card p {
+    margin: 0 0 2rem 0 !important;
+    color: var(--text-secondary) !important;
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+}
+
+.modal-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 1rem !important;
+}
+
+.modal-actions button {
+    padding: 0.8rem 1.8rem !important;
+    border-radius: 4px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    font-size: 0.95rem !important;
+}
+
 [data-theme="dark"] {
     --bg-color: #161616; /* Deep charcoal */
     --card-bg: #262626;
@@ -1153,72 +1217,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 .admin-footer-links a {
     color: var(--text-secondary);
     text-decoration: none;
-}
-
-/* Modals & Dialogs (Priority Styles) */
-.modal-overlay {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: rgba(0, 0, 0, 0.75) !important;
-    backdrop-filter: blur(5px) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 99999 !important;
-    padding: 1.5rem;
-}
-
-.modal-card {
-    background: var(--card-bg) !important;
-    border: 1px solid var(--border-color) !important;
-    padding: 2.5rem !important;
-    max-width: 500px !important;
-    width: 100% !important;
-    border-radius: 12px !important;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
-    animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-}
-
-@keyframes modalIn {
-    from { opacity: 0; transform: translateY(30px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.modal-card h3 {
-    margin-bottom: 1.5rem;
-    color: var(--text-main);
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin-top: 0;
-}
-
-.modal-card p {
-    margin-bottom: 2.5rem;
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    line-height: 1.6;
-}
-
-.modal-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-}
-
-/* Modal Specific Buttons */
-.modal-actions .btn-secondary, 
-.modal-actions .btn-danger,
-.modal-actions .btn-primary {
-    padding: 0.8rem 1.75rem;
-    font-weight: 600;
-    border-radius: 4px;
-    font-family: inherit;
-    cursor: pointer;
-    font-size: 1rem;
 }
 
 /* Carbon-style Buttons */
