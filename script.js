@@ -162,11 +162,27 @@ themeToggle.addEventListener('click', () => {
 });
 
 // Time and Clock Management
+let lastMinute = -1;
+
 function updateClock() {
     const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const currentMin = now.getMinutes();
+    
+    // Update display every second
+    const timeString = now.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit',
+        hour12: false 
+    });
     currentTimeDisplay.textContent = timeString;
-    highlightCurrentClass();
+    
+    // Only run heavy logic once per minute
+    if (currentMin !== lastMinute) {
+        lastMinute = currentMin;
+        highlightCurrentClass();
+        applySunsetTheme();
+    }
 }
 
 // Fetch Data (Real-time Auto Refresh)
@@ -1044,11 +1060,8 @@ function init() {
         });
     }
 
-    // Update clock every minute + check sunset theme
-    setInterval(() => {
-        updateClock();
-        applySunsetTheme();
-    }, 60000);
+    // Update clock every second
+    setInterval(updateClock, 1000);
     
     // Fetch data every 5 minutes
     setInterval(fetchDashboardData, 5 * 60 * 1000);
