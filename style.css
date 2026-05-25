@@ -643,6 +643,201 @@ thead .time-col.sticky-header {
     color: var(--text-main);
 }
 
+/* ===== ADMIN PAGE STYLES ===== */
+
+/* Login card */
+.admin-login-card {
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 2rem;
+}
+
+@media (max-width: 768px) {
+    .admin-login-card {
+        margin: 2rem auto;
+        padding: 1.5rem;
+    }
+}
+
+/* Full-width button */
+.btn-full {
+    width: 100%;
+}
+
+/* Login divider */
+.login-divider {
+    margin: 1.5rem 0;
+    text-align: center;
+    position: relative;
+}
+
+.login-divider hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+}
+
+.login-divider span {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--card-bg);
+    padding: 0 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+
+/* Admin message */
+.admin-msg {
+    margin-top: 1rem;
+    display: none;
+    text-align: center;
+}
+
+.admin-msg-error {
+    color: var(--danger);
+}
+
+.admin-msg-success {
+    color: var(--success);
+}
+
+/* Back link */
+.admin-back-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+/* Header actions */
+.admin-header-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .admin-header-actions {
+        gap: 0.25rem;
+    }
+    .admin-header-actions .time-badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+    }
+}
+
+/* Form stack (vertical layout for forms) */
+.admin-form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Add User form */
+.admin-user-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-user-form .form-input {
+    flex: 1;
+    min-width: 180px;
+}
+
+@media (max-width: 768px) {
+    .admin-user-form .form-input {
+        min-width: 100%;
+    }
+}
+
+/* Schedule form */
+.admin-sched-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.sched-time-input {
+    flex: 1;
+    min-width: 150px;
+}
+
+.sched-day-input {
+    flex: 1;
+    min-width: 70px;
+}
+
+@media (max-width: 768px) {
+    .admin-sched-form {
+        flex-direction: column;
+    }
+    .sched-time-input,
+    .sched-day-input {
+        min-width: 100%;
+    }
+}
+
+/* Action buttons in admin tables */
+.admin-action-cell {
+    white-space: nowrap;
+}
+
+.admin-btn-icon {
+    color: var(--accent-color);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.4rem;
+    font-family: inherit;
+}
+
+.admin-btn-icon:hover {
+    opacity: 0.8;
+}
+
+.admin-btn-danger {
+    color: var(--danger) !important;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.4rem;
+    font-family: inherit;
+}
+
+.admin-btn-danger:hover {
+    opacity: 0.8;
+}
+
+/* Admin footer */
+.admin-footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding: 2rem 0;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.admin-footer-links {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-footer-links a {
+    color: var(--text-secondary);
+    text-decoration: none;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .app-container {

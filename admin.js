@@ -357,7 +357,7 @@ async function loadUsers() {
                 <td>${data.email}</td>
                 <td><span class="time-badge">${listRole}</span></td>
                 <td>
-                    <button class="remove-user-btn" data-uid="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
+                        <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}"><i class="ph ph-trash"></i> Remove</button>
                 </td>
             </tr>`;
         });
@@ -441,9 +441,9 @@ async function loadSchedule() {
                 <td>${data.wednesday || ''}</td>
                 <td>${data.thursday || ''}</td>
                 <td>${data.friday || ''}</td>
-                <td style="display: flex; gap: 0.5rem; justify-content: center;">
-                    <button class="edit-sched-btn" data-id="${data.id}" style="color:var(--accent-color); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-note-pencil"></i> Edit</button>
-                    <button class="remove-sched-btn" data-id="${data.id}" style="color:var(--danger); background:none; border:none; cursor:pointer; font-weight: 600;"><i class="ph ph-trash"></i> Remove</button>
+                <td class="admin-action-cell">
+                    <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i> Edit</button>
+                    <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i> Remove</button>
                 </td>
             </tr>`;
         });
@@ -509,7 +509,7 @@ async function loadAnnouncements() {
                 <td>${data.author}</td>
                 <td>${data.date}</td>
                 <td>
-                    <button class="remove-ann-btn" data-id="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer;"><i class="ph ph-trash"></i> Delete</button>
+                    <button class="remove-ann-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
                 </td>
             </tr>`;
         });
@@ -558,7 +558,7 @@ async function loadHomework() {
                 <td>${data.homework}</td>
                 <td>${data.due}</td>
                 <td>
-                    <button class="remove-hw-btn" data-id="${doc.id}" style="color:var(--danger); background:none; border:none; cursor:pointer;"><i class="ph ph-trash"></i> Delete</button>
+                    <button class="remove-hw-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
                 </td>
             </tr>`;
         });
