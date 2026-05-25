@@ -97,9 +97,9 @@ document.addEventListener('click', (e) => {
 });
 
 // Modal Open Listeners
-document.getElementById('open-ann-modal').addEventListener('click', () => openModal('ann-modal-card'));
-document.getElementById('open-hw-modal').addEventListener('click', () => openModal('hw-modal-card'));
-document.getElementById('open-sched-modal').addEventListener('click', () => openModal('sched-modal-card'));
+// document.getElementById('open-ann-modal').addEventListener('click', () => openModal('ann-modal-card'));
+// document.getElementById('open-hw-modal').addEventListener('click', () => openModal('hw-modal-card'));
+// document.getElementById('open-sched-modal').addEventListener('click', () => openModal('sched-modal-card'));
 
 // Email Link Elements
 const emailLinkInput = document.getElementById('email-link-input');
@@ -187,9 +187,9 @@ onAuthStateChanged(auth, async (user) => {
                 manageHomeworkSection.style.display = 'block';
                 
                 loadUsers();
-                closeModal(); loadSchedule();
-                closeModal(); loadAnnouncements();
-                closeModal(); loadHomework();
+                loadSchedule();
+                loadAnnouncements();
+                loadHomework();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -198,8 +198,8 @@ onAuthStateChanged(auth, async (user) => {
                 manageAnnouncementsSection.style.display = 'block';
                 manageHomeworkSection.style.display = 'block';
                 
-                closeModal(); loadAnnouncements();
-                closeModal(); loadHomework();
+                loadAnnouncements();
+                loadHomework();
             } else if (currentUserRole === 'ta') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -208,7 +208,7 @@ onAuthStateChanged(auth, async (user) => {
                 manageAnnouncementsSection.style.display = 'none';
                 manageHomeworkSection.style.display = 'block';
                 
-                closeModal(); loadHomework();
+                loadHomework();
             }
         } catch (error) {
             console.error("Error fetching user role:", error);
@@ -358,7 +358,7 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
         document.getElementById('ann-title').value = '';
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
-        closeModal(); loadAnnouncements();
+        loadAnnouncements();
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -389,7 +389,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
-        closeModal(); loadHomework();
+        loadHomework();
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -469,7 +469,7 @@ document.getElementById('add-sched-btn').addEventListener('click', async () => {
         document.getElementById('sched-wed').value = '';
         document.getElementById('sched-thu').value = '';
         document.getElementById('sched-fri').value = '';
-        closeModal(); loadSchedule();
+        loadSchedule();
     } catch (error) {
         showToast("Error adding schedule: " + error.message);
     } finally {
@@ -748,7 +748,7 @@ async function loadAnnouncements() {
                 if(await customConfirm("Confirm Action", "Delete this announcement?")) {
                     const id = e.target.closest('.remove-ann-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "announcements", id));
-                    closeModal(); loadAnnouncements();
+                    loadAnnouncements();
                 }
             });
         });
@@ -818,7 +818,7 @@ async function loadHomework() {
                 if(await customConfirm("Confirm Action", "Delete this homework?")) {
                     const id = e.target.closest('.remove-hw-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "homework", id));
-                    closeModal(); loadHomework();
+                    loadHomework();
                 }
             });
         });
@@ -835,7 +835,7 @@ async function removeSchedule(id) {
         try {
             await deleteDoc(doc(db, "schedule", id));
             showToast("Time slot removed.");
-            closeModal(); loadSchedule();
+            loadSchedule();
         } catch (error) {
             showToast("Error removing schedule: " + error.message);
         }
