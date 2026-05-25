@@ -415,39 +415,71 @@ async function loadSchedule() {
             const [hB, mB] = timeB.split(/[:.]/).map(Number);
             return (hA * 60 + (mA || 0)) - (hB * 60 + (mB || 0));
         });
+
+        const isMobile = window.innerWidth <= 768;
         
-        let html = `
-        <table class="schedule-table">
-            <thead>
+        let html = '';
+        if (isMobile) {
+            // Mobile: Render as cards
+            html = `<div class="admin-sched-cards">`;
+            scheduleData.forEach(data => {
+                const days = [
+                    { key: 'monday', label: 'Mon', val: data.monday || '' },
+                    { key: 'tuesday', label: 'Tue', val: data.tuesday || '' },
+                    { key: 'wednesday', label: 'Wed', val: data.wednesday || '' },
+                    { key: 'thursday', label: 'Thu', val: data.thursday || '' },
+                    { key: 'friday', label: 'Fri', val: data.friday || '' },
+                ];
+                const dayBars = days.map(d => `<span class="sched-day-bar"><span class="sched-day-label">${d.label}</span><span class="sched-day-val">${d.val || '—'}</span></span>`).join('');
+                html += `
+                    <div class="admin-sched-card" data-id="${data.id}">
+                        <div class="admin-sched-card-header">
+                            <span class="admin-sched-time">${data.time}</span>
+                            <div class="admin-sched-card-actions">
+                                <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i></button>
+                                <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i></button>
+                            </div>
+                        </div>
+                        <div class="admin-sched-day-row">${dayBars}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            // Desktop: Render as table
+            html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Mon</th>
+                        <th>Tue</th>
+                        <th>Wed</th>
+                        <th>Thu</th>
+                        <th>Fri</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            scheduleData.forEach(data => {
+                html += `
                 <tr>
-                    <th>Time</th>
-                    <th>Mon</th>
-                    <th>Tue</th>
-                    <th>Wed</th>
-                    <th>Thu</th>
-                    <th>Fri</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
-        
-        scheduleData.forEach(data => {
-            html += `
-            <tr>
-                <td class="time-col">${data.time}</td>
-                <td>${data.monday || ''}</td>
-                <td>${data.tuesday || ''}</td>
-                <td>${data.wednesday || ''}</td>
-                <td>${data.thursday || ''}</td>
-                <td>${data.friday || ''}</td>
-                <td class="admin-action-cell">
-                    <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i> Edit</button>
-                    <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i> Remove</button>
-                </td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
+                    <td class="time-col">${data.time}</td>
+                    <td>${data.monday || ''}</td>
+                    <td>${data.tuesday || ''}</td>
+                    <td>${data.wednesday || ''}</td>
+                    <td>${data.thursday || ''}</td>
+                    <td>${data.friday || ''}</td>
+                    <td class="admin-action-cell">
+                        <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i> Edit</button>
+                        <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i> Remove</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        }
         schedList.innerHTML = html;
         
         document.querySelectorAll('.remove-sched-btn').forEach(btn => {
@@ -488,32 +520,54 @@ async function loadAnnouncements() {
     
     try {
         const snap = await getDocs(collection(db, "announcements"));
-        let html = `
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Date</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
+        const isMobile = window.innerWidth <= 768;
+        let html = '';
         
-        snap.forEach(doc => {
-            const data = doc.data();
-            html += `
-            <tr>
-                <td>${data.title}</td>
-                <td>${data.author}</td>
-                <td>${data.date}</td>
-                <td>
-                    <button class="remove-ann-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
-                </td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
+        if (isMobile) {
+            html = `<div class="admin-sched-cards">`;
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `
+                    <div class="admin-sched-card">
+                        <div class="admin-sched-card-header">
+                            <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
+                            <button class="remove-ann-btn admin-btn-danger admin-btn-icon" data-id="${doc.id}"><i class="ph ph-trash"></i></button>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
+                            ${data.author || ''} · ${data.date || ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `
+                <tr>
+                    <td>${data.title}</td>
+                    <td>${data.author}</td>
+                    <td>${data.date}</td>
+                    <td>
+                        <button class="remove-ann-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        }
         list.innerHTML = html;
         
         document.querySelectorAll('.remove-ann-btn').forEach(btn => {
@@ -537,32 +591,53 @@ async function loadHomework() {
     
     try {
         const snap = await getDocs(collection(db, "homework"));
-        let html = `
-        <table class="schedule-table">
-            <thead>
-                <tr>
-                    <th>Subject</th>
-                    <th>Task</th>
-                    <th>Due</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
+        const isMobile = window.innerWidth <= 768;
+        let html = '';
         
-        snap.forEach(doc => {
-            const data = doc.data();
-            html += `
-            <tr>
-                <td>${data.subject}</td>
-                <td>${data.homework}</td>
-                <td>${data.due}</td>
-                <td>
-                    <button class="remove-hw-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
-                </td>
-            </tr>`;
-        });
-        html += '</tbody></table>';
+        if (isMobile) {
+            html = `<div class="admin-sched-cards">`;
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `
+                    <div class="admin-sched-card">
+                        <div class="admin-sched-card-header">
+                            <span style="font-weight:600;font-size:0.85rem;">${data.subject}</span>
+                            <button class="remove-hw-btn admin-btn-danger admin-btn-icon" data-id="${doc.id}"><i class="ph ph-trash"></i></button>
+                        </div>
+                        <div style="font-size:0.85rem;margin:0.25rem 0;">${data.homework}</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Due: ${data.due || ''}</div>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        } else {
+            html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Task</th>
+                        <th>Due</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                html += `
+                <tr>
+                    <td>${data.subject}</td>
+                    <td>${data.homework}</td>
+                    <td>${data.due}</td>
+                    <td>
+                        <button class="remove-hw-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        }
         list.innerHTML = html;
         
         document.querySelectorAll('.remove-hw-btn').forEach(btn => {

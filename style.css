@@ -815,6 +815,72 @@ thead .time-col.sticky-header {
     opacity: 0.8;
 }
 
+/* Admin schedule cards (mobile) */
+.admin-sched-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.admin-sched-card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    padding: 0.75rem;
+}
+
+.admin-sched-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.admin-sched-time {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--accent-color);
+}
+
+.admin-sched-card-actions {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.admin-sched-day-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+.sched-day-bar {
+    flex: 1;
+    min-width: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.3rem 0.2rem;
+    background: var(--bg-color);
+    border-radius: 4px;
+}
+
+.sched-day-label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.sched-day-val {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-main);
+    text-align: center;
+    word-break: break-word;
+    max-width: 100%;
+}
+
 /* Admin footer */
 .admin-footer {
     text-align: center;
