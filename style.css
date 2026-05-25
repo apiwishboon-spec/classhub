@@ -385,6 +385,20 @@ thead .time-col.sticky-header {
     font-size: 0.9375rem;
 }
 
+/* Date input styling */
+input[type="date"].form-input {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 2.5rem;
+    font-family: inherit;
+}
+
+input[type="date"].form-input::-webkit-calendar-picker-indicator {
+    filter: var(--date-icon-filter, none);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
 .btn-primary {
     background: var(--accent-color);
     color: #fff;

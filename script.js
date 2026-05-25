@@ -622,6 +622,17 @@ function renderHomework() {
         return;
     }
 
+    function formatDueDate(due) {
+        if (!due) return '';
+        // Check if it's a YYYY-MM-DD date
+        if (/^\d{4}-\d{2}-\d{2}$/.test(due)) {
+            const [y, m, d] = due.split('-');
+            const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return `${d} ${months[parseInt(m)-1]} ${y}`;
+        }
+        return due;
+    }
+
     const finishedHw = JSON.parse(localStorage.getItem('finishedHomework') || '[]');
 
     let html = '<div class="homework-list">';
@@ -645,7 +656,7 @@ function renderHomework() {
                         <span class="subject-tag" style="background:${hwColor.bg};color:${hwColor.text};border:1px solid ${hwColor.text}33;font-size:0.7rem;">${hw.subject || 'Subject'}</span>
                     </div>
                     <div class="hw-title">${hw.homework || 'Task'}</div>
-                    <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${hw.due || ''}</div>
+                    <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${formatDueDate(hw.due)}</div>
                 </div>
             </div>
         `;
