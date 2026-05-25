@@ -1155,56 +1155,70 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     text-decoration: none;
 }
 
-/* Modals & Dialogs */
+/* Modals & Dialogs (Priority Styles) */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7); /* Darker backdrop */
-    backdrop-filter: blur(4px); /* Modern blur effect */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 11000;
-    padding: 1rem;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(5px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 99999 !important;
+    padding: 1.5rem;
 }
 
 .modal-card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    padding: 2rem;
-    max-width: 450px;
-    width: 100%;
-    border-radius: 8px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    animation: modalIn 0.3s ease-out;
+    background: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 2.5rem !important;
+    max-width: 500px !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5) !important;
+    animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
 }
 
 @keyframes modalIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-card h3 {
-    margin-bottom: 1rem;
+    margin-bottom: 1.5rem;
     color: var(--text-main);
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 0;
 }
 
 .modal-card p {
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     color: var(--text-secondary);
-    font-size: 1rem;
+    font-size: 1.1rem;
     line-height: 1.6;
 }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 1rem;
+}
+
+/* Modal Specific Buttons */
+.modal-actions .btn-secondary, 
+.modal-actions .btn-danger,
+.modal-actions .btn-primary {
+    padding: 0.8rem 1.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    font-family: inherit;
+    cursor: pointer;
+    font-size: 1rem;
 }
 
 /* Carbon-style Buttons */
