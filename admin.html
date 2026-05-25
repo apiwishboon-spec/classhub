@@ -27,14 +27,68 @@
     <!-- Toast Notification Container -->
     <div id="toast-container"></div>
 
-    <!-- Custom Confirmation Modal -->
-    <div id="confirm-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-card">
+    <!-- Modals Overlay -->
+    <div id="modal-overlay" class="modal-overlay" style="display: none;">
+        <!-- Confirm Modal -->
+        <div id="confirm-modal-card" class="modal-card" style="display: none;">
             <h3 id="confirm-title">Confirm Action</h3>
             <p id="confirm-msg">Are you sure you want to proceed?</p>
             <div class="modal-actions">
                 <button id="confirm-cancel" class="btn-secondary">Cancel</button>
                 <button id="confirm-ok" class="btn-danger">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Announcement Modal -->
+        <div id="ann-modal-card" class="modal-card" style="display: none;">
+            <h3>Post Announcement</h3>
+            <div class="admin-form-stack">
+                <input type="text" id="ann-title" placeholder="Title" class="form-input">
+                <textarea id="ann-message" placeholder="Message" class="form-input" rows="4"></textarea>
+                <input type="text" id="ann-author" placeholder="Author Name" class="form-input">
+                <div class="modal-actions">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button id="add-ann-btn" class="btn-primary">Post Announcement</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Homework Modal -->
+        <div id="hw-modal-card" class="modal-card" style="display: none;">
+            <h3>Post Homework</h3>
+            <div class="admin-form-stack">
+                <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px; margin-bottom: 0.5rem;">
+                    <label style="font-size:0.75rem; font-weight:700; color:var(--accent-color); text-transform:uppercase;">⚡ Quick Add</label>
+                    <input type="text" id="hw-quick-add" placeholder="e.g. Math: Page 42 due Friday" class="form-input" style="border-bottom-color: var(--accent-color);">
+                </div>
+                <div id="manual-hw-fields">
+                    <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
+                    <textarea id="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
+                    <label style="font-size:0.8rem;color:var(--text-secondary);">Due Date</label>
+                    <input type="date" id="hw-due" class="form-input">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button id="add-hw-btn" class="btn-primary">Post Homework</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule Modal -->
+        <div id="sched-modal-card" class="modal-card" style="display: none;">
+            <h3>Manage Time Slot</h3>
+            <div class="admin-form-stack">
+                <input type="hidden" id="sched-id">
+                <input type="text" id="sched-time" placeholder="Time (08:00-08:50)" class="form-input">
+                <input type="text" id="sched-mon" placeholder="Monday" class="form-input">
+                <input type="text" id="sched-tue" placeholder="Tuesday" class="form-input">
+                <input type="text" id="sched-wed" placeholder="Wednesday" class="form-input">
+                <input type="text" id="sched-thu" placeholder="Thursday" class="form-input">
+                <input type="text" id="sched-fri" placeholder="Friday" class="form-input">
+                <div class="modal-actions">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button id="add-sched-btn" class="btn-primary">Save Changes</button>
+                </div>
             </div>
         </div>
     </div>
@@ -84,77 +138,35 @@
         </header>
 
         <main class="dashboard-grid">
-            <!-- Add Announcement -->
-            <section class="dashboard-card" id="add-announcement-section">
-                <div class="card-header">
-                    <h2><i class="ph ph-megaphone"></i> Post Announcement</h2>
-                </div>
-                <div class="card-content admin-form-stack">
-                    <input type="text" id="ann-title" placeholder="Title" class="form-input">
-                    <textarea id="ann-message" placeholder="Message" class="form-input" rows="3"></textarea>
-                    <input type="text" id="ann-author" placeholder="Author Name" class="form-input">
-                    <button id="add-ann-btn" class="btn-primary btn-full">Post Announcement</button>
-                </div>
-            </section>
-
-            <!-- Add Homework -->
-            <section class="dashboard-card" id="add-homework-section">
-                <div class="card-header">
-                    <h2><i class="ph ph-pencil-simple"></i> Post Homework</h2>
-                </div>
-                <div class="card-content admin-form-stack">
-                    <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px; margin-bottom: 0.5rem;">
-                        <label style="font-size:0.75rem; font-weight:700; color:var(--accent-color); text-transform:uppercase;">⚡ Quick Add</label>
-                        <input type="text" id="hw-quick-add" placeholder="e.g. Math: Page 42 due Friday" class="form-input" style="border-bottom-color: var(--accent-color);">
-                        <p style="font-size:0.65rem; color:var(--text-secondary); margin-top:0.25rem;">Format: Subject: Task due Date</p>
-                    </div>
-
-                    <div id="manual-hw-fields">
-                        <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
-                        <textarea id="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
-                        <label style="font-size:0.8rem;color:var(--text-secondary);margin-top:-0.5rem;">Due Date</label>
-                        <input type="date" id="hw-due" class="form-input">
-                    </div>
-                    <button id="add-hw-btn" class="btn-primary btn-full">Post Homework</button>
-                </div>
-            </section>
-
-            <!-- Manage Announcements (Admin & Teacher) -->
+            <!-- Manage Announcements -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
-                    <h2><i class="ph ph-list-bullets"></i> Manage Announcements</h2>
+                    <h2><i class="ph ph-megaphone"></i> Announcements</h2>
+                    <button id="open-ann-modal" class="btn-primary" style="padding: 0.5rem 1rem; min-height: auto; font-size: 0.85rem;">+ New Announcement</button>
                 </div>
                 <div class="card-content">
                     <div id="announcements-list-admin" class="overflow-x-auto"></div>
                 </div>
             </section>
 
-            <!-- Manage Homework (Admin & Teacher) -->
+            <!-- Manage Homework -->
             <section class="dashboard-card span-2" id="manage-homework-section">
                 <div class="card-header">
-                    <h2><i class="ph ph-notebook"></i> Manage Homework</h2>
+                    <h2><i class="ph ph-notebook"></i> Homework</h2>
+                    <button id="open-hw-modal" class="btn-primary" style="padding: 0.5rem 1rem; min-height: auto; font-size: 0.85rem;">+ New Homework</button>
                 </div>
                 <div class="card-content">
                     <div id="homework-list-admin" class="overflow-x-auto"></div>
                 </div>
             </section>
 
-            <!-- Manage Schedule (Admin Only) -->
+            <!-- Manage Schedule -->
             <section class="dashboard-card span-2" id="manage-schedule-section" style="display: none;">
                 <div class="card-header">
-                    <h2><i class="ph ph-calendar"></i> Manage Schedule</h2>
+                    <h2><i class="ph ph-calendar"></i> Schedule</h2>
+                    <button id="open-sched-modal" class="btn-primary" style="padding: 0.5rem 1rem; min-height: auto; font-size: 0.85rem;">+ Add Time Slot</button>
                 </div>
                 <div class="card-content">
-                    <div id="schedule-form-container" class="admin-sched-form">
-                        <input type="hidden" id="sched-id">
-                        <input type="text" id="sched-time" placeholder="Time (08:00-08:50)" class="form-input sched-time-input">
-                        <input type="text" id="sched-mon" placeholder="Mon" class="form-input sched-day-input">
-                        <input type="text" id="sched-tue" placeholder="Tue" class="form-input sched-day-input">
-                        <input type="text" id="sched-wed" placeholder="Wed" class="form-input sched-day-input">
-                        <input type="text" id="sched-thu" placeholder="Thu" class="form-input sched-day-input">
-                        <input type="text" id="sched-fri" placeholder="Fri" class="form-input sched-day-input">
-                        <button id="add-sched-btn" class="btn-primary btn-full">Save Time Slot</button>
-                    </div>
                     <div id="schedule-list" class="overflow-x-auto"></div>
                 </div>
             </section>
