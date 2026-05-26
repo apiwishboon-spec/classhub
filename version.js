@@ -1,5 +1,5 @@
 // MyClassHub Version
-const APP_VERSION = "V.3.2.1";
+const APP_VERSION = "V.3.3.0";
 
 function injectVersion() {
     const versionElements = document.querySelectorAll('.app-version');
