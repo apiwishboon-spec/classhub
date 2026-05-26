@@ -1,5 +1,5 @@
-// MyClassHub Version
-const BASE_VERSION = "V.3.3.0";
+// MyClassHub Version (Commit ID)
+const BASE_VERSION = "f649e09";
 
 async function fetchGitHubVersion() {
     const CACHE_KEY = "gh_version_cache";
@@ -7,9 +7,16 @@ async function fetchGitHubVersion() {
     const CACHE_TTL = 5 * 60 * 1000; // 5 minutes cache
 
     // Check localStorage cache first
-    const cachedData = localStorage.getItem(CACHE_KEY);
+    let cachedData = localStorage.getItem(CACHE_KEY);
     const cachedTime = localStorage.getItem(CACHE_TIME_KEY);
     const now = Date.now();
+
+    // Clear old cache format (which contained hyphens) if found
+    if (cachedData && cachedData.includes('-')) {
+        localStorage.removeItem(CACHE_KEY);
+        localStorage.removeItem(CACHE_TIME_KEY);
+        cachedData = null;
+    }
 
     if (cachedData && cachedTime && (now - parseInt(cachedTime) < CACHE_TTL)) {
         return cachedData;
@@ -20,22 +27,14 @@ async function fetchGitHubVersion() {
         if (response.ok) {
             const data = await response.json();
             const sha = data.sha.substring(0, 7);
-            const dateStr = data.commit.committer.date; // e.g. "2026-05-26T13:08:44Z"
-            const date = new Date(dateStr);
-            const formattedDate = date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            });
-            const fullVersion = `${BASE_VERSION}-${sha} (${formattedDate})`;
             
             // Cache in localStorage
-            localStorage.setItem(CACHE_KEY, fullVersion);
+            localStorage.setItem(CACHE_KEY, sha);
             localStorage.setItem(CACHE_TIME_KEY, now.toString());
-            return fullVersion;
+            return sha;
         }
     } catch (e) {
-        console.error("Error fetching version from GitHub:", e);
+        console.error("Error fetching commit ID from GitHub:", e);
     }
     return null;
 }
@@ -49,7 +48,7 @@ function injectVersion(versionStr) {
 
 // Run on DOM ready
 async function initVersion() {
-    // 1. Immediately inject the base fallback version
+    // 1. Immediately inject the base fallback commit ID
     injectVersion(BASE_VERSION);
     
     // 2. Fetch from GitHub (cached or live) and update dynamically

@@ -35,7 +35,15 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Ignore non-GET requests (such as analytics POST requests or forms)
+  if (event.request.method !== 'GET') return;
+
   const url = new URL(event.request.url);
+  
+  // Bypass Service Worker caching entirely for Google Analytics and external Google collectors
+  if (url.hostname.includes('google-analytics') || url.hostname.includes('google.com') && url.pathname.includes('/g/collect')) {
+    return;
+  }
   
   // HTML pages — network first (latest version always)
   if (url.pathname.endsWith('.html') || url.pathname === '/' || url.pathname === '') {
@@ -51,10 +59,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Static assets — cache first
+  // Static assets — cache first with graceful error catch
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch((err) => {
+        console.warn(`[SW] Network fetch failed or was blocked for: ${event.request.url}`);
+        // Return a basic empty response or offline indicator to prevent uncaught promise rejection crashes
+        return new Response('', { status: 404, statusText: 'Offline/Blocked' });
+      });
     })
   );
 });
