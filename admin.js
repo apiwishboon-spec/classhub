@@ -372,6 +372,8 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     const subject = document.getElementById('hw-subject').value.trim();
     const task = document.getElementById('hw-task').value.trim();
     const due = document.getElementById('hw-due').value.trim();
+    const sendNotif = document.getElementById('hw-send-notif').checked;
+    const notifBody = document.getElementById('hw-notif-body').value.trim();
     
     if(!subject || !task) return showToast("Subject and Task required");
     
@@ -382,6 +384,8 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     try {
         await addDoc(collection(db, "homework"), {
             subject, homework: task, due,
+            sendNotification: sendNotif,
+            customNotificationBody: notifBody || null,
             timestamp: new Date()
         });
         showToast("Homework added!");
@@ -389,12 +393,23 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
+        document.getElementById('hw-send-notif').checked = true;
+        document.getElementById('hw-notif-body').value = '';
+        document.getElementById('hw-notif-body-wrapper').style.display = 'block';
         loadHomework();
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
         btn.textContent = 'Post Homework';
         btn.disabled = false;
+    }
+});
+
+// Toggle Custom Notification Textbox based on checkbox
+document.getElementById('hw-send-notif').addEventListener('change', (e) => {
+    const wrapper = document.getElementById('hw-notif-body-wrapper');
+    if (wrapper) {
+        wrapper.style.display = e.target.checked ? 'block' : 'none';
     }
 });
 

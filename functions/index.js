@@ -96,10 +96,20 @@ exports.onNewHomework = functions.firestore
   .onCreate(async (snap, context) => {
     const data = snap.data();
     
+    // Check if the admin chose to suppress notifications
+    if (data.sendNotification === false) {
+      console.log("Push notification suppressed by administrator.");
+      return;
+    }
+    
+    // Determine the notification body
+    const bodyContent = data.customNotificationBody || 
+      `${data.homework || "No description"}${data.due ? ` (Due: ${data.due})` : ""}`;
+    
     const payload = {
       notification: {
         title: `📚 New Homework: ${data.subject || "Unknown Subject"}`,
-        body: `${data.homework || "No description"}${data.due ? ` (Due: ${data.due})` : ""}`,
+        body: bodyContent,
       },
       data: {
         type: "homework",

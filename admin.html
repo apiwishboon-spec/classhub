@@ -103,6 +103,21 @@
                         <label style="font-size:0.8rem;color:var(--text-secondary);margin-top:-0.5rem;">Due Date</label>
                         <input type="date" id="hw-due" class="form-input">
                     </div>
+                    
+                    <!-- Custom Notification Option -->
+                    <div style="margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem; text-align: left;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--text-main); margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="hw-send-notif" checked style="width: auto; margin-right: 0.25rem;">
+                            <span>Send push notification to all students</span>
+                        </label>
+                        <div id="hw-notif-body-wrapper" style="margin-top: 0.5rem;">
+                            <input type="text" id="hw-notif-body" placeholder="Custom notification text (Optional)" class="form-input" style="font-size: 0.8rem;">
+                            <p style="font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                                If left blank, it defaults to the subject and task description.
+                            </p>
+                        </div>
+                    </div>
+
                     <button id="add-hw-btn" class="btn-primary btn-full">Post Homework</button>
                 </div>
             </section>
@@ -200,7 +215,9 @@
         </div>
     </div>
 
+    <script src="version.js"></script>
     <script type="module" src="admin.js?v=4"></script>
     <script src="help.js?v=1"></script>
+
 </body>
 </html>
