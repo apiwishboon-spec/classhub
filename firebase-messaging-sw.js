@@ -1,6 +1,22 @@
 // Firebase Cloud Messaging Service Worker
 // This service worker handles push notifications even when the app is closed
 
+// Listen for messages from the main thread to show notifications
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
+    const { title, body, icon, tag } = event.data;
+    self.registration.showNotification(title, {
+      body: body,
+      icon: icon || './favicon.png',
+      badge: './favicon.png',
+      tag: tag || 'classhub-notification',
+      vibrate: [200, 100, 200],
+      requireInteraction: true,
+      data: event.data
+    });
+  }
+});
+
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js");
 

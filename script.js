@@ -23,6 +23,18 @@ let selectedDay = null; // For mobile day selector
 let isMobileView = false;
 
 // Notification system
+// Send system notification via Service Worker (works on Android PWA)
+function sendSystemNotification(title, body, type) {
+    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
+    navigator.serviceWorker.controller.postMessage({
+        type: 'SHOW_NOTIFICATION',
+        title: title,
+        body: body,
+        icon: './favicon.png',
+        tag: `classhub-${type}-${Date.now()}`
+    });
+}
+
 function showToast(message, icon, color) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -59,13 +71,14 @@ function checkForUpdates(type, newData) {
         return !lastData.some(last => (last.id || last.title || last.homework || '') === id);
     });
     
-    // Show notifications for new items
+    // Show notifications for new items (in-app toast + system push via SW)
     newItems.forEach(item => {
-        const id = item.id || '';
         if (type === 'homework') {
             showToast(`New homework: ${item.subject} — ${item.homework}`, 'ph-book-open', 'var(--success)');
+            sendSystemNotification('📚 New Homework', `${item.subject}: ${item.homework}${item.due ? ` (Due: ${item.due})` : ''}`, 'homework');
         } else if (type === 'announcements') {
             showToast(`New: ${item.title}`, 'ph-megaphone', 'var(--accent-color)');
+            sendSystemNotification('📢 New Announcement', `${item.title}${item.author ? ` — ${item.author}` : ''}`, 'announcement');
         }
     });
     
