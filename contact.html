@@ -55,6 +55,27 @@
             </div>
         </main>
 
+        <!-- System Info / Deployment -->
+        <div class="dashboard-card" style="padding: 1.5rem; max-width: 600px; margin: 1.5rem auto 0;">
+            <div class="card-content">
+                <h3 style="margin-bottom: 1rem;"><i class="ph ph-cloud-arrow-up"></i> System Deployment</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                    Current Version: <strong><span class="app-version">V.3.2.1</span></strong>
+                </p>
+                <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem; font-family: monospace; font-size: 0.75rem; line-height: 1.8;">
+                    <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">🚀 Deploy Push Notifications (Cloud Functions)</div>
+                    <div style="color: var(--text-secondary);">cd functions && npm install</div>
+                    <div style="color: var(--text-secondary);">firebase deploy --only functions</div>
+                    <hr style="border-color: var(--border-color); margin: 0.75rem 0;">
+                    <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">🌐 Deploy Hosting</div>
+                    <div style="color: var(--text-secondary);">firebase deploy --only hosting</div>
+                    <hr style="border-color: var(--border-color); margin: 0.75rem 0;">
+                    <div style="margin-bottom: 0.5rem; font-weight: 700; color: var(--accent-color);">📦 Deploy All</div>
+                    <div style="color: var(--text-secondary);">firebase deploy</div>
+                </div>
+            </div>
+        </div>
+
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
             <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem;">
                 <a href="privacy.html" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
