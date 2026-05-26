@@ -1375,6 +1375,52 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     #schedule-section {
         min-height: 300px;
     }
+
+    /* Mobile: Help modal full width */
+    .help-modal-card {
+        max-width: 100% !important;
+        max-height: 90vh !important;
+        margin: 0 10px !important;
+        border-radius: 12px !important;
+    }
+
+    .help-modal-body {
+        padding: 1rem 1.25rem 1.5rem !important;
+    }
+
+    .help-title {
+        font-size: 1.2rem !important;
+    }
+
+    .help-section-item {
+        padding: 0.6rem 0.75rem !important;
+    }
+
+    .help-section-icon {
+        width: 34px !important;
+        height: 34px !important;
+        min-width: 34px !important;
+        font-size: 1.1rem !important;
+    }
+
+    .help-section-text h4 {
+        font-size: 0.85rem !important;
+    }
+
+    .help-section-text p {
+        font-size: 0.78rem !important;
+    }
+
+    .help-modal-header {
+        padding: 0.75rem 1rem !important;
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+
+    .help-lang-btn {
+        padding: 0.3rem 0.7rem !important;
+        font-size: 0.75rem !important;
+    }
 }
 
 /* ===== HELP MANUAL MODAL ===== */

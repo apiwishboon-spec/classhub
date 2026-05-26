@@ -219,7 +219,11 @@ function fetchDashboardData() {
         // Listen for Announcements changes + notifications
         onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), (snap) => {
             if (!snap.empty) {
-                const annData = snap.docs.map(doc => doc.data());
+                const annData = snap.docs.map(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    return data;
+                });
                 dashboardData.announcements = annData;
                 checkForUpdates('announcements', annData);
             } else {
