@@ -1,4 +1,4 @@
-import { db, auth, firebaseConfig } from './firebase-config.js';
+import { db, auth, firebaseConfig, messaging, getToken, onMessage } from './firebase-config.js';
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -842,5 +842,37 @@ async function removeSchedule(id) {
     }
 }
 
+// FCM Setup for admin page (so admins also receive push notifications)
+async function setupAdminFCM() {
+    try {
+        if (Notification.permission === 'granted') {
+            const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+            const currentToken = await getToken(messaging, {
+                vapidKey: null,
+                serviceWorkerRegistration: registration
+            });
+            if (currentToken) {
+                localStorage.setItem('fcm_token', currentToken);
+                try {
+                    await setDoc(doc(db, "fcm_tokens", currentToken), {
+                        token: currentToken,
+                        timestamp: new Date(),
+                        userAgent: navigator.userAgent
+                    });
+                } catch (e) {
+                    console.log('Token save skipped:', e);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Admin FCM setup error:', error);
+    }
+}
+
 // Initialization
-document.addEventListener('DOMContentLoaded', initTheme);
+document.addEventListener('DOMContentLoaded', () => {
+    initTheme();
+    if ('serviceWorker' in navigator) {
+        setTimeout(setupAdminFCM, 3000);
+    }
+});

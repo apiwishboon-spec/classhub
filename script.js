@@ -1,5 +1,5 @@
-import { db } from './firebase-config.js';
-import { collection, getDocs, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { db, messaging, getToken, onMessage } from './firebase-config.js';
+import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -1106,6 +1106,83 @@ window.addEventListener('resize', () => {
     }
 });
 
+// FCM Push Notification Setup
+async function setupFCM() {
+    try {
+        // Request notification permission if not already decided
+        if (Notification.permission === 'default') {
+            const permission = await Notification.requestPermission();
+            localStorage.setItem('notif_asked', 'true');
+            if (permission !== 'granted') {
+                console.log('Notification permission denied');
+                return;
+            }
+        } else if (Notification.permission === 'denied') {
+            console.log('Notification permission previously denied');
+            return;
+        }
+
+        // Register the FCM service worker for push notifications
+        const fcmRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+        console.log('FCM Service Worker registered');
+
+        // Get FCM token
+        const currentToken = await getToken(messaging, {
+            vapidKey: null, // Uses default from Firebase Console
+            serviceWorkerRegistration: fcmRegistration
+        });
+
+        if (currentToken) {
+            console.log('FCM Token obtained');
+            localStorage.setItem('fcm_token', currentToken);
+            
+            // Send token to a Firestore collection so Cloud Functions can use it
+            try {
+                await setDoc(doc(db, "fcm_tokens", currentToken), {
+                    token: currentToken,
+                    timestamp: new Date(),
+                    userAgent: navigator.userAgent
+                });
+            } catch (e) {
+                console.log('Token saving to Firestore (non-critical):', e);
+            }
+        } else {
+            console.log('No registration token available.');
+        }
+
+        // Listen for foreground messages (when app is open and visible)
+        onMessage(messaging, (payload) => {
+            console.log('[FCM] Foreground message received:', payload);
+            
+            const title = payload.notification?.title || payload.data?.title || 'MyClassHub';
+            const body = payload.notification?.body || payload.data?.body || '';
+            const type = payload.data?.type || '';
+            
+            if (title && body) {
+                // Show as in-app toast when app is open
+                let icon = 'ph-bell';
+                let color = 'var(--accent-color)';
+                
+                if (type === 'homework') {
+                    icon = 'ph-book-open';
+                    color = 'var(--success)';
+                } else if (type === 'announcement') {
+                    icon = 'ph-megaphone';
+                    color = 'var(--accent-color)';
+                } else if (type === 'schedule') {
+                    icon = 'ph-calendar';
+                    color = 'var(--warning)';
+                }
+                
+                showToast(body, icon, color);
+            }
+        });
+
+    } catch (error) {
+        console.error('FCM setup error:', error);
+    }
+}
+
 // Initialization
 function init() {
     initTheme();
@@ -1116,11 +1193,15 @@ function init() {
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
+            // Register main SW
             navigator.serviceWorker.register('./sw.js').then(reg => {
                 console.log('SW registered!', reg);
             }).catch(err => {
                 console.log('SW registration failed: ', err);
             });
+            
+            // Setup FCM push notifications after main SW is loaded
+            setTimeout(setupFCM, 2000);
         });
     }
 
