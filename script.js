@@ -1130,9 +1130,9 @@ async function setupFCM() {
         const fcmRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
         console.log('FCM Service Worker registered');
 
-        // Get FCM token
+        // Get FCM token — VAPID key from Firebase Cloud Messaging settings
         const currentToken = await getToken(messaging, {
-            vapidKey: null, // Uses default from Firebase Console
+            vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
             serviceWorkerRegistration: fcmRegistration
         });
 
