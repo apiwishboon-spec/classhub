@@ -100,16 +100,42 @@ const HELP_CONTENT = {
     }
 };
 
+let helpOverlay = null;
+let helpModal = null;
+
 // Wait for DOM
 document.addEventListener('DOMContentLoaded', () => {
+    buildHelpElements();
     setupHelpButton();
     checkFirstVisit();
 });
 
+function buildHelpElements() {
+    // Create overlay once
+    helpOverlay = document.createElement('div');
+    helpOverlay.id = 'help-overlay';
+    helpOverlay.className = 'modal-overlay';
+    helpOverlay.style.display = 'none';
+    
+    // Click on background = close
+    helpOverlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
+    });
+    
+    // Create modal
+    helpModal = document.createElement('div');
+    helpModal.id = 'help-modal';
+    helpModal.className = 'help-modal-card';
+    
+    helpOverlay.appendChild(helpModal);
+    document.body.appendChild(helpOverlay);
+}
+
 function setupHelpButton() {
-    // Add "?" button next to theme toggle
     const headerActions = document.querySelector('.top-nav > div:last-child');
-    if (!headerActions) return;
+    if (!headerActions || document.getElementById('help-btn')) return;
 
     const helpBtn = document.createElement('button');
     helpBtn.id = 'help-btn';
@@ -118,7 +144,6 @@ function setupHelpButton() {
     helpBtn.innerHTML = '<i class="ph ph-question"></i>';
     helpBtn.addEventListener('click', showHelpModal);
     
-    // Insert before theme toggle
     const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
         headerActions.insertBefore(helpBtn, themeToggle);
@@ -130,7 +155,6 @@ function setupHelpButton() {
 function checkFirstVisit() {
     const hasSeenHelp = localStorage.getItem('classhub_help_seen');
     if (!hasSeenHelp) {
-        // Small delay for page to fully render
         setTimeout(() => {
             showHelpModal();
             localStorage.setItem('classhub_help_seen', 'true');
@@ -139,94 +163,40 @@ function checkFirstVisit() {
 }
 
 function showHelpModal() {
-    let overlay = document.getElementById('help-overlay');
-    let modal = document.getElementById('help-modal');
+    if (!helpModal || !helpOverlay) buildHelpElements();
     
-    // Create if not exist
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.id = 'help-overlay';
-        overlay.className = 'modal-overlay';
-        overlay.style.display = 'flex';
-        overlay.style.alignItems = 'center';
-        overlay.style.justifyContent = 'center';
-        
-        modal = document.createElement('div');
-        modal.id = 'help-modal';
-        modal.className = 'help-modal-card';
-        
-        overlay.appendChild(modal);
-        document.body.appendChild(overlay);
-    } else {
-        overlay.style.display = 'flex';
-    }
-    
-    // Build content with current language
     const lang = getHelpLanguage();
-    renderHelpContent(modal, lang);
+    renderHelpContent(helpModal, lang);
+    bindModalEvents();
     
-    // Close handlers
-    const closeModal = () => {
-        overlay.style.display = 'none';
-    };
-    
-    // Remove old listeners by replacing
-    const newOverlay = overlay.cloneNode(true);
-    overlay.parentNode.replaceChild(newOverlay, overlay);
-    
-    newOverlay.addEventListener('click', (e) => {
-        const modalCard = newOverlay.querySelector('.help-modal-card');
-        if (e.target === newOverlay) {
-            newOverlay.style.display = 'none';
-        }
-    });
-    
-    // Attach events to buttons in the new overlay
-    const closeBtn = newOverlay.querySelector('.help-close-btn');
-    if (closeBtn) closeBtn.addEventListener('click', () => newOverlay.style.display = 'none');
-    
-    const enBtn = newOverlay.querySelector('.help-lang-btn[data-lang="en"]');
-    const thBtn = newOverlay.querySelector('.help-lang-btn[data-lang="th"]');
-    
-    if (enBtn) {
-        enBtn.addEventListener('click', () => {
-            localStorage.setItem('classhub_help_lang', 'en');
-            renderHelpContent(newOverlay.querySelector('.help-modal-card'), 'en');
-            // Reattach events
-            attachLangEvents(newOverlay);
-        });
-    }
-    if (thBtn) {
-        thBtn.addEventListener('click', () => {
-            localStorage.setItem('classhub_help_lang', 'th');
-            renderHelpContent(newOverlay.querySelector('.help-modal-card'), 'th');
-            attachLangEvents(newOverlay);
-        });
-    }
-    
-    // Re-attach close on the new close button after render
-    setTimeout(() => {
-        const newClose = newOverlay.querySelector('.help-close-btn');
-        if (newClose) newClose.addEventListener('click', () => newOverlay.style.display = 'none');
-    }, 0);
+    helpOverlay.style.display = 'flex';
+    helpOverlay.style.alignItems = 'center';
+    helpOverlay.style.justifyContent = 'center';
 }
 
-function attachLangEvents(overlay) {
-    const enBtn = overlay.querySelector('.help-lang-btn[data-lang="en"]');
-    const thBtn = overlay.querySelector('.help-lang-btn[data-lang="th"]');
+function bindModalEvents() {
+    // Close button
+    const closeBtn = helpModal.querySelector('.help-close-btn');
+    if (closeBtn) {
+        closeBtn.onclick = () => { helpOverlay.style.display = 'none'; };
+    }
+    
+    // Language buttons
+    const enBtn = helpModal.querySelector('.help-lang-btn[data-lang="en"]');
+    const thBtn = helpModal.querySelector('.help-lang-btn[data-lang="th"]');
     
     if (enBtn) {
         enBtn.onclick = () => {
             localStorage.setItem('classhub_help_lang', 'en');
-            renderHelpContent(overlay.querySelector('.help-modal-card'), 'en');
-            attachLangEvents(overlay);
+            renderHelpContent(helpModal, 'en');
+            bindModalEvents();
         };
     }
     if (thBtn) {
         thBtn.onclick = () => {
             localStorage.setItem('classhub_help_lang', 'th');
-            renderHelpContent(overlay.querySelector('.help-modal-card'), 'th');
-            attachLangEvents(overlay);
+            renderHelpContent(helpModal, 'th');
+            bindModalEvents();
         };
     }
 }
