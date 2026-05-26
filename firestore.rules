@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to fetch the role of the authenticated user from /users/{uid}
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    // 1. Homework collection
+    // Read: Anyone (students and staff)
+    // Write: Admins, Teachers, and TAs
+    match /homework/{id} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher' || 
+        getUserRole() == 'ta'
+      );
+    }
+    
+    // 2. Announcements collection
+    // Read: Anyone (students and staff)
+    // Write: Admins and Teachers only
+    match /announcements/{id} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher'
+      );
+    }
+    
+    // 3. Schedule collection
+    // Read: Anyone (students and staff)
+    // Write: Admins only
+    match /schedule/{id} {
+      allow read: if true;
+      allow write: if request.auth != null && getUserRole() == 'admin';
+    }
+
+    // 4. Users collection
+    // Read: Any logged-in staff member can read user profiles
+    // Write: Admins only (only admins can assign/edit roles)
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && getUserRole() == 'admin';
+    }
+    
+    // 5. FCM Tokens collection
+    // Read/Write: Anyone (so browsers can register their push notification tokens anonymously)
+    match /fcm_tokens/{token} {
+      allow read, write: if true;
+    }
+  }
+}
