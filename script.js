@@ -1126,6 +1126,15 @@ window.addEventListener('resize', () => {
 // FCM Push Notification Setup
 async function setupFCM() {
     try {
+        // Unregister the old separate firebase-messaging-sw.js if still present
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+            if (reg.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
+                await reg.unregister();
+                console.log('[FCM] Unregistered old firebase-messaging-sw.js');
+            }
+        }
+
         // Request notification permission if not already decided
         if (Notification.permission === 'default') {
             const permission = await Notification.requestPermission();
@@ -1139,21 +1148,21 @@ async function setupFCM() {
             return;
         }
 
-        // Use the existing main service worker for push notifications
-        const fcmRegistration = await navigator.serviceWorker.ready;
-        console.log('FCM Service Worker attached');
+        // Use the main sw.js (which includes Firebase Messaging)
+        const swRegistration = await navigator.serviceWorker.register('./sw.js');
+        // Wait for it to be active
+        await navigator.serviceWorker.ready;
+        console.log('[FCM] Service Worker ready');
 
-        // Get FCM token — VAPID key from Firebase Cloud Messaging settings
+        // Get FCM token
         const currentToken = await getToken(messaging, {
             vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
-            serviceWorkerRegistration: fcmRegistration
+            serviceWorkerRegistration: swRegistration
         });
 
         if (currentToken) {
-            console.log('FCM Token obtained');
+            console.log('[FCM] Token obtained');
             localStorage.setItem('fcm_token', currentToken);
-            
-            // Send token to a Firestore collection so Cloud Functions can use it
             try {
                 await setDoc(doc(db, "fcm_tokens", currentToken), {
                     token: currentToken,
@@ -1161,36 +1170,24 @@ async function setupFCM() {
                     userAgent: navigator.userAgent
                 });
             } catch (e) {
-                console.log('Token saving to Firestore (non-critical):', e);
+                console.log('[FCM] Token saving (non-critical):', e);
             }
         } else {
-            console.log('No registration token available.');
+            console.log('[FCM] No registration token available.');
         }
 
-        // Listen for foreground messages (when app is open and visible)
+        // Listen for foreground messages (when app is open)
         onMessage(messaging, (payload) => {
-            console.log('[FCM] Foreground message received:', payload);
-            
+            console.log('[FCM] Foreground message:', payload);
             const title = payload.notification?.title || payload.data?.title || 'MyClassHub';
             const body = payload.notification?.body || payload.data?.body || '';
             const type = payload.data?.type || '';
-            
             if (title && body) {
-                // Show as in-app toast when app is open
                 let icon = 'ph-bell';
                 let color = 'var(--accent-color)';
-                
-                if (type === 'homework') {
-                    icon = 'ph-book-open';
-                    color = 'var(--success)';
-                } else if (type === 'announcement') {
-                    icon = 'ph-megaphone';
-                    color = 'var(--accent-color)';
-                } else if (type === 'schedule') {
-                    icon = 'ph-calendar';
-                    color = 'var(--warning)';
-                }
-                
+                if (type === 'homework')     { icon = 'ph-book-open'; color = 'var(--success)'; }
+                if (type === 'announcement') { icon = 'ph-megaphone'; color = 'var(--accent-color)'; }
+                if (type === 'schedule')     { icon = 'ph-calendar';  color = 'var(--warning)'; }
                 showToast(body, icon, color);
             }
         });
