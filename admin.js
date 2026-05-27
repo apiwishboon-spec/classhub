@@ -896,6 +896,17 @@ async function setupAdminFCM() {
             const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
             await navigator.serviceWorker.ready;
             
+            // Aggressive Reset: Clear existing push subscriptions to fix "push service error"
+            try {
+                const existingSub = await registration.pushManager.getSubscription();
+                if (existingSub) {
+                    console.log('[FCM] Found existing subscription, clearing for fresh registration...');
+                    await existingSub.unsubscribe();
+                }
+            } catch (e) {
+                console.log('[FCM] Error clearing subscription (non-critical):', e);
+            }
+
             const currentToken = await getToken(messaging, {
                 vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
                 serviceWorkerRegistration: registration
