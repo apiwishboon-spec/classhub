@@ -1,4 +1,4 @@
-import { db, messaging, getToken, onMessage } from './firebase-config.js';
+import { db } from './firebase-config.js';
 import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
@@ -1123,91 +1123,6 @@ window.addEventListener('resize', () => {
     }
 });
 
-// FCM Push Notification Setup
-async function setupFCM() {
-    try {
-        // Unregister any conflicting or old service workers
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const reg of registrations) {
-            const scriptURL = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL;
-            if (scriptURL && scriptURL.includes('firebase-messaging-sw.js')) {
-                await reg.unregister();
-                console.log('[FCM] Unregistered old/conflicting firebase-messaging-sw.js');
-            }
-        }
-
-        // Request notification permission if not already decided
-        if (Notification.permission === 'default') {
-            const permission = await Notification.requestPermission();
-            localStorage.setItem('notif_asked', 'true');
-            if (permission !== 'granted') {
-                console.log('Notification permission denied');
-                return;
-            }
-        } else if (Notification.permission === 'denied') {
-            console.log('Notification permission previously denied');
-            return;
-        }
-
-        // Use the main sw.js (which includes Firebase Messaging)
-        const swRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-        await navigator.serviceWorker.ready;
-        console.log('[FCM] Service Worker active and ready');
-
-        // Aggressive Reset: Clear existing push subscriptions to fix "push service error"
-        try {
-            const existingSub = await swRegistration.pushManager.getSubscription();
-            if (existingSub) {
-                console.log('[FCM] Found existing subscription, clearing for fresh registration...');
-                await existingSub.unsubscribe();
-            }
-        } catch (e) {
-            console.log('[FCM] Error clearing subscription (non-critical):', e);
-        }
-
-        // Get FCM token
-        const currentToken = await getToken(messaging, {
-            vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
-            serviceWorkerRegistration: swRegistration
-        });
-
-        if (currentToken) {
-            console.log('[FCM] Token obtained');
-            localStorage.setItem('fcm_token', currentToken);
-            try {
-                await setDoc(doc(db, "fcm_tokens", currentToken), {
-                    token: currentToken,
-                    timestamp: new Date(),
-                    userAgent: navigator.userAgent
-                });
-            } catch (e) {
-                console.log('[FCM] Token saving (non-critical):', e);
-            }
-        } else {
-            console.log('[FCM] No registration token available.');
-        }
-
-        // Listen for foreground messages (when app is open)
-        onMessage(messaging, (payload) => {
-            console.log('[FCM] Foreground message:', payload);
-            const title = payload.notification?.title || payload.data?.title || 'MyClassHub';
-            const body = payload.notification?.body || payload.data?.body || '';
-            const type = payload.data?.type || '';
-            if (title && body) {
-                let icon = 'ph-bell';
-                let color = 'var(--accent-color)';
-                if (type === 'homework')     { icon = 'ph-book-open'; color = 'var(--success)'; }
-                if (type === 'announcement') { icon = 'ph-megaphone'; color = 'var(--accent-color)'; }
-                if (type === 'schedule')     { icon = 'ph-calendar';  color = 'var(--warning)'; }
-                showToast(body, icon, color);
-            }
-        });
-
-    } catch (error) {
-        console.error('FCM setup error:', error);
-    }
-}
-
 // Initialization
 function init() {
     initTheme();
@@ -1224,9 +1139,6 @@ function init() {
             }).catch(err => {
                 console.log('SW registration failed: ', err);
             });
-            
-            // Setup FCM push notifications after main SW is loaded
-            setTimeout(setupFCM, 2000);
         });
     }
 

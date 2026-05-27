@@ -1,27 +1,5 @@
-import { db, auth, firebaseConfig, messaging, getToken, onMessage } from './firebase-config.js';
+import { db, auth, firebaseConfig } from './firebase-config.js';
 
-// Cloudflare Worker endpoint for push notifications
-// Replace with your actual worker URL after deploying
-const WORKER_URL = 'https://classhub-notifications.apiwish-boon.workers.dev';
-const WORKER_SECRET = 'classhub-notify-2024!';
-
-async function sendPushViaWorker(title, body, type) {
-    try {
-        const res = await fetch(WORKER_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Worker-Secret': WORKER_SECRET,
-            },
-            body: JSON.stringify({ title, body, type }),
-        });
-        const data = await res.json();
-        console.log('[Push] Worker response:', data);
-        return data;
-    } catch (err) {
-        console.error('[Push] Worker error:', err);
-    }
-}
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -382,9 +360,6 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
         loadAnnouncements();
-        // Send push notification to all devices
-        const shortMsg = message.length > 120 ? message.substring(0, 120) + '...' : message;
-        sendPushViaWorker(`📢 ${title}`, shortMsg, 'announcement');
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -423,12 +398,6 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-notif-body').value = '';
         document.getElementById('hw-notif-body-wrapper').style.display = 'block';
         loadHomework();
-        // Send push notification to all devices
-        if (sendNotif) {
-            const notifTitle = `📚 New Homework: ${subject}`;
-            const notifBody2 = notifBody || `${task}${due ? ` (Due: ${due})` : ''}`;
-            sendPushViaWorker(notifTitle, notifBody2, 'homework');
-        }
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -889,50 +858,7 @@ async function removeSchedule(id) {
     }
 }
 
-// FCM Setup for admin page (so admins also receive push notifications)
-async function setupAdminFCM() {
-    try {
-        if (Notification.permission === 'granted') {
-            const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
-            await navigator.serviceWorker.ready;
-            
-            // Aggressive Reset: Clear existing push subscriptions to fix "push service error"
-            try {
-                const existingSub = await registration.pushManager.getSubscription();
-                if (existingSub) {
-                    console.log('[FCM] Found existing subscription, clearing for fresh registration...');
-                    await existingSub.unsubscribe();
-                }
-            } catch (e) {
-                console.log('[FCM] Error clearing subscription (non-critical):', e);
-            }
-
-            const currentToken = await getToken(messaging, {
-                vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
-                serviceWorkerRegistration: registration
-            });
-            if (currentToken) {
-                localStorage.setItem('fcm_token', currentToken);
-                try {
-                    await setDoc(doc(db, "fcm_tokens", currentToken), {
-                        token: currentToken,
-                        timestamp: new Date(),
-                        userAgent: navigator.userAgent
-                    });
-                } catch (e) {
-                    console.log('Token save skipped:', e);
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Admin FCM setup error:', error);
-    }
-}
-
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    if ('serviceWorker' in navigator) {
-        setTimeout(setupAdminFCM, 3000);
-    }
 });
