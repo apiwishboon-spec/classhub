@@ -893,7 +893,9 @@ async function removeSchedule(id) {
 async function setupAdminFCM() {
     try {
         if (Notification.permission === 'granted') {
-            const registration = await navigator.serviceWorker.register('./sw.js');
+            const registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+            await navigator.serviceWorker.ready;
+            
             const currentToken = await getToken(messaging, {
                 vapidKey: "BHbY4SHvfAesQJhF6YnkMPTMWw1jYCBGQ2QdW7xjb6JJW02t14nKqSSt9SGJFyRFS87gZ08fBZnAq3swUQnByX4",
                 serviceWorkerRegistration: registration

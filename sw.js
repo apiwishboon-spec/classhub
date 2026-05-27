@@ -16,16 +16,16 @@ const messaging = firebase.messaging();
 
 // ─── Cache & PWA ──────────────────────────────────────────────────────────────
 
-const CACHE_NAME = 'classhub-v6';
+const CACHE_NAME = 'classhub-v7';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
-        './style.css?v=6',
-        './script.js?v=6',
-        './admin.js?v=6',
+        './style.css?v=7',
+        './script.js?v=7',
+        './admin.js?v=7',
         './help.js?v=2',
         './version.js',
         './firebase-config.js',

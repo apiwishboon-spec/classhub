@@ -1126,12 +1126,13 @@ window.addEventListener('resize', () => {
 // FCM Push Notification Setup
 async function setupFCM() {
     try {
-        // Unregister the old separate firebase-messaging-sw.js if still present
+        // Unregister any conflicting or old service workers
         const registrations = await navigator.serviceWorker.getRegistrations();
         for (const reg of registrations) {
-            if (reg.active?.scriptURL?.includes('firebase-messaging-sw.js')) {
+            const scriptURL = reg.active?.scriptURL || reg.installing?.scriptURL || reg.waiting?.scriptURL;
+            if (scriptURL && scriptURL.includes('firebase-messaging-sw.js')) {
                 await reg.unregister();
-                console.log('[FCM] Unregistered old firebase-messaging-sw.js');
+                console.log('[FCM] Unregistered old/conflicting firebase-messaging-sw.js');
             }
         }
 
@@ -1149,10 +1150,10 @@ async function setupFCM() {
         }
 
         // Use the main sw.js (which includes Firebase Messaging)
-        const swRegistration = await navigator.serviceWorker.register('./sw.js');
-        // Wait for it to be active
+        // Ensure we register with the correct scope and wait for activation
+        const swRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
         await navigator.serviceWorker.ready;
-        console.log('[FCM] Service Worker ready');
+        console.log('[FCM] Service Worker active and ready');
 
         // Get FCM token
         const currentToken = await getToken(messaging, {
