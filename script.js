@@ -1150,10 +1150,20 @@ async function setupFCM() {
         }
 
         // Use the main sw.js (which includes Firebase Messaging)
-        // Ensure we register with the correct scope and wait for activation
         const swRegistration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
         await navigator.serviceWorker.ready;
         console.log('[FCM] Service Worker active and ready');
+
+        // Aggressive Reset: Clear existing push subscriptions to fix "push service error"
+        try {
+            const existingSub = await swRegistration.pushManager.getSubscription();
+            if (existingSub) {
+                console.log('[FCM] Found existing subscription, clearing for fresh registration...');
+                await existingSub.unsubscribe();
+            }
+        } catch (e) {
+            console.log('[FCM] Error clearing subscription (non-critical):', e);
+        }
 
         // Get FCM token
         const currentToken = await getToken(messaging, {
