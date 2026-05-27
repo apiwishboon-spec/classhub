@@ -1,14 +1,14 @@
-const CACHE_NAME = 'classhub-v4';
+const CACHE_NAME = 'classhub-v5';
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll([
-        './style.css?v=4',
-        './script.js?v=4',
-        './admin.js?v=4',
-        './help.js?v=1',
+        './style.css?v=5',
+        './script.js?v=5',
+        './admin.js?v=5',
+        './help.js?v=2',
         './version.js',
         './firebase-config.js',
         './favicon.png',
@@ -71,7 +71,55 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Listen for messages from the main thread to show notifications
+importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js");
+
+firebase.initializeApp({
+  apiKey: "AIzaSyDGN83Fo7YSQYt6FbG1mj-J_fFAbFQ2rwI",
+  authDomain: "classhub-e1e8b.firebaseapp.com",
+  projectId: "classhub-e1e8b",
+  storageBucket: "classhub-e1e8b.firebasestorage.app",
+  messagingSenderId: "967849169380",
+  appId: "1:967849169380:web:347cd74ee21a2b4141b7f1",
+  measurementId: "G-300HW5WQC6"
+});
+
+const messaging = firebase.messaging();
+
+// Handle background push notifications
+messaging.onBackgroundMessage((payload) => {
+  console.log('[sw.js] Received background message:', payload);
+
+  const notificationTitle = payload.data?.title || payload.notification?.title || 'MyClassHub';
+  const notificationBody = payload.data?.body || payload.notification?.body || 'New update available';
+  const notificationIcon = payload.data?.icon || './favicon.png';
+  const tag = payload.data?.tag || 'default';
+
+  // Determine click action URL
+  let clickAction = './index.html';
+  if (payload.data?.type === 'homework') {
+    clickAction = './index.html#homework';
+  } else if (payload.data?.type === 'announcement') {
+    clickAction = './index.html#announcements';
+  } else if (payload.data?.type === 'schedule') {
+    clickAction = './index.html#schedule';
+  }
+
+  self.registration.showNotification(notificationTitle, {
+    body: notificationBody,
+    icon: notificationIcon,
+    badge: './favicon.png',
+    tag: tag,
+    data: {
+      url: clickAction,
+      ...payload.data
+    },
+    requireInteraction: true,
+    vibrate: [200, 100, 200]
+  });
+});
+
+// Listen for messages from the main thread to show notifications manually
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon, tag } = event.data;
@@ -88,17 +136,22 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Handle notification click
+// Handle notification click - open the app at the relevant section
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   
-  const urlToOpen = './index.html';
+  const urlToOpen = event.notification.data?.url || './index.html';
   
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
       for (const client of windowClients) {
         if (client.url.includes('index.html') && 'focus' in client) {
-          return client.focus();
+          return client.focus().then(() => {
+            // Navigate to the specific section if needed
+            if (event.notification.data?.type) {
+              return client.navigate(urlToOpen);
+            }
+          });
         }
       }
       if (clients.openWindow) {

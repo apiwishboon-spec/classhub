@@ -1139,9 +1139,9 @@ async function setupFCM() {
             return;
         }
 
-        // Register the FCM service worker for push notifications
-        const fcmRegistration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
-        console.log('FCM Service Worker registered');
+        // Use the existing main service worker for push notifications
+        const fcmRegistration = await navigator.serviceWorker.ready;
+        console.log('FCM Service Worker attached');
 
         // Get FCM token — VAPID key from Firebase Cloud Messaging settings
         const currentToken = await getToken(messaging, {
