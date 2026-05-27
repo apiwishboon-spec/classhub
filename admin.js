@@ -1,4 +1,27 @@
 import { db, auth, firebaseConfig, messaging, getToken, onMessage } from './firebase-config.js';
+
+// Cloudflare Worker endpoint for push notifications
+// Replace with your actual worker URL after deploying
+const WORKER_URL = 'https://classhub-notifications.apiwish-boon.workers.dev';
+const WORKER_SECRET = 'classhub-notify-2024!';
+
+async function sendPushViaWorker(title, body, type) {
+    try {
+        const res = await fetch(WORKER_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Worker-Secret': WORKER_SECRET,
+            },
+            body: JSON.stringify({ title, body, type }),
+        });
+        const data = await res.json();
+        console.log('[Push] Worker response:', data);
+        return data;
+    } catch (err) {
+        console.error('[Push] Worker error:', err);
+    }
+}
 import { 
     signInWithEmailAndPassword, 
     signOut, 
@@ -359,6 +382,9 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
         loadAnnouncements();
+        // Send push notification to all devices
+        const shortMsg = message.length > 120 ? message.substring(0, 120) + '...' : message;
+        sendPushViaWorker(`📢 ${title}`, shortMsg, 'announcement');
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -397,6 +423,12 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-notif-body').value = '';
         document.getElementById('hw-notif-body-wrapper').style.display = 'block';
         loadHomework();
+        // Send push notification to all devices
+        if (sendNotif) {
+            const notifTitle = `📚 New Homework: ${subject}`;
+            const notifBody2 = notifBody || `${task}${due ? ` (Due: ${due})` : ''}`;
+            sendPushViaWorker(notifTitle, notifBody2, 'homework');
+        }
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
