@@ -29,7 +29,6 @@ const HELP_CONTENT = {
             { icon: "ph-note", title: "บันทึกด่วน", desc: "จดสิ่งที่ต้องจำ บันทึกจะบันทึกอัตโนมัติและซิงค์ข้ามอุปกรณ์" },
             { icon: "ph-moon", title: "โหมดมืด", desc: "สลับระหว่างธีมสว่างและมืดโดยใช้ไอคอนพระจันทร์ที่แถบด้านบน" },
             { icon: "ph-user-gear", title: "แผงผู้ดูแล", desc: "ครูสามารถเข้าสู่ระบบเพื่อโพสต์ประกาศ เพิ่มการบ้าน จัดการตารางเรียน และอื่นๆ" },
-            { icon: "ph-bell", title: "การแจ้งเตือน", desc: "เปิดการแจ้งเตือนเพื่อรับการแจ้งเตือนเมื่อมีการบ้านหรือประกาศใหม่" },
             { icon: "ph-magnifying-glass", title: "ค้นหา", desc: "ใช้แถบค้นหาเพื่อค้นหาข้อมูลได้อย่างรวดเร็ว ไม่ว่าจะเป็นตารางเรียน การบ้าน หรือบันทึก" }
         ],
         footer: "ต้องการความช่วยเหลือเพิ่มเติม? ติดต่อผู้ดูแลระบบได้ที่ลิงก์ท้ายหน้า"
@@ -125,6 +124,10 @@ function renderHelpContent(modal, lang) {
                         <div class="help-section-icon"><i class="ph ${s.icon}"></i></div>
                         <div class="help-section-text"><h4>${s.title}</h4><p>${s.desc}</p></div>
                     </div>`).join('')}
+            </div>
+            <p class="help-footer-text">${content.footer}</p>
+        </div>`;
+}           </div>`).join('')}
             </div>
             <p class="help-footer-text">${content.footer}</p>
         </div>`;

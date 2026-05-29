@@ -106,6 +106,79 @@
   filter: drop-shadow(0 0 5px var(--cyan-glow));
 }
 
+/* Admin User Info Panel */
+.user-info-panel {
+    display: none;
+    padding: 1rem;
+    margin-top: 0.5rem;
+    background: var(--bg-color);
+    border-radius: 8px;
+    border-left: 4px solid var(--accent-color);
+    animation: slideDown 0.2s ease-out;
+}
+
+.user-info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.user-info-label {
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.user-info-val {
+    color: var(--text-main);
+}
+
+.user-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.user-action-btn {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.user-action-btn:hover {
+    background: var(--highlight-bg);
+    border-color: var(--accent-color);
+}
+
+.user-action-btn.btn-danger-alt {
+    color: var(--danger);
+}
+
+.user-action-btn.btn-danger-alt:hover {
+    background: #fff1f1;
+    border-color: var(--danger);
+}
+
+[data-theme="dark"] .user-action-btn.btn-danger-alt:hover {
+    background: #3a1e1e;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes l26 {
   12.5% {box-shadow: 
     19px -19px 0 0px, 38px -19px 0 0px, 57px -19px 0 5px,

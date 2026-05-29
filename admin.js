@@ -160,19 +160,41 @@ onAuthStateChanged(auth, async (user) => {
         
         try {
             // Fetch user role from Firestore
-            const userDoc = await getDoc(doc(db, "users", user.uid));
+            const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            // Update last login
+            const lastLogin = new Date().toLocaleString('en-US', { 
+                year: 'numeric', month: 'short', day: 'numeric', 
+                hour: '2-digit', minute: '2-digit', second: '2-digit' 
+            });
+            
             if (userDoc.exists()) {
-                currentUserRole = userDoc.data().role || 'teacher';
+                const data = userDoc.data();
+                
+                // Check if account is disabled
+                if (data.disabled) {
+                    await signOut(auth);
+                    showToast("This account has been disabled. Please contact the administrator.", "ph-prohibit", "var(--danger)");
+                    return;
+                }
+                
+                currentUserRole = data.role || 'teacher';
+                // Update last login for existing user
+                await setDoc(userDocRef, { lastLogin: lastLogin }, { merge: true });
             } else {
                 // For the very first user ever, we might want to make them admin.
-                // But for safety in a shared environment, let's check if any users exist.
                 const usersSnap = await getDocs(collection(db, "users"));
                 if (usersSnap.empty) {
                     currentUserRole = 'admin';
                 } else {
                     currentUserRole = 'teacher'; // Default for new signups
                 }
-                await setDoc(doc(db, "users", user.uid), { role: currentUserRole, email: user.email });
+                await setDoc(userDocRef, { 
+                    role: currentUserRole, 
+                    email: user.email,
+                    lastLogin: lastLogin
+                });
             }
             
             const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
@@ -373,8 +395,6 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     const subject = document.getElementById('hw-subject').value.trim();
     const task = document.getElementById('hw-task').value.trim();
     const due = document.getElementById('hw-due').value.trim();
-    const sendNotif = document.getElementById('hw-send-notif').checked;
-    const notifBody = document.getElementById('hw-notif-body').value.trim();
     
     if(!subject || !task) return showToast("Subject and Task required");
     
@@ -385,8 +405,6 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     try {
         await addDoc(collection(db, "homework"), {
             subject, homework: task, due,
-            sendNotification: sendNotif,
-            customNotificationBody: notifBody || null,
             timestamp: new Date()
         });
         showToast("Homework added!");
@@ -394,23 +412,12 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
-        document.getElementById('hw-send-notif').checked = true;
-        document.getElementById('hw-notif-body').value = '';
-        document.getElementById('hw-notif-body-wrapper').style.display = 'block';
         loadHomework();
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
         btn.textContent = 'Post Homework';
         btn.disabled = false;
-    }
-});
-
-// Toggle Custom Notification Textbox based on checkbox
-document.getElementById('hw-send-notif').addEventListener('change', (e) => {
-    const wrapper = document.getElementById('hw-notif-body-wrapper');
-    if (wrapper) {
-        wrapper.style.display = e.target.checked ? 'block' : 'none';
     }
 });
 
@@ -511,14 +518,36 @@ async function loadUsers() {
             snap.forEach(doc => {
                 const data = doc.data();
                 const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
+                const statusBadge = data.disabled ? '<span class="time-badge" style="background:var(--danger);color:white;">Disabled</span>' : '';
+                
                 html += `
-                    <div class="admin-sched-card">
+                    <div class="admin-sched-card" id="user-card-${doc.id}">
                         <div class="admin-sched-card-header">
                             <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.email}</span>
-                            <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}"><i class="ph ph-trash"></i></button>
+                            <div style="display:flex; gap:0.25rem;">
+                                <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}" title="See Info"><i class="ph ph-info"></i></button>
+                                <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}" title="Remove"><i class="ph ph-trash"></i></button>
+                            </div>
                         </div>
-                        <div style="margin-top:0.25rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
                             <span class="time-badge" style="font-size:0.7rem;">${listRole}</span>
+                            ${statusBadge}
+                        </div>
+                        
+                        <!-- Info Panel -->
+                        <div id="info-panel-${doc.id}" class="user-info-panel">
+                            <div class="user-info-row">
+                                <span class="user-info-label">Last Login:</span>
+                                <span class="user-info-val">${data.lastLogin || 'Never'}</span>
+                            </div>
+                            <div class="user-actions-grid">
+                                <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+                                    <i class="ph ph-key"></i> Reset Pass
+                                </button>
+                                <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+                                    <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable' : 'Disable'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -531,6 +560,7 @@ async function loadUsers() {
                     <tr>
                         <th>Email</th>
                         <th>Role</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -540,24 +570,81 @@ async function loadUsers() {
             snap.forEach(doc => {
                 const data = doc.data();
                 const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
+                const statusBadge = data.disabled ? '<span class="time-badge" style="background:var(--danger);color:white;">Disabled</span>' : '<span class="time-badge" style="background:var(--success);color:white;">Active</span>';
+                
                 html += `
-                <tr>
+                <tr id="user-row-${doc.id}">
                     <td>${data.email}</td>
                     <td><span class="time-badge">${listRole}</span></td>
+                    <td>${statusBadge}</td>
                     <td>
+                        <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}"><i class="ph ph-info"></i> Info</button>
                         <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}"><i class="ph ph-trash"></i> Remove</button>
                     </td>
-                </tr>`;
+                </tr>
+                <tr id="info-row-${doc.id}" style="display:none;">
+                    <td colspan="4">
+                        <div id="info-panel-${doc.id}" class="user-info-panel" style="display:block; margin: 0 1rem 1rem 1rem;">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                                <div>
+                                    <div class="user-info-row">
+                                        <span class="user-info-label">Last Login:</span>
+                                        <span class="user-info-val">${data.lastLogin || 'Never'}</span>
+                                    </div>
+                                    <div class="user-info-row">
+                                        <span class="user-info-label">User ID:</span>
+                                        <span class="user-info-val" style="font-size:0.7rem; opacity:0.7;">${doc.id}</span>
+                                    </div>
+                                </div>
+                                <div class="user-actions-grid" style="margin-top:0;">
+                                    <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+                                        <i class="ph ph-key"></i> Send Password Reset Email
+                                    </button>
+                                    <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+                                        <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable Account' : 'Disable Account'}
+                                    </button>
+                                    <button class="user-action-btn btn-danger-alt remove-user-btn" data-uid="${doc.id}">
+                                        <i class="ph ph-trash"></i> Delete from Database
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                `;
             });
             html += '</tbody></table>';
         }
         usersList.innerHTML = html;
         
-        // Add event listeners to remove buttons
+        // Event Listeners
+        document.querySelectorAll('.see-info-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const uid = btn.getAttribute('data-uid');
+                toggleUserInfo(uid);
+            });
+        });
+
         document.querySelectorAll('.remove-user-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const uid = e.target.closest('.remove-user-btn').getAttribute('data-uid');
+            btn.addEventListener('click', () => {
+                const uid = btn.getAttribute('data-uid');
                 removeUser(uid);
+            });
+        });
+
+        document.querySelectorAll('.reset-pass-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const email = btn.getAttribute('data-email');
+                resetUserPassword(email);
+            });
+        });
+
+        document.querySelectorAll('.disable-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const uid = btn.getAttribute('data-uid');
+                const email = btn.getAttribute('data-email');
+                const currentStatus = btn.getAttribute('data-status') === 'true';
+                toggleUserStatus(uid, email, currentStatus);
             });
         });
         
@@ -566,14 +653,52 @@ async function loadUsers() {
     }
 }
 
+// Toggle User Info Panel
+function toggleUserInfo(uid) {
+    const panel = document.getElementById(`info-panel-${uid}`);
+    const infoRow = document.getElementById(`info-row-${uid}`); // For desktop table
+    
+    if (panel) {
+        const isHidden = panel.style.display === 'none' || panel.style.display === '';
+        panel.style.display = isHidden ? 'block' : 'none';
+        if (infoRow) infoRow.style.display = isHidden ? 'table-row' : 'none';
+    }
+}
+
+// Reset User Password
+async function resetUserPassword(email) {
+    if (await customConfirm("Reset Password", `Send a password reset email to ${email}?`)) {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            showToast(`Password reset email sent to ${email}`);
+        } catch (error) {
+            showToast("Error: " + error.message);
+        }
+    }
+}
+
+// Toggle User Status (Disable/Enable)
+async function toggleUserStatus(uid, email, isCurrentlyDisabled) {
+    const action = isCurrentlyDisabled ? "Enable" : "Disable";
+    if (await customConfirm(`${action} Account`, `Are you sure you want to ${action.toLowerCase()} access for ${email}?`)) {
+        try {
+            await setDoc(doc(db, "users", uid), { disabled: !isCurrentlyDisabled }, { merge: true });
+            showToast(`Account ${email} ${isCurrentlyDisabled ? 'enabled' : 'disabled'}.`);
+            loadUsers();
+        } catch (error) {
+            showToast("Error: " + error.message);
+        }
+    }
+}
+
 // Remove User Function
 async function removeUser(uid) {
     if (currentUserRole !== 'admin') return;
     
-    if(await customConfirm("Confirm Action", "Remove this user's access? (Note: To completely delete the authentication account, you must use the Firebase Console or Admin SDK. This will remove their role and login privileges.)")) {
+    if(await customConfirm("Confirm Deletion", "Remove this user's data from the database? (Note: This will not delete the Authentication account, only their permissions and role.)")) {
         try {
             await deleteDoc(doc(db, "users", uid));
-            showToast("User role removed.");
+            showToast("User role and data removed.");
             loadUsers();
         } catch (error) {
             showToast("Error removing user: " + error.message);

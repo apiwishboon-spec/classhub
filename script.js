@@ -22,19 +22,6 @@ let searchTerm = '';
 let selectedDay = null; // For mobile day selector
 let isMobileView = false;
 
-// Notification system
-// Send system notification via Service Worker (works on Android PWA)
-function sendSystemNotification(title, body, type) {
-    if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return;
-    navigator.serviceWorker.controller.postMessage({
-        type: 'SHOW_NOTIFICATION',
-        title: title,
-        body: body,
-        icon: './favicon.png',
-        tag: `classhub-${type}-${Date.now()}`
-    });
-}
-
 function showToast(message, icon, color) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -71,14 +58,12 @@ function checkForUpdates(type, newData) {
         return !lastData.some(last => (last.id || last.title || last.homework || '') === id);
     });
     
-    // Show notifications for new items (in-app toast + system push via SW)
+    // Show notifications for new items (in-app toast)
     newItems.forEach(item => {
         if (type === 'homework') {
             showToast(`New homework: ${item.subject} — ${item.homework}`, 'ph-book-open', 'var(--success)');
-            sendSystemNotification('📚 New Homework', `${item.subject}: ${item.homework}${item.due ? ` (Due: ${item.due})` : ''}`, 'homework');
         } else if (type === 'announcements') {
             showToast(`New: ${item.title}`, 'ph-megaphone', 'var(--accent-color)');
-            sendSystemNotification('📢 New Announcement', `${item.title}${item.author ? ` — ${item.author}` : ''}`, 'announcement');
         }
     });
     
@@ -1156,30 +1141,8 @@ function init() {
         }
     });
 
-    // Request Notification Permission on first open
-    if ('Notification' in window && Notification.permission === 'default') {
-        if (!localStorage.getItem('notif_asked')) {
-            setTimeout(() => {
-                requestNotifPermission();
-            }, 3000);
-        }
-    }
-
     // Update clock every second
     setInterval(updateClock, 1000);
-    
-    // Fetch data every 5 minutes
-    setInterval(fetchDashboardData, 5 * 60 * 1000);
-}
-
-function requestNotifPermission() {
-    Notification.requestPermission().then(permission => {
-        localStorage.setItem('notif_asked', 'true');
-        if (permission === 'granted') {
-            showToast('Notifications enabled!', 'ph-bell', 'var(--success)');
-        }
-    });
-}
 
 function showInstallBanner(prompt) {
     const banner = document.createElement('div');
