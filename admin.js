@@ -11,7 +11,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // DOM Elements
@@ -164,10 +164,7 @@ onAuthStateChanged(auth, async (user) => {
             const userDoc = await getDoc(userDocRef);
             
             // Update last login
-            const lastLogin = new Date().toLocaleString('en-US', { 
-                year: 'numeric', month: 'short', day: 'numeric', 
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
-            });
+            const lastLoginTs = serverTimestamp();
             
             if (userDoc.exists()) {
                 const data = userDoc.data();
@@ -181,7 +178,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 currentUserRole = data.role || 'teacher';
                 // Update last login for existing user
-                await setDoc(userDocRef, { lastLogin: lastLogin }, { merge: true });
+                await setDoc(userDocRef, { lastLogin: lastLoginTs }, { merge: true });
             } else {
                 // For the very first user ever, we might want to make them admin.
                 const usersSnap = await getDocs(collection(db, "users"));
@@ -193,7 +190,7 @@ onAuthStateChanged(auth, async (user) => {
                 await setDoc(userDocRef, { 
                     role: currentUserRole, 
                     email: user.email,
-                    lastLogin: lastLogin
+                    lastLogin: lastLoginTs
                 });
             }
             
@@ -501,6 +498,20 @@ document.getElementById('add-sched-btn').addEventListener('click', async () => {
     }
 });
 
+// Format date for display
+function formatDate(val) {
+    if (!val) return 'Never';
+    // Handle Firestore Timestamp
+    if (val && typeof val.toDate === 'function') {
+        return val.toDate().toLocaleString('en-US', { 
+            year: 'numeric', month: 'short', day: 'numeric', 
+            hour: '2-digit', minute: '2-digit', second: '2-digit' 
+        });
+    }
+    // Handle string or Date object
+    return val.toString();
+}
+
 // Load Users
 async function loadUsers() {
     if (currentUserRole !== 'admin') return;
@@ -538,7 +549,7 @@ async function loadUsers() {
                         <div id="info-panel-${doc.id}" class="user-info-panel">
                             <div class="user-info-row">
                                 <span class="user-info-label">Last Login:</span>
-                                <span class="user-info-val">${data.lastLogin || 'Never'}</span>
+                                <span class="user-info-val">${formatDate(data.lastLogin)}</span>
                             </div>
                             <div class="user-actions-grid">
                                 <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
@@ -584,12 +595,12 @@ async function loadUsers() {
                 </tr>
                 <tr id="info-row-${doc.id}" style="display:none;">
                     <td colspan="4">
-                        <div id="info-panel-${doc.id}" class="user-info-panel" style="display:block; margin: 0 1rem 1rem 1rem;">
+                        <div id="info-panel-${doc.id}" class="user-info-panel" style="margin: 0 1rem 1rem 1rem;">
                             <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                                 <div>
                                     <div class="user-info-row">
                                         <span class="user-info-label">Last Login:</span>
-                                        <span class="user-info-val">${data.lastLogin || 'Never'}</span>
+                                        <span class="user-info-val">${formatDate(data.lastLogin)}</span>
                                     </div>
                                     <div class="user-info-row">
                                         <span class="user-info-label">User ID:</span>
