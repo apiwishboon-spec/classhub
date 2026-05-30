@@ -127,8 +127,4 @@ function renderHelpContent(modal, lang) {
             </div>
             <p class="help-footer-text">${content.footer}</p>
         </div>`;
-}           </div>`).join('')}
-            </div>
-            <p class="help-footer-text">${content.footer}</p>
-        </div>`;
 }
