@@ -30,6 +30,8 @@ const addAnnouncementSection = document.getElementById('add-announcement-section
 const addHomeworkSection = document.getElementById('add-homework-section');
 const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
 const manageHomeworkSection = document.getElementById('manage-homework-section');
+const systemSettingsSection = document.getElementById('system-settings-section');
+const auditLogSection = document.getElementById('audit-log-section');
 
 // Notification system
 function showToast(message, icon, color) {
@@ -205,11 +207,15 @@ onAuthStateChanged(auth, async (user) => {
                 addHomeworkSection.style.display = 'block';
                 manageAnnouncementsSection.style.display = 'block';
                 manageHomeworkSection.style.display = 'block';
+                systemSettingsSection.style.display = 'block';
+                auditLogSection.style.display = 'block';
                 
                 loadUsers();
                 loadSchedule();
                 loadAnnouncements();
                 loadHomework();
+                loadSettings();
+                loadAuditLog();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -377,6 +383,7 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
             timestamp: new Date()
         });
         showToast("Announcement added!");
+        logAction("Add Announcement", `Title: ${title}`);
         document.getElementById('ann-title').value = '';
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
@@ -409,6 +416,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
             timestamp: new Date()
         });
         showToast("Homework added!");
+        logAction("Add Homework", `Subject: ${subject}, Task: ${task}`);
         document.getElementById('hw-quick-add').value = '';
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
@@ -554,6 +562,13 @@ async function loadUsers() {
                             <div class="user-info-row">
                                 <span class="user-info-label">Last Login:</span>
                                 <span class="user-info-val">${formatDate(data.lastLogin)}</span>
+                            </div>
+                            <div class="user-info-row" style="margin-top:0.5rem;">
+                                <span class="user-info-label" style="color:var(--accent-color);">Private Admin Notes:</span>
+                                <div style="display:flex; gap:0.4rem; margin-top:0.25rem;">
+                                    <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${data.adminNote || ''}" placeholder="e.g. Likes to yap">
+                                    <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
+                                </div>
                             </div>
                             <div class="user-actions-grid">
                                 <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
@@ -904,6 +919,7 @@ async function loadAnnouncements() {
                 if(await customConfirm("Confirm Action", "Delete this announcement?")) {
                     const id = e.target.closest('.remove-ann-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "announcements", id));
+                    logAction("Delete Announcement", `ID: ${id}`);
                     loadAnnouncements();
                 }
             });
@@ -974,6 +990,7 @@ async function loadHomework() {
                 if(await customConfirm("Confirm Action", "Delete this homework?")) {
                     const id = e.target.closest('.remove-hw-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "homework", id));
+                    logAction("Delete Homework", `ID: ${id}`);
                     loadHomework();
                 }
             });
@@ -991,10 +1008,83 @@ async function removeSchedule(id) {
         try {
             await deleteDoc(doc(db, "schedule", id));
             showToast("Time slot removed.");
+            logAction("Delete Schedule", `Deleted slot: ${id}`);
             loadSchedule();
         } catch (error) {
             showToast("Error removing schedule: " + error.message);
         }
+    }
+}
+
+// Secret Admin Functions: Audit Log & God Mode
+async function logAction(action, details) {
+    try {
+        await addDoc(collection(db, "audit_log"), {
+            user: auth.currentUser.email,
+            role: currentUserRole,
+            action,
+            details,
+            timestamp: serverTimestamp()
+        });
+    } catch (e) {
+        console.error("Audit log failed", e);
+    }
+}
+
+async function loadSettings() {
+    const docRef = doc(db, "settings", "maintenance");
+    const docSnap = await getDoc(docRef);
+    const btn = document.getElementById('maintenance-toggle');
+    if (docSnap.exists() && docSnap.data().enabled) {
+        btn.textContent = 'ON';
+        btn.className = 'btn-danger';
+    } else {
+        btn.textContent = 'OFF';
+        btn.className = 'btn-secondary';
+    }
+}
+
+document.getElementById('maintenance-toggle').addEventListener('click', async () => {
+    const btn = document.getElementById('maintenance-toggle');
+    const isCurrentlyOn = btn.textContent === 'ON';
+    const newState = !isCurrentlyOn;
+    
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            enabled: newState,
+            updatedBy: auth.currentUser.email,
+            updatedAt: serverTimestamp()
+        });
+        showToast(`Maintenance Mode turned ${newState ? 'ON' : 'OFF'}`);
+        logAction("Toggle Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
+        loadSettings();
+    } catch (e) {
+        showToast("Error updating settings: " + e.message);
+    }
+});
+
+async function loadAuditLog() {
+    const list = document.getElementById('audit-log-list');
+    try {
+        const snap = await getDocs(query(collection(db, "audit_log"), orderBy("timestamp", "desc")));
+        let html = '';
+        snap.forEach(doc => {
+            const data = doc.data();
+            const date = data.timestamp ? data.timestamp.toDate().toLocaleString() : 'Just now';
+            html += `
+                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.2rem;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="font-weight: 700; color: var(--accent-color);">${data.action}</span>
+                        <span style="color: var(--text-secondary); font-size: 0.65rem;">${date}</span>
+                    </div>
+                    <div style="word-break: break-all;">${data.details}</div>
+                    <div style="font-size: 0.65rem; color: var(--text-secondary);">By: ${data.user} (${data.role})</div>
+                </div>
+            `;
+        });
+        list.innerHTML = html || '<p style="text-align:center; color:var(--text-secondary);">No logs yet.</p>';
+    } catch (e) {
+        list.innerHTML = `<p style="color:var(--danger)">Error: ${e.message}</p>`;
     }
 }
 

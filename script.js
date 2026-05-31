@@ -1181,4 +1181,61 @@ function showInstallBanner(prompt) {
 }
 
 // Run init on load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    checkMaintenanceMode();
+});
+
+async function checkMaintenanceMode() {
+    try {
+        onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
+            if (docSnap.exists() && docSnap.data().enabled) {
+                showMaintenancePopup();
+            } else {
+                const existing = document.getElementById('maintenance-popup');
+                if (existing) existing.remove();
+            }
+        });
+    } catch (e) {
+        console.error("Failed to check maintenance mode", e);
+    }
+}
+
+function showMaintenancePopup() {
+    if (document.getElementById('maintenance-popup')) return;
+    
+    const popup = document.createElement('div');
+    popup.id = 'maintenance-popup';
+    popup.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--danger);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        z-index: 9999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-weight: 600;
+        animation: slideUp 0.4s ease-out;
+    `;
+    popup.innerHTML = `
+        <i class="ph ph-warning-octagon" style="font-size: 1.2rem;"></i>
+        <span>System under maintenance. Some features may be limited.</span>
+    `;
+    document.body.appendChild(popup);
+}
+
+// Add animation to style.css or inject it here
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideUp {
+        from { transform: translate(-50%, 100px); opacity: 0; }
+        to { transform: translate(-50%, 0); opacity: 1; }
+    }
+`;
+document.head.appendChild(style);

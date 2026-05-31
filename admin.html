@@ -158,6 +158,34 @@
                     <div id="users-list" class="overflow-x-auto"></div>
                 </div>
             </section>
+
+            <!-- System Settings (God Mode - Admin Only) -->
+            <section class="dashboard-card" id="system-settings-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-shield-check"></i> System Settings</h2>
+                </div>
+                <div class="card-content admin-form-stack">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                        <div>
+                            <div style="font-weight: 600;">Maintenance Mode</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Shows a warning to all users</div>
+                        </div>
+                        <button id="maintenance-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Audit Log (Admin Only) -->
+            <section class="dashboard-card" id="audit-log-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-clock-counter-clockwise"></i> Audit Log</h2>
+                </div>
+                <div class="card-content">
+                    <div id="audit-log-list" style="font-size: 0.75rem; max-height: 300px; overflow-y: auto;">
+                        <p style="color: var(--text-secondary); text-align: center;">Loading log...</p>
+                    </div>
+                </div>
+            </section>
         </main>
         
         <footer class="admin-footer">
