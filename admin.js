@@ -371,6 +371,8 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
     try {
         await addDoc(collection(db, "announcements"), {
             title, message, author,
+            posterName: auth.currentUser.email.split('@')[0],
+            posterEmail: auth.currentUser.email,
             date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
             timestamp: new Date()
         });
@@ -402,6 +404,8 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
     try {
         await addDoc(collection(db, "homework"), {
             subject, homework: task, due,
+            posterName: auth.currentUser.email.split('@')[0],
+            posterEmail: auth.currentUser.email,
             timestamp: new Date()
         });
         showToast("Homework added!");

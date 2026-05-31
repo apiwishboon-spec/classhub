@@ -772,8 +772,9 @@ function renderAnnouncements() {
                     <div class="announcement-date">${ann.date || ''}</div>
                 </div>
                 <div class="announcement-message">${ann.message || ''}</div>
-                <div class="announcement-author">
-                    <i class="ph ph-user-circle"></i> ${ann.author || 'Teacher'}
+                <div class="announcement-author" style="display: flex; justify-content: space-between; align-items: center;">
+                    <span><i class="ph ph-user-circle"></i> ${ann.author || 'Teacher'}</span>
+                    ${ann.posterName ? `<span style="font-size: 0.7rem; opacity: 0.7;">Posted by: ${ann.posterName}</span>` : ''}
                 </div>
             </div>
         `;
@@ -905,7 +906,10 @@ function renderHomework() {
                         ${statusTag}
                     </div>
                     <div class="hw-title">${hw.homework || 'Task'}</div>
-                    <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${formatDueDate(hw.due)}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${formatDueDate(hw.due)}</div>
+                        ${hw.posterName ? `<span style="font-size: 0.65rem; opacity: 0.6; font-style: italic;">By: ${hw.posterName}</span>` : ''}
+                    </div>
                 </div>
             </div>
         `;
@@ -1143,6 +1147,7 @@ function init() {
 
     // Update clock every second
     setInterval(updateClock, 1000);
+}
 
 function showInstallBanner(prompt) {
     const banner = document.createElement('div');
