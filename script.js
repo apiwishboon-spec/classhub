@@ -1184,7 +1184,52 @@ function showInstallBanner(prompt) {
 document.addEventListener('DOMContentLoaded', () => {
     init();
     checkMaintenanceMode();
+    detectAdBlock();
 });
+
+async function detectAdBlock() {
+    // Try to fetch a resource that is commonly blocked by ad blockers (Firebase-related)
+    try {
+        const url = 'https://firestore.googleapis.com/google.firestore.v1.Firestore/Write/channel?VER=8';
+        const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
+    } catch (error) {
+        // If fetch fails, it might be due to an ad blocker
+        console.warn('Ad blocker detected or connection issue:', error);
+        showAdBlockPopup();
+    }
+}
+
+function showAdBlockPopup() {
+    if (document.getElementById('adblock-popup')) return;
+    
+    const popup = document.createElement('div');
+    popup.id = 'adblock-popup';
+    popup.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--warning);
+        color: #000;
+        padding: 0.8rem 1.5rem;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-weight: 500;
+        font-size: 0.85rem;
+        border-left: 5px solid #000;
+        animation: slideDown 0.4s ease-out;
+    `;
+    popup.innerHTML = `
+        <i class="ph ph-shield-warning" style="font-size: 1.2rem;"></i>
+        <span>Ad-blocker detected! This may cause real-time updates to fail. Please disable it for this site.</span>
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-size:1.2rem; margin-left:10px;">&times;</button>
+    `;
+    document.body.appendChild(popup);
+}
 
 async function checkMaintenanceMode() {
     try {
@@ -1235,6 +1280,10 @@ const style = document.createElement('style');
 style.textContent = `
     @keyframes slideUp {
         from { transform: translate(-50%, 100px); opacity: 0; }
+        to { transform: translate(-50%, 0); opacity: 1; }
+    }
+    @keyframes slideDown {
+        from { transform: translate(-50%, -100px); opacity: 0; }
         to { transform: translate(-50%, 0); opacity: 1; }
     }
 `;
