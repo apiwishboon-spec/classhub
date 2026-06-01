@@ -25,6 +25,7 @@ jobs:
       #   run: npm run build
 
       - name: Publish to Cloudflare Pages
+        id: deploy
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -33,3 +34,17 @@ jobs:
           directory: . # The directory containing your static files (index.html, etc.)
           # Optional: Enable this if you want to have a comment on PRs with the preview URL
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Summary
+        if: always()
+        run: |
+          echo "### Deployment Summary 🚀" >> $GITHUB_STEP_SUMMARY
+          echo "| Info | Details |" >> $GITHUB_STEP_SUMMARY
+          echo "| :--- | :--- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Project Name** | myclasshub |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Status** | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Deployment URL** | [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }}) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit ID** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Triggered By** | @${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Environment** | Production |" >> $GITHUB_STEP_SUMMARY
