@@ -41,29 +41,25 @@ jobs:
           # Get short SHA
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           
-          echo "<h2>🚀 Deployment Report</h2>" >> $GITHUB_STEP_SUMMARY
-          echo "<table>" >> $GITHUB_STEP_SUMMARY
-          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td width='100'><b>Status</b></td>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td>${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}</td>" >> $GITHUB_STEP_SUMMARY
-          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
-          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td><b>Project</b></td>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td><code>myclasshub</code></td>" >> $GITHUB_STEP_SUMMARY
-          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
-          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td><b>Link</b></td>" >> $GITHUB_STEP_SUMMARY
-          echo "    <td><a href='${{ steps.deploy.outputs.url }}'><b>Open Application ↗️</b></a></td>" >> $GITHUB_STEP_SUMMARY
-          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
-          echo "</table>" >> $GITHUB_STEP_SUMMARY
-          echo "<br />" >> $GITHUB_STEP_SUMMARY
-          echo "<details open>" >> $GITHUB_STEP_SUMMARY
-          echo "  <summary><b>📝 Version & Commit Info</b></summary>" >> $GITHUB_STEP_SUMMARY
-          echo "  <br />" >> $GITHUB_STEP_SUMMARY
-          echo "  <ul>" >> $GITHUB_STEP_SUMMARY
-          echo "    <li><b>Commit ID:</b> <code>$SHORT_SHA</code></li>" >> $GITHUB_STEP_SUMMARY
-          echo "    <li><b>Message:</b> ${{ github.event.head_commit.message }}</li>" >> $GITHUB_STEP_SUMMARY
-          echo "    <li><b>Author:</b> @${{ github.actor }}</li>" >> $GITHUB_STEP_SUMMARY
-          echo "    <li><b>Branch:</b> <code>${{ github.ref_name }}</code></li>" >> $GITHUB_STEP_SUMMARY
-          echo "  </ul>" >> $GITHUB_STEP_SUMMARY
-          echo "</details>" >> $GITHUB_STEP_SUMMARY
+          # Use heredoc for better reliability
+          cat <<EOF >> $GITHUB_STEP_SUMMARY
+          ## 🚀 Deployment Report
+          
+          | Key | Info |
+          | :--- | :--- |
+          | **Status** | ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }} |
+          | **Project** | \`myclasshub\` |
+          | **Link** | [**Open Application ↗️**](${{ steps.deploy.outputs.url }}) |
+          
+          <br />
+          
+          <details open>
+          <summary><b>📝 Version & Commit Info</b></summary>
+          <br />
+          
+          - **Commit ID:** \`$SHORT_SHA\`
+          - **Message:** ${{ github.event.head_commit.message }}
+          - **Author:** @${{ github.actor }}
+          - **Branch:** \`${{ github.ref_name }}\`
+          </details>
+          EOF
