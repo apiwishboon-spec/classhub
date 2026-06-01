@@ -11,7 +11,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // DOM Elements
@@ -236,6 +236,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 loadHomework();
             }
+            syncAdminSystemStates();
         } catch (error) {
             console.error("Error fetching user role:", error);
         }
@@ -244,6 +245,10 @@ onAuthStateChanged(auth, async (user) => {
         loginContainer.style.display = 'block';
         adminContainer.style.display = 'none';
         checkEmailLinkSignIn();
+        if (systemStatesListener) {
+            systemStatesListener();
+            systemStatesListener = null;
+        }
     }
 });
 
@@ -1034,32 +1039,149 @@ async function logAction(action, details) {
 async function loadSettings() {
     const docRef = doc(db, "settings", "maintenance");
     const docSnap = await getDoc(docRef);
-    const btn = document.getElementById('maintenance-toggle');
-    if (docSnap.exists() && docSnap.data().enabled) {
-        btn.textContent = 'ON';
-        btn.className = 'btn-danger';
-    } else {
-        btn.textContent = 'OFF';
-        btn.className = 'btn-secondary';
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        
+        // 1. Maintenance Mode
+        const maintenanceBtn = document.getElementById('maintenance-toggle');
+        if (data.enabled) {
+            maintenanceBtn.textContent = 'ON';
+            maintenanceBtn.className = 'btn-danger';
+        } else {
+            maintenanceBtn.textContent = 'OFF';
+            maintenanceBtn.className = 'btn-secondary';
+        }
+
+        // 2. Developer Lockout Mode
+        const lockoutBtn = document.getElementById('lockout-toggle');
+        if (data.lockoutEnabled) {
+            lockoutBtn.textContent = 'ON';
+            lockoutBtn.className = 'btn-danger';
+        } else {
+            lockoutBtn.textContent = 'OFF';
+            lockoutBtn.className = 'btn-secondary';
+        }
+        
+        const passcodeField = document.getElementById('lockout-passcode-input');
+        if (data.lockoutPasscode) {
+            passcodeField.value = data.lockoutPasscode;
+        }
+
+        // 3. Global Alert Banner Mode
+        const bannerBtn = document.getElementById('banner-toggle');
+        if (data.bannerEnabled) {
+            bannerBtn.textContent = 'ON';
+            bannerBtn.className = 'btn-danger';
+        } else {
+            bannerBtn.textContent = 'OFF';
+            bannerBtn.className = 'btn-secondary';
+        }
+
+        const bannerText = document.getElementById('banner-text-input');
+        if (data.bannerText) {
+            bannerText.value = data.bannerText;
+        }
+
+        const bannerTypeSelect = document.getElementById('banner-type-select');
+        if (data.bannerType) {
+            bannerTypeSelect.value = data.bannerType;
+        }
     }
 }
 
+// Maintenance Toggle
 document.getElementById('maintenance-toggle').addEventListener('click', async () => {
     const btn = document.getElementById('maintenance-toggle');
-    const isCurrentlyOn = btn.textContent === 'ON';
-    const newState = !isCurrentlyOn;
-    
+    const newState = btn.textContent !== 'ON';
     try {
         await setDoc(doc(db, "settings", "maintenance"), {
             enabled: newState,
             updatedBy: auth.currentUser.email,
             updatedAt: serverTimestamp()
-        });
+        }, { merge: true });
         showToast(`Maintenance Mode turned ${newState ? 'ON' : 'OFF'}`);
         logAction("Toggle Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
         loadSettings();
     } catch (e) {
         showToast("Error updating settings: " + e.message);
+    }
+});
+
+// Lockout Toggle
+document.getElementById('lockout-toggle').addEventListener('click', async () => {
+    const btn = document.getElementById('lockout-toggle');
+    const newState = btn.textContent !== 'ON';
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            lockoutEnabled: newState,
+            updatedBy: auth.currentUser.email,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        showToast(`Developer Lockout Mode turned ${newState ? 'ON' : 'OFF'}`);
+        logAction("Toggle Lockout", `State: ${newState ? 'ON' : 'OFF'}`);
+        loadSettings();
+    } catch (e) {
+        showToast("Error updating settings: " + e.message);
+    }
+});
+
+// Save Lockout Passcode
+document.getElementById('save-lockout-btn').addEventListener('click', async () => {
+    const passcodeVal = document.getElementById('lockout-passcode-input').value.trim();
+    if (!passcodeVal) {
+        return showToast("Passcode cannot be empty", "ph-x-circle", "var(--danger)");
+    }
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            lockoutPasscode: passcodeVal,
+            updatedBy: auth.currentUser.email,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        showToast("Developer passcode saved successfully");
+        logAction("Update Lockout Passcode", "Changed passcode");
+        loadSettings();
+    } catch (e) {
+        showToast("Error saving passcode: " + e.message);
+    }
+});
+
+// Banner Toggle
+document.getElementById('banner-toggle').addEventListener('click', async () => {
+    const btn = document.getElementById('banner-toggle');
+    const newState = btn.textContent !== 'ON';
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            bannerEnabled: newState,
+            updatedBy: auth.currentUser.email,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        showToast(`Global Alert Banner turned ${newState ? 'ON' : 'OFF'}`);
+        logAction("Toggle Alert Banner", `State: ${newState ? 'ON' : 'OFF'}`);
+        loadSettings();
+    } catch (e) {
+        showToast("Error updating settings: " + e.message);
+    }
+});
+
+// Save Banner Configuration
+document.getElementById('save-banner-btn').addEventListener('click', async () => {
+    const bannerTextVal = document.getElementById('banner-text-input').value.trim();
+    const bannerTypeVal = document.getElementById('banner-type-select').value;
+    if (!bannerTextVal) {
+        return showToast("Banner message cannot be empty", "ph-x-circle", "var(--danger)");
+    }
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            bannerText: bannerTextVal,
+            bannerType: bannerTypeVal,
+            updatedBy: auth.currentUser.email,
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+        showToast("Alert banner settings published!");
+        logAction("Publish Alert Banner", `Text: ${bannerTextVal} (${bannerTypeVal})`);
+        loadSettings();
+    } catch (e) {
+        showToast("Error saving banner settings: " + e.message);
     }
 });
 
@@ -1092,3 +1214,144 @@ async function loadAuditLog() {
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
 });
+
+// Sync system states in real-time on Admin page
+let systemStatesListener = null;
+async function syncAdminSystemStates() {
+    if (systemStatesListener) return; // avoid duplicate listeners
+    
+    try {
+        systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // 1. Global Alert Banner Mode
+                const existingBanner = document.getElementById('system-global-banner');
+                if (data.bannerEnabled && data.bannerText) {
+                    if (existingBanner) {
+                        existingBanner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+                        const contentEl = existingBanner.querySelector('.banner-content');
+                        if (contentEl) contentEl.textContent = data.bannerText;
+                        
+                        const iconEl = existingBanner.querySelector('i');
+                        if (iconEl) {
+                            iconEl.className = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
+                                               data.bannerType === 'warning' ? 'ph ph-warning' :
+                                               'ph ph-info';
+                        }
+                    } else {
+                        const banner = document.createElement('div');
+                        banner.id = 'system-global-banner';
+                        banner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+                        
+                        const iconClass = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
+                                          data.bannerType === 'warning' ? 'ph ph-warning' :
+                                          'ph ph-info';
+                                          
+                        banner.innerHTML = `
+                            <i class="${iconClass}"></i>
+                            <div class="banner-content">${data.bannerText}</div>
+                        `;
+                        document.body.insertBefore(banner, document.body.firstChild);
+                    }
+                } else {
+                    if (existingBanner) existingBanner.remove();
+                }
+
+                // 2. Developer Lockout Gate (Bypassed for Admins)
+                const isAdmin = currentUserRole === 'admin';
+                const isBypassed = sessionStorage.getItem('dev_bypass') === 'true';
+                if (data.lockoutEnabled && !isAdmin && !isBypassed) {
+                    showAdminLockoutOverlay(data.lockoutPasscode || '');
+                } else {
+                    hideAdminLockoutOverlay();
+                }
+            }
+        });
+    } catch (e) {
+        console.error("Failed to sync admin system states", e);
+    }
+}
+
+function showAdminLockoutOverlay(correctPasscode) {
+    if (document.getElementById('lockout-overlay')) return;
+
+    const appContainer = document.getElementById('admin-container');
+    const loginContainer = document.getElementById('login-container');
+    if (appContainer) appContainer.style.display = 'none';
+    if (loginContainer) loginContainer.style.display = 'none';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'lockout-overlay';
+    overlay.className = 'lockout-screen-overlay';
+    overlay.innerHTML = `
+        <div class="lockout-card">
+            <i class="ph ph-lock-keyhole lockout-icon"></i>
+            <h1>System Locked</h1>
+            <p>This portal is currently under active development. Enter the developer passcode to access.</p>
+            
+            <div class="lockout-input-wrapper">
+                <input type="password" id="dev-passcode-input" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
+            </div>
+            <div id="dev-passcode-error" class="lockout-error">❌ Incorrect passcode. Please try again.</div>
+            
+            <button id="dev-bypass-btn" class="btn-primary btn-full" style="padding: 0.75rem 1.5rem; width: 100%;">
+                <i class="ph ph-key"></i> Unlock Dashboard
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const input = document.getElementById('dev-passcode-input');
+    const button = document.getElementById('dev-bypass-btn');
+    const card = overlay.querySelector('.lockout-card');
+    const errorEl = document.getElementById('dev-passcode-error');
+
+    const handleUnlock = () => {
+        const value = input.value.trim();
+        if (value === correctPasscode) {
+            sessionStorage.setItem('dev_bypass', 'true');
+            const icon = card.querySelector('.lockout-icon');
+            icon.className = 'ph ph-lock-simple-open-fill lockout-icon';
+            icon.style.color = 'var(--success)';
+            icon.style.background = 'rgba(36, 161, 72, 0.1)';
+            card.querySelector('h1').textContent = 'Access Granted';
+            card.querySelector('p').textContent = 'Decrypting database and preparing dashboard...';
+            input.style.display = 'none';
+            button.style.display = 'none';
+            errorEl.style.display = 'none';
+            
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.remove();
+                    if (appContainer) appContainer.style.display = 'block';
+                }, 400);
+            }, 1000);
+        } else {
+            card.classList.remove('shake');
+            void card.offsetWidth;
+            card.classList.add('shake');
+            errorEl.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+    };
+
+    button.addEventListener('click', handleUnlock);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleUnlock();
+    });
+    
+    input.focus();
+}
+
+function hideAdminLockoutOverlay() {
+    const overlay = document.getElementById('lockout-overlay');
+    if (overlay) overlay.remove();
+    
+    const appContainer = document.getElementById('admin-container');
+    if (appContainer && auth.currentUser) appContainer.style.display = 'block';
+}

@@ -1183,7 +1183,7 @@ function showInstallBanner(prompt) {
 // Run init on load
 document.addEventListener('DOMContentLoaded', () => {
     init();
-    checkMaintenanceMode();
+    syncSystemStates();
     detectAdBlock();
 });
 
@@ -1231,18 +1231,64 @@ function showAdBlockPopup() {
     document.body.appendChild(popup);
 }
 
-async function checkMaintenanceMode() {
+async function syncSystemStates() {
     try {
         onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
-            if (docSnap.exists() && docSnap.data().enabled) {
-                showMaintenancePopup();
-            } else {
-                const existing = document.getElementById('maintenance-popup');
-                if (existing) existing.remove();
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // 1. Maintenance Mode Popup
+                if (data.enabled) {
+                    showMaintenancePopup();
+                } else {
+                    const existingPopup = document.getElementById('maintenance-popup');
+                    if (existingPopup) existingPopup.remove();
+                }
+
+                // 2. Global Alert Banner Mode
+                const existingBanner = document.getElementById('system-global-banner');
+                if (data.bannerEnabled && data.bannerText) {
+                    if (existingBanner) {
+                        existingBanner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+                        const contentEl = existingBanner.querySelector('.banner-content');
+                        if (contentEl) contentEl.textContent = data.bannerText;
+                        
+                        const iconEl = existingBanner.querySelector('i');
+                        if (iconEl) {
+                            iconEl.className = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
+                                               data.bannerType === 'warning' ? 'ph ph-warning' :
+                                               'ph ph-info';
+                        }
+                    } else {
+                        const banner = document.createElement('div');
+                        banner.id = 'system-global-banner';
+                        banner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+                        
+                        const iconClass = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
+                                          data.bannerType === 'warning' ? 'ph ph-warning' :
+                                          'ph ph-info';
+                                          
+                        banner.innerHTML = `
+                            <i class="${iconClass}"></i>
+                            <div class="banner-content">${data.bannerText}</div>
+                        `;
+                        document.body.insertBefore(banner, document.body.firstChild);
+                    }
+                } else {
+                    if (existingBanner) existingBanner.remove();
+                }
+
+                // 3. Developer Lockout Gate
+                const isBypassed = sessionStorage.getItem('dev_bypass') === 'true';
+                if (data.lockoutEnabled && !isBypassed) {
+                    showLockoutOverlay(data.lockoutPasscode || '');
+                } else {
+                    hideLockoutOverlay();
+                }
             }
         });
     } catch (e) {
-        console.error("Failed to check maintenance mode", e);
+        console.error("Failed to sync system states", e);
     }
 }
 
@@ -1275,7 +1321,87 @@ function showMaintenancePopup() {
     document.body.appendChild(popup);
 }
 
-// Add animation to style.css or inject it here
+function showLockoutOverlay(correctPasscode) {
+    if (document.getElementById('lockout-overlay')) return;
+
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) appContainer.style.display = 'none';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'lockout-overlay';
+    overlay.className = 'lockout-screen-overlay';
+    overlay.innerHTML = `
+        <div class="lockout-card">
+            <i class="ph ph-lock-keyhole lockout-icon"></i>
+            <h1>System Locked</h1>
+            <p>This portal is currently under active development. Enter the developer passcode to access.</p>
+            
+            <div class="lockout-input-wrapper">
+                <input type="password" id="dev-passcode-input" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
+            </div>
+            <div id="dev-passcode-error" class="lockout-error">❌ Incorrect passcode. Please try again.</div>
+            
+            <button id="dev-bypass-btn" class="btn-primary btn-full" style="padding: 0.75rem 1.5rem; width: 100%;">
+                <i class="ph ph-key"></i> Unlock Dashboard
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const input = document.getElementById('dev-passcode-input');
+    const button = document.getElementById('dev-bypass-btn');
+    const card = overlay.querySelector('.lockout-card');
+    const errorEl = document.getElementById('dev-passcode-error');
+
+    const handleUnlock = () => {
+        const value = input.value.trim();
+        if (value === correctPasscode) {
+            sessionStorage.setItem('dev_bypass', 'true');
+            const icon = card.querySelector('.lockout-icon');
+            icon.className = 'ph ph-lock-simple-open-fill lockout-icon';
+            icon.style.color = 'var(--success)';
+            icon.style.background = 'rgba(36, 161, 72, 0.1)';
+            card.querySelector('h1').textContent = 'Access Granted';
+            card.querySelector('p').textContent = 'Decrypting database and preparing dashboard...';
+            input.style.display = 'none';
+            button.style.display = 'none';
+            errorEl.style.display = 'none';
+            
+            setTimeout(() => {
+                overlay.style.transition = 'opacity 0.4s ease';
+                overlay.style.opacity = '0';
+                setTimeout(() => {
+                    overlay.remove();
+                    if (appContainer) appContainer.style.display = 'block';
+                }, 400);
+            }, 1000);
+        } else {
+            card.classList.remove('shake');
+            void card.offsetWidth;
+            card.classList.add('shake');
+            errorEl.style.display = 'block';
+            input.value = '';
+            input.focus();
+        }
+    };
+
+    button.addEventListener('click', handleUnlock);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') handleUnlock();
+    });
+    
+    input.focus();
+}
+
+function hideLockoutOverlay() {
+    const overlay = document.getElementById('lockout-overlay');
+    if (overlay) overlay.remove();
+    
+    const appContainer = document.querySelector('.app-container');
+    if (appContainer) appContainer.style.display = 'block';
+}
+
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideUp {

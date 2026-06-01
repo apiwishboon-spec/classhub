@@ -164,13 +164,51 @@
                 <div class="card-header">
                     <h2><i class="ph ph-shield-check"></i> System Settings</h2>
                 </div>
-                <div class="card-content admin-form-stack">
-                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border-color);">
+                <div class="card-content admin-form-stack" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <!-- Maintenance Mode Toggle -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                         <div>
                             <div style="font-weight: 600;">Maintenance Mode</div>
-                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Shows a warning to all users</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Shows a warning banner to all users</div>
                         </div>
                         <button id="maintenance-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                    </div>
+
+                    <!-- Developer Lockout Mode -->
+                    <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <div>
+                                <div style="font-weight: 600;">Developer Lockout Mode</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">Locks down the entire site; requires passcode to access</div>
+                            </div>
+                            <button id="lockout-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                        </div>
+                        <div id="lockout-config-container" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+                            <input type="password" id="lockout-passcode-input" placeholder="Developer Passcode" class="form-input" style="max-width: 250px; margin: 0;">
+                            <button id="save-lockout-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-floppy-disk"></i> Save Passcode</button>
+                        </div>
+                    </div>
+
+                    <!-- Global Alert Banner Mode -->
+                    <div style="padding-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <div>
+                                <div style="font-weight: 600;">Global Alert Banner</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">Sticky alert message displayed at the top of all pages</div>
+                            </div>
+                            <button id="banner-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                        </div>
+                        <div id="banner-config-container" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;">
+                            <input type="text" id="banner-text-input" placeholder="Urgent announcement message..." class="form-input" style="margin: 0;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <select id="banner-type-select" class="form-input" style="max-width: 150px; margin: 0;">
+                                    <option value="info">Info (Blue)</option>
+                                    <option value="warning">Warning (Amber)</option>
+                                    <option value="danger">Danger (Red)</option>
+                                </select>
+                                <button id="save-banner-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-megaphone"></i> Publish Banner</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
