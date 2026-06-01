@@ -1,4 +1,5 @@
 // MyClassHub Version (Commit ID)
+// Test deployment triggered by Gemini CLI
 const BASE_VERSION = "f649e09";
 
 async function fetchGitHubVersion() {
