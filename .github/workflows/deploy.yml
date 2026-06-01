@@ -41,18 +41,29 @@ jobs:
           # Get short SHA
           SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
           
-          echo "## 🚀 Deployment Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📊 Status" >> $GITHUB_STEP_SUMMARY
-          echo "- **Result:** ${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Project:** \`myclasshub\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
-          echo "- **Live Site:** [Visit Project](${{ steps.deploy.outputs.url }})" >> $GITHUB_STEP_SUMMARY
-          echo "- **Workflow:** [View Run Details](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📝 Commit Info" >> $GITHUB_STEP_SUMMARY
-          echo "- **ID:** \`$SHORT_SHA\`" >> $GITHUB_STEP_SUMMARY
-          echo "- **Message:** ${{ github.event.head_commit.message }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Author:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "<h2>🚀 Deployment Report</h2>" >> $GITHUB_STEP_SUMMARY
+          echo "<table>" >> $GITHUB_STEP_SUMMARY
+          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td width='100'><b>Status</b></td>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td>${{ job.status == 'success' && '✅ Success' || '❌ Failed' }}</td>" >> $GITHUB_STEP_SUMMARY
+          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
+          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td><b>Project</b></td>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td><code>myclasshub</code></td>" >> $GITHUB_STEP_SUMMARY
+          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
+          echo "  <tr>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td><b>Link</b></td>" >> $GITHUB_STEP_SUMMARY
+          echo "    <td><a href='${{ steps.deploy.outputs.url }}'><b>Open Application ↗️</b></a></td>" >> $GITHUB_STEP_SUMMARY
+          echo "  </tr>" >> $GITHUB_STEP_SUMMARY
+          echo "</table>" >> $GITHUB_STEP_SUMMARY
+          echo "<br />" >> $GITHUB_STEP_SUMMARY
+          echo "<details open>" >> $GITHUB_STEP_SUMMARY
+          echo "  <summary><b>📝 Version & Commit Info</b></summary>" >> $GITHUB_STEP_SUMMARY
+          echo "  <br />" >> $GITHUB_STEP_SUMMARY
+          echo "  <ul>" >> $GITHUB_STEP_SUMMARY
+          echo "    <li><b>Commit ID:</b> <code>$SHORT_SHA</code></li>" >> $GITHUB_STEP_SUMMARY
+          echo "    <li><b>Message:</b> ${{ github.event.head_commit.message }}</li>" >> $GITHUB_STEP_SUMMARY
+          echo "    <li><b>Author:</b> @${{ github.actor }}</li>" >> $GITHUB_STEP_SUMMARY
+          echo "    <li><b>Branch:</b> <code>${{ github.ref_name }}</code></li>" >> $GITHUB_STEP_SUMMARY
+          echo "  </ul>" >> $GITHUB_STEP_SUMMARY
+          echo "</details>" >> $GITHUB_STEP_SUMMARY
