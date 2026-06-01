@@ -354,7 +354,7 @@ function startCountdownTimer() {
                 countdownEl.className = 'sched-countdown';
             }
         });
-    }, 60000);
+    }, 30000);
 }
 
 function renderSchedule() {

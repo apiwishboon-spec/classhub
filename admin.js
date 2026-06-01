@@ -109,6 +109,8 @@ const emailLinkInput = document.getElementById('email-link-input');
 const sendLinkBtn = document.getElementById('send-link-btn');
 
 let currentUserRole = 'teacher';
+let annListener = null;
+let hwListener = null;
 
 // Global Theme Management
 function initTheme() {
@@ -245,10 +247,9 @@ onAuthStateChanged(auth, async (user) => {
         loginContainer.style.display = 'block';
         adminContainer.style.display = 'none';
         checkEmailLinkSignIn();
-        if (systemStatesListener) {
-            systemStatesListener();
-            systemStatesListener = null;
-        }
+        if (systemStatesListener) { systemStatesListener(); systemStatesListener = null; }
+        if (annListener) { annListener(); annListener = null; }
+        if (hwListener) { hwListener(); hwListener = null; }
     }
 });
 
@@ -392,7 +393,7 @@ document.getElementById('add-ann-btn').addEventListener('click', async () => {
         document.getElementById('ann-title').value = '';
         document.getElementById('ann-message').value = '';
         document.getElementById('ann-author').value = '';
-        loadAnnouncements();
+        // onSnapshot listener auto-refreshes the list
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -426,7 +427,7 @@ document.getElementById('add-hw-btn').addEventListener('click', async () => {
         document.getElementById('hw-subject').value = '';
         document.getElementById('hw-task').value = '';
         document.getElementById('hw-due').value = '';
-        loadHomework();
+        // onSnapshot listener auto-refreshes the list
     } catch (error) {
         showToast("Error: " + error.message);
     } finally {
@@ -682,6 +683,19 @@ async function loadUsers() {
                 toggleUserStatus(uid, email, currentStatus);
             });
         });
+
+        document.querySelectorAll('.save-note-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const uid = btn.getAttribute('data-uid');
+                const noteVal = document.getElementById(`admin-note-${uid}`)?.value.trim() || '';
+                try {
+                    await setDoc(doc(db, "users", uid), { adminNote: noteVal }, { merge: true });
+                    showToast("Note saved!", "ph-floppy-disk", "var(--success)");
+                } catch (e) {
+                    showToast("Error saving note: " + e.message, "ph-x-circle", "var(--danger)");
+                }
+            });
+        });
         
     } catch (error) {
         usersList.innerHTML = `<p style="color:var(--danger)">Error loading users: ${error.message}</p>`;
@@ -861,26 +875,27 @@ async function loadSchedule() {
     }
 }
 
-// Load Announcements
-async function loadAnnouncements() {
+// Load Announcements (real-time)
+function loadAnnouncements() {
     if (currentUserRole === 'ta') return;
+    if (annListener) { annListener(); annListener = null; }
+
     const list = document.getElementById('announcements-list-admin');
     list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
-    
-    try {
-        const snap = await getDocs(collection(db, "announcements"));
+
+    annListener = onSnapshot(collection(db, "announcements"), (snap) => {
         const isMobile = window.innerWidth <= 768;
         let html = '';
-        
+
         if (isMobile) {
             html = `<div class="admin-sched-cards">`;
-            snap.forEach(doc => {
-                const data = doc.data();
+            snap.forEach(d => {
+                const data = d.data();
                 html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
                             <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
-                            <button class="remove-ann-btn admin-btn-danger admin-btn-icon" data-id="${doc.id}"><i class="ph ph-trash"></i></button>
+                            <button class="remove-ann-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
                             ${data.author || ''} · ${data.date || ''}
@@ -902,57 +917,57 @@ async function loadAnnouncements() {
                 </thead>
                 <tbody>
             `;
-            
-            snap.forEach(doc => {
-                const data = doc.data();
+            snap.forEach(d => {
+                const data = d.data();
                 html += `
                 <tr>
                     <td>${data.title}</td>
                     <td>${data.author}</td>
                     <td>${data.date}</td>
                     <td>
-                        <button class="remove-ann-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
+                        <button class="remove-ann-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
                     </td>
                 </tr>`;
             });
             html += '</tbody></table>';
         }
         list.innerHTML = html;
-        
+
         document.querySelectorAll('.remove-ann-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                if(await customConfirm("Confirm Action", "Delete this announcement?")) {
+                if (await customConfirm("Confirm Action", "Delete this announcement?")) {
                     const id = e.target.closest('.remove-ann-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "announcements", id));
                     logAction("Delete Announcement", `ID: ${id}`);
-                    loadAnnouncements();
+                    // onSnapshot auto-refreshes the list
                 }
             });
         });
-    } catch (error) {
+    }, (error) => {
         list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
-    }
+    });
 }
 
-// Load Homework
-async function loadHomework() {
+// Load Homework (real-time)
+function loadHomework() {
+    if (hwListener) { hwListener(); hwListener = null; }
+
     const list = document.getElementById('homework-list-admin');
     list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
-    
-    try {
-        const snap = await getDocs(collection(db, "homework"));
+
+    hwListener = onSnapshot(collection(db, "homework"), (snap) => {
         const isMobile = window.innerWidth <= 768;
         let html = '';
-        
+
         if (isMobile) {
             html = `<div class="admin-sched-cards">`;
-            snap.forEach(doc => {
-                const data = doc.data();
+            snap.forEach(d => {
+                const data = d.data();
                 html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
                             <span style="font-weight:600;font-size:0.85rem;">${data.subject}</span>
-                            <button class="remove-hw-btn admin-btn-danger admin-btn-icon" data-id="${doc.id}"><i class="ph ph-trash"></i></button>
+                            <button class="remove-hw-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="font-size:0.85rem;margin:0.25rem 0;">${data.homework}</div>
                         <div style="font-size:0.75rem;color:var(--text-secondary);">Due: ${data.due || ''}</div>
@@ -973,36 +988,35 @@ async function loadHomework() {
                 </thead>
                 <tbody>
             `;
-            
-            snap.forEach(doc => {
-                const data = doc.data();
+            snap.forEach(d => {
+                const data = d.data();
                 html += `
                 <tr>
                     <td>${data.subject}</td>
                     <td>${data.homework}</td>
                     <td>${data.due}</td>
                     <td>
-                        <button class="remove-hw-btn admin-btn-danger" data-id="${doc.id}"><i class="ph ph-trash"></i> Delete</button>
+                        <button class="remove-hw-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
                     </td>
                 </tr>`;
             });
             html += '</tbody></table>';
         }
         list.innerHTML = html;
-        
+
         document.querySelectorAll('.remove-hw-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
-                if(await customConfirm("Confirm Action", "Delete this homework?")) {
+                if (await customConfirm("Confirm Action", "Delete this homework?")) {
                     const id = e.target.closest('.remove-hw-btn').getAttribute('data-id');
                     await deleteDoc(doc(db, "homework", id));
                     logAction("Delete Homework", `ID: ${id}`);
-                    loadHomework();
+                    // onSnapshot auto-refreshes the list
                 }
             });
         });
-    } catch (error) {
+    }, (error) => {
         list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
-    }
+    });
 }
 
 // Remove Schedule Function
