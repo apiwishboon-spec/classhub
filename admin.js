@@ -11,7 +11,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // DOM Elements
@@ -178,7 +178,7 @@ onAuthStateChanged(auth, async (user) => {
                     return;
                 }
                 
-                currentUserRole = data.role || 'teacher';
+                currentUserRole = (data.role || 'teacher').toLowerCase().trim();
                 // Update last login for existing user
                 await setDoc(userDocRef, { lastLogin: lastLoginTs }, { merge: true });
             } else {
