@@ -153,12 +153,20 @@
     </div>
 
     <!-- Floating Feedback Button -->
-    <button id="open-feedback" style="position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;">
+    <button id="open-feedback" style="position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;">
         <i class="ph ph-chat-centered-dots" style="font-size: 1.8rem;"></i>
     </button>
     
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script>
+        window.addEventListener('load', function() {
+            const feedbackBtn = document.getElementById('open-feedback');
+            if (feedbackBtn) {
+                feedbackBtn.style.display = 'flex';
+            }
+        });
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>
