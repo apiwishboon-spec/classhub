@@ -132,20 +132,28 @@ function loadPolls() {
         let html = '';
         snap.forEach(d => {
             const data = d.data();
-            const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
+            const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
+            const isOpen = data.isOpen !== false; // Default to true
+            
             html += `
-                <div class="admin-sched-card" style="border-left: 4px solid var(--accent-color);">
+                <div class="admin-sched-card" style="border-left: 4px solid ${isOpen ? 'var(--accent-color)' : 'var(--text-secondary)'};">
                     <div class="admin-sched-card-header">
-                        <span style="font-weight:700;">${data.question}</span>
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-weight:700;">${data.question}</span>
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">${isOpen ? '🟢 OPEN' : '🔴 CLOSED'} — Total Votes: ${totalVotes}</span>
+                        </div>
                         <div class="admin-sched-card-actions">
+                            <button class="toggle-poll-btn admin-btn-icon" data-id="${d.id}" data-open="${isOpen}" title="${isOpen ? 'Close Poll' : 'Open Poll'}">
+                                <i class="ph ${isOpen ? 'ph-lock-open' : 'ph-lock'}"></i>
+                            </button>
                             <button class="qr-full-btn admin-btn-icon" data-id="${d.id}" data-question="${data.question.replace(/"/g, '&quot;')}" style="color:var(--accent-color);"><i class="ph ph-corners-out"></i></button>
                             <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                     </div>
                     <div style="display:flex; gap:1rem; align-items:center; margin-top:0.5rem; flex-wrap:wrap;">
-                        <div id="qr-${d.id}" style="background:white; padding:5px; border-radius:4px;"></div>
+                        <div id="qr-${d.id}" style="background:white; padding:5px; border-radius:4px; opacity: ${isOpen ? 1 : 0.3};"></div>
                         <div style="flex:1;">
-                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">VOTES:</div>
+                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">LIVE RESULTS (Hidden from students while open):</div>
                             ${Object.entries(data.votes || {}).map(([opt, count]) => `
                                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
                                     <span>${opt}</span>
@@ -161,6 +169,7 @@ function loadPolls() {
 
         // Generate QRs
         snap.forEach(d => {
+            const isOpen = d.data().isOpen !== false;
             const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
             new QRCode(document.getElementById(`qr-${d.id}`), {
                 text: pollUrl,
@@ -169,6 +178,22 @@ function loadPolls() {
                 colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+
+        document.querySelectorAll('.toggle-poll-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const currentState = btn.getAttribute('data-open') === 'true';
+                try {
+                    await updateDoc(doc(db, "polls", id), {
+                        isOpen: !currentState
+                    });
+                    showToast(`Poll ${!currentState ? 'Opened' : 'Closed'} successfully!`);
+                    logAction("Toggle Poll", `ID: ${id}, State: ${!currentState ? 'Open' : 'Closed'}`);
+                } catch (e) {
+                    showToast("Error: " + e.message, "ph-x", "var(--danger)");
+                }
             });
         });
 

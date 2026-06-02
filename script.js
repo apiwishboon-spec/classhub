@@ -37,31 +37,45 @@ function fetchPolls() {
             const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
             const hasVoted = localStorage.getItem(`voted_${d.id}`);
             const isTargetPoll = pollIdParam === d.id;
+            const isOpen = data.isOpen !== false;
+            const showResults = !isOpen || hasVoted; // Always show if voted, OR if closed
 
             html += `
                 <div class="poll-card" style="margin-bottom: 1.5rem; ${isTargetPoll ? 'border: 2px solid var(--accent-color); padding: 1rem; border-radius: 8px;' : ''}" id="poll-${d.id}">
-                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        ${data.question}
-                        ${isTargetPoll ? '<span class="time-badge" style="font-size: 0.6rem; background: var(--accent-color); color: white;">SCANNED</span>' : ''}
-                    </h3>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+                        <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                            ${data.question}
+                            ${isTargetPoll ? '<span class="time-badge" style="font-size: 0.6rem; background: var(--accent-color); color: white;">SCANNED</span>' : ''}
+                        </h3>
+                        <span class="time-badge" style="font-size: 0.7rem;">${totalVotes} votes</span>
+                    </div>
+                    
+                    ${!isOpen && !hasVoted ? `<p style="text-align:center; color:var(--danger); font-weight:600; margin-bottom:1rem;">🗳️ This poll is now CLOSED. See results below.</p>` : ''}
+
                     <div class="poll-options" style="display: flex; flex-direction: column; gap: 0.75rem;">
                         ${data.options.map(opt => {
                             const count = data.votes[opt] || 0;
                             const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                            
+                            // Only show percentages/bars if closed OR if the user has already voted
+                            const revealStats = !isOpen || (isOpen && hasVoted);
+                            
                             return `
                                 <div class="poll-option-wrapper" style="position: relative;">
                                     <button class="poll-vote-btn btn-secondary" 
                                             style="width: 100%; text-align: left; position: relative; z-index: 1; background: transparent; overflow: hidden; display: flex; justify-content: space-between;"
-                                            data-poll-id="${d.id}" data-option="${opt}" ${hasVoted ? 'disabled' : ''}>
+                                            data-poll-id="${d.id}" data-option="${opt}" ${hasVoted || !isOpen ? 'disabled' : ''}>
                                         <span>${opt}</span>
-                                        ${hasVoted ? `<span>${percent}% (${count})</span>` : ''}
-                                        <div class="poll-progress" style="position: absolute; top: 0; left: 0; height: 100%; background: var(--highlight-bg); width: ${hasVoted ? percent : 0}%; z-index: -1; transition: width 0.5s ease;"></div>
+                                        ${revealStats ? `<span>${percent}% (${count})</span>` : ''}
+                                        <div class="poll-progress" style="position: absolute; top: 0; left: 0; height: 100%; background: var(--highlight-bg); width: ${revealStats ? percent : 0}%; z-index: -1; transition: width 0.5s ease;"></div>
                                     </button>
                                 </div>
                             `;
                         }).join('')}
                     </div>
-                    ${hasVoted ? `<p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center;">You have already voted. Total votes: ${totalVotes}</p>` : ''}
+                    <div class="status-msg" style="text-align: center; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-secondary);">
+                        ${!isOpen ? 'Poll closed by Admin.' : hasVoted ? 'You have already voted.' : 'Select an option to vote!'}
+                    </div>
                 </div>
             `;
         });

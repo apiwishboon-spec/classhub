@@ -114,21 +114,27 @@
                 const data = docSnap.data();
                 const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
                 const hasVoted = localStorage.getItem(`voted_${pollId}`);
+                const isOpen = data.isOpen !== false;
 
                 let html = `
-                    <h2 style="margin-bottom: 2rem; text-align: center;">${data.question}</h2>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+                        <h2 style="margin:0;">${data.question}</h2>
+                        <span class="time-badge">${totalVotes} votes</span>
+                    </div>
+                    ${!isOpen && !hasVoted ? `<p style="text-align:center; color:var(--danger); font-weight:600; margin-bottom:1rem;">🗳️ This poll is now CLOSED. See results below.</p>` : ''}
                     <div id="options-list">
                 `;
 
                 data.options.forEach(opt => {
                     const count = data.votes[opt] || 0;
                     const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                    const revealStats = !isOpen || (isOpen && hasVoted);
                     
                     html += `
-                        <button class="poll-option-btn" data-option="${opt}" ${hasVoted ? 'disabled' : ''}>
+                        <button class="poll-option-btn" data-option="${opt}" ${hasVoted || !isOpen ? 'disabled' : ''}>
                             <span>${opt}</span>
-                            ${hasVoted ? `<span>${percent}% (${count})</span>` : ''}
-                            <div class="progress-bar" style="width: ${hasVoted ? percent : 0}%"></div>
+                            ${revealStats ? `<span>${percent}% (${count})</span>` : ''}
+                            <div class="progress-bar" style="width: ${revealStats ? percent : 0}%"></div>
                         </button>
                     `;
                 });
@@ -136,7 +142,7 @@
                 html += `
                     </div>
                     <div class="status-msg">
-                        ${hasVoted ? `You have already voted. Total: ${totalVotes}` : 'Tap an option to vote!'}
+                        ${!isOpen ? 'Poll closed by Admin.' : hasVoted ? `You have already voted. Total: ${totalVotes}` : 'Tap an option to vote!'}
                     </div>
                 `;
 
