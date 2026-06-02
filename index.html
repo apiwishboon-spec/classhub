@@ -130,16 +130,21 @@
         </footer>
     </div>
 
-    <!-- Feedback Modal -->
     <div id="feedback-modal" class="modal-overlay">
-        <div class="modal-card" style="display: block; max-width: 450px;">
-            <h3><i class="ph ph-chat-centered-text"></i> Message Teacher</h3>
-            <p>Send an anonymous message, question, or bug report to the teacher.</p>
+        <div class="modal-card" style="display: block; max-width: 500px; padding: 1.5rem !important;">
+            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Teacher</h3>
+            <p style="margin-bottom: 1rem !important; font-size: 0.9rem !important;">Send an anonymous message or question to the teacher.</p>
+            
+            <!-- Message History -->
+            <div id="feedback-history" style="max-height: 200px; overflow-y: auto; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 5px;">
+                <!-- Messages will be injected here -->
+            </div>
+
             <div class="admin-form-stack">
-                <textarea id="feedback-text" placeholder="Type your message here..." class="form-input" rows="4" style="border-radius: 8px; border: 1px solid var(--border-color);"></textarea>
+                <textarea id="feedback-text" placeholder="Type a new message..." class="form-input" rows="3" style="border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;"></textarea>
                 <div style="display: flex; gap: 0.5rem; align-items: center;">
                     <input type="checkbox" id="feedback-urgent">
-                    <label for="feedback-urgent" style="font-size: 0.85rem; color: var(--danger); font-weight: 600;">Mark as Urgent</label>
+                    <label for="feedback-urgent" style="font-size: 0.8rem; color: var(--danger); font-weight: 600;">Mark as Urgent</label>
                 </div>
                 <div class="modal-actions">
                     <button class="btn-secondary" id="close-feedback">Cancel</button>

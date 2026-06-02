@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -17,6 +17,7 @@ const closeFeedbackBtn = document.getElementById('close-feedback');
 const sendFeedbackBtn = document.getElementById('send-feedback');
 const feedbackText = document.getElementById('feedback-text');
 const feedbackUrgent = document.getElementById('feedback-urgent');
+const feedbackHistory = document.getElementById('feedback-history');
 
 // Feedback Logic
 if (openFeedbackBtn) {
@@ -24,7 +25,58 @@ if (openFeedbackBtn) {
         feedbackModal.style.display = 'flex';
         feedbackText.value = '';
         feedbackUrgent.checked = false;
+        refreshFeedbackHistory();
     });
+}
+
+async function refreshFeedbackHistory() {
+    if (!feedbackHistory) return;
+    const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
+    
+    if (myMessages.length === 0) {
+        feedbackHistory.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">No message history yet.</p>';
+        return;
+    }
+
+    feedbackHistory.innerHTML = '<div class="loader" style="margin: 1rem auto; width: 20px; height: 20px;"></div>';
+    
+    let html = '';
+    const sortedMessages = [];
+
+    // Fetch all my messages
+    for (const id of myMessages) {
+        try {
+            const docSnap = await getDoc(doc(db, "feedback", id));
+            if (docSnap.exists()) {
+                sortedMessages.push({ id, ...docSnap.data() });
+            }
+        } catch (e) { console.error("Error fetching message history", e); }
+    }
+
+    // Sort by date (newest last for chat feel, or newest first?)
+    // Let's do newest first for easy reading
+    sortedMessages.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+
+    sortedMessages.forEach(msg => {
+        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        html += `
+            <div style="background: var(--bg-color); border-radius: 8px; padding: 0.75rem; border: 1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-secondary); margin-bottom:0.25rem;">
+                    <span>You — ${date}</span>
+                    ${msg.status === 'resolved' ? '<span style="color:var(--success);">✔ Solved</span>' : ''}
+                </div>
+                <div style="font-size:0.85rem; margin-bottom:0.5rem;">${msg.message}</div>
+                ${msg.reply ? `
+                    <div style="background: var(--highlight-bg); border-radius: 6px; padding: 0.6rem; border-left: 3px solid var(--accent-color); margin-top: 0.5rem;">
+                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">TEACHER REPLY:</div>
+                        <div style="font-size: 0.8rem;">${msg.reply}</div>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    });
+
+    feedbackHistory.innerHTML = html;
 }
 
 if (closeFeedbackBtn) {
