@@ -59,6 +59,14 @@ async function initVersion() {
     }
 }
 
+// Recruitment Message for Developers
+console.log(
+    "%c 🚀 MYCLASSHUB %c Do you want to join our team? %c 📧 apiwish.boon@gmail.com ",
+    "background: #6366f1; color: white; padding: 5px 10px; border-radius: 5px 0 0 5px; font-weight: bold; font-family: system-ui;",
+    "background: #1e1e2e; color: #a6adc8; padding: 5px 10px; font-family: system-ui;",
+    "background: #6366f1; color: white; padding: 5px 10px; border-radius: 0 5px 5px 0; font-weight: bold; font-family: system-ui;"
+);
+
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initVersion);
 } else {
