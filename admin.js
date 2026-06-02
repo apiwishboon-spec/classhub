@@ -12,16 +12,30 @@ import {
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // DOM Elements
 const loginContainer = document.getElementById('login-container');
-// ... rest of elements ...
+const adminContainer = document.getElementById('admin-container');
+const loginBtn = document.getElementById('login-btn');
+const emailInput = document.getElementById('email');
+const passInput = document.getElementById('password');
+const loginError = document.getElementById('login-error');
+const loginSuccess = document.getElementById('login-success');
+const logoutBtn = document.getElementById('logout-btn');
+const userRoleBadge = document.getElementById('user-role-badge');
+const manageUsersSection = document.getElementById('manage-users-section');
+const manageScheduleSection = document.getElementById('manage-schedule-section');
+const addAnnouncementSection = document.getElementById('add-announcement-section');
+const addHomeworkSection = document.getElementById('add-homework-section');
+const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
+const manageHomeworkSection = document.getElementById('manage-homework-section');
+const systemSettingsSection = document.getElementById('system-settings-section');
+const auditLogSection = document.getElementById('audit-log-section');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
-
-// ... rest of imports and DOM elements ...
 
 // Notification system
 function showToast(message, icon, color) {
