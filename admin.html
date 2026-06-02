@@ -286,6 +286,16 @@
                 </div>
             </div>
         </div>
+
+        <!-- QR Full Screen Modal -->
+        <div id="qr-modal-card" class="modal-card" style="display: none; max-width: 600px; text-align: center;">
+            <h3 id="qr-modal-question" style="margin-bottom: 2rem !important;">Poll Question</h3>
+            <div id="qr-modal-container" style="display: flex; justify-content: center; margin-bottom: 2rem; background: white; padding: 2rem; border-radius: 12px; display: inline-block;"></div>
+            <p style="font-size: 1.2rem; color: var(--accent-color); font-weight: 600;">Scan to Vote!</p>
+            <div class="modal-actions" style="justify-content: center !important;">
+                <button class="btn-secondary close-modal">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>

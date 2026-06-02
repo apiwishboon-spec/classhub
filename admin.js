@@ -132,12 +132,15 @@ function loadPolls() {
         let html = '';
         snap.forEach(d => {
             const data = d.data();
-            const pollUrl = `${window.location.origin}/index.html?pollId=${d.id}`;
+            const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
             html += `
                 <div class="admin-sched-card" style="border-left: 4px solid var(--accent-color);">
                     <div class="admin-sched-card-header">
                         <span style="font-weight:700;">${data.question}</span>
-                        <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                        <div class="admin-sched-card-actions">
+                            <button class="qr-full-btn admin-btn-icon" data-id="${d.id}" data-question="${data.question.replace(/"/g, '&quot;')}" style="color:var(--accent-color);"><i class="ph ph-corners-out"></i></button>
+                            <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                        </div>
                     </div>
                     <div style="display:flex; gap:1rem; align-items:center; margin-top:0.5rem; flex-wrap:wrap;">
                         <div id="qr-${d.id}" style="background:white; padding:5px; border-radius:4px;"></div>
@@ -158,7 +161,7 @@ function loadPolls() {
 
         // Generate QRs
         snap.forEach(d => {
-            const pollUrl = `${window.location.origin}/index.html?pollId=${d.id}`;
+            const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
             new QRCode(document.getElementById(`qr-${d.id}`), {
                 text: pollUrl,
                 width: 80,
@@ -166,6 +169,29 @@ function loadPolls() {
                 colorDark : "#000000",
                 colorLight : "#ffffff",
                 correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+
+        document.querySelectorAll('.qr-full-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.getAttribute('data-id');
+                const question = btn.getAttribute('data-question');
+                const pollUrl = `${window.location.origin}/vote.html?pollId=${id}`;
+                
+                document.getElementById('qr-modal-question').textContent = question;
+                const container = document.getElementById('qr-modal-container');
+                container.innerHTML = ''; // Clear previous
+                
+                new QRCode(container, {
+                    text: pollUrl,
+                    width: 300,
+                    height: 300,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+                
+                openModal('qr-modal-card');
             });
         });
 

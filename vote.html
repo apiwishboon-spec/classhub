@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote | MyClassHub</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 1rem;
+        }
+        .vote-container {
+            max-width: 500px;
+            width: 100%;
+            padding: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .poll-option-btn {
+            width: 100%;
+            text-align: left;
+            position: relative;
+            z-index: 1;
+            background: var(--bg-color);
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .poll-option-btn:hover:not(:disabled) {
+            border-color: var(--accent-color);
+            background: var(--highlight-bg);
+        }
+        .poll-option-btn:disabled {
+            cursor: default;
+        }
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(15, 98, 254, 0.1);
+            z-index: -1;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .status-msg {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .loading-vote {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div id="toast-container"></div>
+    <div class="vote-container">
+        <div id="vote-ui" class="loading-vote">
+            <div class="loader"></div>
+            <p>Loading poll...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, getDoc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const container = document.querySelector('.vote-container');
+        const voteUi = document.getElementById('vote-ui');
+        
+        // Theme initialization
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const pollId = urlParams.get('pollId');
+
+        if (!pollId) {
+            voteUi.innerHTML = '<i class="ph ph-warning-circle" style="font-size:3rem; color:var(--danger);"></i><p>Invalid Poll Link</p><a href="index.html" class="btn-secondary" style="text-decoration:none;">Go Home</a>';
+        } else {
+            initPoll();
+        }
+
+        function initPoll() {
+            onSnapshot(doc(db, "polls", pollId), (docSnap) => {
+                if (!docSnap.exists()) {
+                    voteUi.innerHTML = '<i class="ph ph-warning-circle" style="font-size:3rem; color:var(--danger);"></i><p>This poll no longer exists.</p>';
+                    return;
+                }
+
+                const data = docSnap.data();
+                const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
+                const hasVoted = localStorage.getItem(`voted_${pollId}`);
+
+                let html = `
+                    <h2 style="margin-bottom: 2rem; text-align: center;">${data.question}</h2>
+                    <div id="options-list">
+                `;
+
+                data.options.forEach(opt => {
+                    const count = data.votes[opt] || 0;
+                    const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                    
+                    html += `
+                        <button class="poll-option-btn" data-option="${opt}" ${hasVoted ? 'disabled' : ''}>
+                            <span>${opt}</span>
+                            ${hasVoted ? `<span>${percent}% (${count})</span>` : ''}
+                            <div class="progress-bar" style="width: ${hasVoted ? percent : 0}%"></div>
+                        </button>
+                    `;
+                });
+
+                html += `
+                    </div>
+                    <div class="status-msg">
+                        ${hasVoted ? `You have already voted. Total: ${totalVotes}` : 'Tap an option to vote!'}
+                    </div>
+                `;
+
+                voteUi.className = '';
+                voteUi.innerHTML = html;
+
+                // Add listeners if not voted
+                if (!hasVoted) {
+                    document.querySelectorAll('.poll-option-btn').forEach(btn => {
+                        btn.addEventListener('click', async () => {
+                            const option = btn.getAttribute('data-option');
+                            try {
+                                btn.disabled = true;
+                                await updateDoc(doc(db, "polls", pollId), {
+                                    [`votes.${option}`]: increment(1)
+                                });
+                                localStorage.setItem(`voted_${pollId}`, 'true');
+                            } catch (e) {
+                                console.error("Vote failed", e);
+                                alert("Failed to vote. Please try again.");
+                                btn.disabled = false;
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+    <script type="module" src="visits.js"></script>
+</body>
+</html>
