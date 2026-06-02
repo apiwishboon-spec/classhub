@@ -78,5 +78,15 @@ service cloud.firestore {
     match /page_visits/{pageId} {
       allow read, write: if true;
     }
+
+    // 9. Polls collection
+    match /polls/{pollId} {
+      allow read: if true;
+      allow create, delete: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher'
+      );
+      allow update: if true; // Allow anyone to vote (increment)
+    }
   }
 }

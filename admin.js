@@ -11,27 +11,17 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // DOM Elements
 const loginContainer = document.getElementById('login-container');
-const adminContainer = document.getElementById('admin-container');
-const loginBtn = document.getElementById('login-btn');
-const emailInput = document.getElementById('email');
-const passInput = document.getElementById('password');
-const loginError = document.getElementById('login-error');
-const loginSuccess = document.getElementById('login-success');
-const logoutBtn = document.getElementById('logout-btn');
-const userRoleBadge = document.getElementById('user-role-badge');
-const manageUsersSection = document.getElementById('manage-users-section');
-const manageScheduleSection = document.getElementById('manage-schedule-section');
-const addAnnouncementSection = document.getElementById('add-announcement-section');
-const addHomeworkSection = document.getElementById('add-homework-section');
-const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
-const manageHomeworkSection = document.getElementById('manage-homework-section');
-const systemSettingsSection = document.getElementById('system-settings-section');
-const auditLogSection = document.getElementById('audit-log-section');
+// ... rest of elements ...
+const createPollBtn = document.getElementById('create-poll-btn');
+const pollQuestionInput = document.getElementById('poll-question');
+const pollOptionsInput = document.getElementById('poll-options');
+const activePollsList = document.getElementById('active-polls-list');
+
+// ... rest of imports and DOM elements ...
 
 // Notification system
 function showToast(message, icon, color) {
@@ -111,6 +101,73 @@ const sendLinkBtn = document.getElementById('send-link-btn');
 let currentUserRole = 'teacher';
 let annListener = null;
 let hwListener = null;
+let pollListener = null;
+
+// Load Polls (real-time)
+function loadPolls() {
+    if (pollListener) { pollListener(); pollListener = null; }
+
+    const list = document.getElementById('active-polls-list');
+
+    pollListener = onSnapshot(query(collection(db, "polls"), orderBy("createdAt", "desc")), (snap) => {
+        if (snap.empty) {
+            list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No active polls.</p>';
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const pollUrl = `${window.location.origin}/index.html?pollId=${d.id}`;
+            html += `
+                <div class="admin-sched-card" style="border-left: 4px solid var(--accent-color);">
+                    <div class="admin-sched-card-header">
+                        <span style="font-weight:700;">${data.question}</span>
+                        <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                    </div>
+                    <div style="display:flex; gap:1rem; align-items:center; margin-top:0.5rem; flex-wrap:wrap;">
+                        <div id="qr-${d.id}" style="background:white; padding:5px; border-radius:4px;"></div>
+                        <div style="flex:1;">
+                            <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">VOTES:</div>
+                            ${Object.entries(data.votes || {}).map(([opt, count]) => `
+                                <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
+                                    <span>${opt}</span>
+                                    <span style="font-weight:700;">${count}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+
+        // Generate QRs
+        snap.forEach(d => {
+            const pollUrl = `${window.location.origin}/index.html?pollId=${d.id}`;
+            new QRCode(document.getElementById(`qr-${d.id}`), {
+                text: pollUrl,
+                width: 80,
+                height: 80,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        });
+
+        document.querySelectorAll('.remove-poll-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                if (await customConfirm("Confirm Action", "Delete this poll and all its data?")) {
+                    const id = e.target.closest('.remove-poll-btn').getAttribute('data-id');
+                    await deleteDoc(doc(db, "polls", id));
+                    logAction("Delete Poll", `ID: ${id}`);
+                }
+            });
+        });
+    });
+}
+
+// ... existing code ...
 
 // Global Theme Management
 function initTheme() {
@@ -216,6 +273,7 @@ onAuthStateChanged(auth, async (user) => {
                 loadSchedule();
                 loadAnnouncements();
                 loadHomework();
+                loadPolls();
                 loadSettings();
                 loadAuditLog();
             } else if (currentUserRole === 'teacher') {
@@ -228,6 +286,7 @@ onAuthStateChanged(auth, async (user) => {
                 
                 loadAnnouncements();
                 loadHomework();
+                loadPolls();
             } else if (currentUserRole === 'ta') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -250,6 +309,7 @@ onAuthStateChanged(auth, async (user) => {
         if (systemStatesListener) { systemStatesListener(); systemStatesListener = null; }
         if (annListener) { annListener(); annListener = null; }
         if (hwListener) { hwListener(); hwListener = null; }
+        if (pollListener) { pollListener(); pollListener = null; }
     }
 });
 
@@ -1118,6 +1178,42 @@ document.getElementById('maintenance-toggle').addEventListener('click', async ()
         loadSettings();
     } catch (e) {
         showToast("Error updating settings: " + e.message);
+    }
+});
+
+// Create Poll
+document.getElementById('create-poll-btn').addEventListener('click', async () => {
+    const question = pollQuestionInput.value.trim();
+    const optionsStr = pollOptionsInput.value.trim();
+
+    if (!question || !optionsStr) {
+        showToast("Please enter a question and at least 2 options.", "ph-warning", "var(--warning)");
+        return;
+    }
+
+    const options = optionsStr.split(',').map(o => o.trim()).filter(o => o !== '');
+    if (options.length < 2) {
+        showToast("Please enter at least 2 options.", "ph-warning", "var(--warning)");
+        return;
+    }
+
+    const votes = {};
+    options.forEach(o => votes[o] = 0);
+
+    try {
+        await addDoc(collection(db, "polls"), {
+            question,
+            options,
+            votes,
+            createdAt: serverTimestamp(),
+            createdBy: auth.currentUser.email
+        });
+        pollQuestionInput.value = '';
+        pollOptionsInput.value = '';
+        showToast("Poll created successfully!", "ph-check", "var(--success)");
+        logAction("Create Poll", `Question: ${question}`);
+    } catch (e) {
+        showToast("Error creating poll: " + e.message, "ph-x", "var(--danger)");
     }
 });
 

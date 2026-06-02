@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -9,6 +9,8 @@ const homeworkContainer = document.getElementById('homework-container');
 const notesContainer = document.getElementById('notes-container');
 const globalSearch = document.getElementById('global-search');
 const addNoteBtn = document.getElementById('add-note-btn');
+const pollsSection = document.getElementById('polls-section');
+const pollsContainer = document.getElementById('polls-container');
 
 // State
 let dashboardData = {
@@ -17,6 +19,83 @@ let dashboardData = {
     homework: [],
     notes: []
 };
+
+// Polls Logic
+function fetchPolls() {
+    onSnapshot(query(collection(db, "polls"), orderBy("createdAt", "desc")), (snap) => {
+        if (snap.empty) {
+            if (pollsSection) pollsSection.style.display = 'none';
+            return;
+        }
+
+        if (pollsSection) pollsSection.style.display = 'block';
+        const pollIdParam = new URLSearchParams(window.location.search).get('pollId');
+        
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
+            const hasVoted = localStorage.getItem(`voted_${d.id}`);
+            const isTargetPoll = pollIdParam === d.id;
+
+            html += `
+                <div class="poll-card" style="margin-bottom: 1.5rem; ${isTargetPoll ? 'border: 2px solid var(--accent-color); padding: 1rem; border-radius: 8px;' : ''}" id="poll-${d.id}">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        ${data.question}
+                        ${isTargetPoll ? '<span class="time-badge" style="font-size: 0.6rem; background: var(--accent-color); color: white;">SCANNED</span>' : ''}
+                    </h3>
+                    <div class="poll-options" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        ${data.options.map(opt => {
+                            const count = data.votes[opt] || 0;
+                            const percent = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+                            return `
+                                <div class="poll-option-wrapper" style="position: relative;">
+                                    <button class="poll-vote-btn btn-secondary" 
+                                            style="width: 100%; text-align: left; position: relative; z-index: 1; background: transparent; overflow: hidden; display: flex; justify-content: space-between;"
+                                            data-poll-id="${d.id}" data-option="${opt}" ${hasVoted ? 'disabled' : ''}>
+                                        <span>${opt}</span>
+                                        ${hasVoted ? `<span>${percent}% (${count})</span>` : ''}
+                                        <div class="poll-progress" style="position: absolute; top: 0; left: 0; height: 100%; background: var(--highlight-bg); width: ${hasVoted ? percent : 0}%; z-index: -1; transition: width 0.5s ease;"></div>
+                                    </button>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    ${hasVoted ? `<p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem; text-align: center;">You have already voted. Total votes: ${totalVotes}</p>` : ''}
+                </div>
+            `;
+        });
+        if (pollsContainer) pollsContainer.innerHTML = html;
+
+        // Add vote listeners
+        document.querySelectorAll('.poll-vote-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const pollId = btn.getAttribute('data-poll-id');
+                const option = btn.getAttribute('data-option');
+                if (localStorage.getItem(`voted_${pollId}`)) return;
+
+                try {
+                    const pollRef = doc(db, "polls", pollId);
+                    await updateDoc(pollRef, {
+                        [`votes.${option}`]: increment(1)
+                    });
+                    localStorage.setItem(`voted_${pollId}`, 'true');
+                    showToast("Vote submitted!", "ph-check", "var(--success)");
+                } catch (e) {
+                    showToast("Error voting: " + e.message, "ph-x", "var(--danger)");
+                }
+            });
+        });
+
+        // If target poll exists, scroll to it
+        if (pollIdParam) {
+            setTimeout(() => {
+                const el = document.getElementById(`poll-${pollIdParam}`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 500);
+        }
+    });
+}
 let hwFilter = 'all'; // all, soon, overdue, completed
 let searchTerm = '';
 let selectedDay = null; // For mobile day selector
@@ -1118,6 +1197,7 @@ function init() {
     updateClock();
     fetchDashboardData();
     fetchNotes();
+    fetchPolls();
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {

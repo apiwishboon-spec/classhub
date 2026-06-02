@@ -109,6 +109,23 @@
                 </div>
             </section>
 
+            <!-- Manage Polls -->
+            <section class="dashboard-card" id="manage-polls-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-chart-bar"></i> Class Polls</h2>
+                </div>
+                <div class="card-content admin-form-stack">
+                    <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px;">
+                        <input type="text" id="poll-question" placeholder="Ask a question..." class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="poll-options" placeholder="Options (comma separated: Yes, No, Maybe)" class="form-input">
+                        <button id="create-poll-btn" class="btn-primary btn-full" style="margin-top: 1rem;">Create Poll & QR</button>
+                    </div>
+                    <div id="active-polls-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No active polls.</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- Manage Announcements -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
@@ -271,6 +288,7 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>
     <script type="module" src="admin.js?v=10"></script>
