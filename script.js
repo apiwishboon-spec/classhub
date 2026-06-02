@@ -77,7 +77,7 @@ async function refreshFeedbackHistory() {
         if (msg.replies && Array.isArray(msg.replies)) {
             msg.replies.forEach((reply, index) => {
                 const isUser = reply.sender === 'user';
-                const replyTime = reply.timestamp ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
                 conversationHtml += `
                     <div style="background: ${isUser ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 6px; padding: 0.6rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-top: 0.5rem;">
                         <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
@@ -134,7 +134,7 @@ async function refreshFeedbackHistory() {
                         replies: [...currentReplies, {
                             sender: 'user',
                             text: replyText,
-                            timestamp: serverTimestamp()
+                            timestamp: new Date()
                         }]
                     });
                     showToast("Reply sent!");
