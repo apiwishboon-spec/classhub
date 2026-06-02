@@ -93,18 +93,17 @@
 
 /* Custom IBM Loader */
 .loader {
-  width: 40px;
-  height: 40px;
+  width: 4px;
   color: var(--accent-color);
   aspect-ratio: 1;
   border-radius: 50%;
-  box-shadow:
+  box-shadow: 
     19px -19px 0 0px, 38px -19px 0 0px, 57px -19px 0 0px,
     19px 0     0 5px, 38px 0     0 5px, 57px 0     0 5px,
     19px 19px  0 0px, 38px 19px  0 0px, 57px 19px  0 0px;
-  transform: translateX(-38px) scale(0.6);
-  animation: l26 4s infinite linear;
-  filter: drop-shadow(0 0 5px var(--accent-color));
+  transform: translateX(-38px);
+  animation: l26 4s infinite linear; /* Slower 4s */
+  filter: drop-shadow(0 0 5px var(--cyan-glow));
 }
 
 /* Admin User Info Panel */
@@ -217,14 +216,7 @@
     align-items: center;
     justify-content: center;
     min-height: 200px;
-    gap: 1rem;
-    color: var(--text-secondary);
-    font-size: 0.9rem;
-}
-
-.loading-placeholder p {
-    margin: 0;
-    text-align: center;
+    gap: 2rem;
 }
 
 * {

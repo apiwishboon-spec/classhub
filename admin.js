@@ -153,7 +153,6 @@ function loadPolls() {
     if (pollListener) { pollListener(); pollListener = null; }
 
     const list = document.getElementById('active-polls-list');
-    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div><p>Loading polls...</p></div>';
 
     pollListener = onSnapshot(query(collection(db, "polls"), orderBy("createdAt", "desc")), (snap) => {
         if (snap.empty) {
@@ -271,7 +270,6 @@ function loadFeedback() {
     if (feedbackListener) { feedbackListener(); feedbackListener = null; }
 
     const list = document.getElementById('feedback-list-admin');
-    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div><p>Loading messages...</p></div>';
 
     feedbackListener = onSnapshot(query(collection(db, "feedback"), orderBy("createdAt", "desc")), (snap) => {
         if (snap.empty) {
