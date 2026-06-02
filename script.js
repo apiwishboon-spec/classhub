@@ -59,6 +59,36 @@ async function refreshFeedbackHistory() {
 
     sortedMessages.forEach(msg => {
         const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        
+        // Build conversation thread
+        let conversationHtml = '';
+        
+        // Add old single reply if exists (backward compatibility)
+        if (msg.reply) {
+            conversationHtml += `
+                <div style="background: var(--highlight-bg); border-radius: 6px; padding: 0.6rem; border-left: 3px solid var(--accent-color); margin-top: 0.5rem;">
+                    <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">TEACHER:</div>
+                    <div style="font-size: 0.8rem;">${msg.reply}</div>
+                </div>
+            `;
+        }
+        
+        // Add threaded replies
+        if (msg.replies && Array.isArray(msg.replies)) {
+            msg.replies.forEach((reply, index) => {
+                const isUser = reply.sender === 'user';
+                const replyTime = reply.timestamp ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                conversationHtml += `
+                    <div style="background: ${isUser ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 6px; padding: 0.6rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-top: 0.5rem;">
+                        <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
+                            ${isUser ? 'YOU' : 'TEACHER'} ${replyTime ? `— ${replyTime}` : ''}
+                        </div>
+                        <div style="font-size: 0.8rem;">${reply.text}</div>
+                    </div>
+                `;
+            });
+        }
+        
         html += `
             <div style="background: var(--bg-color); border-radius: 8px; padding: 0.75rem; border: 1px solid var(--border-color);">
                 <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-secondary); margin-bottom:0.25rem;">
@@ -66,10 +96,17 @@ async function refreshFeedbackHistory() {
                     ${msg.status === 'resolved' ? '<span style="color:var(--success);">✔ Solved</span>' : ''}
                 </div>
                 <div style="font-size:0.85rem; margin-bottom:0.5rem;">${msg.message}</div>
-                ${msg.reply ? `
-                    <div style="background: var(--highlight-bg); border-radius: 6px; padding: 0.6rem; border-left: 3px solid var(--accent-color); margin-top: 0.5rem;">
-                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">TEACHER REPLY:</div>
-                        <div style="font-size: 0.8rem;">${msg.reply}</div>
+                
+                ${conversationHtml ? `
+                    <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
+                        ${conversationHtml}
+                    </div>
+                ` : ''}
+                
+                ${conversationHtml ? `
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                        <input type="text" class="form-input feedback-reply-input" placeholder="Reply to teacher..." style="font-size: 0.8rem; padding: 0.4rem; flex: 1;" data-id="${msg.id}">
+                        <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 0.8rem; min-height: auto; font-size: 0.75rem;">Reply</button>
                     </div>
                 ` : ''}
             </div>
@@ -77,6 +114,37 @@ async function refreshFeedbackHistory() {
     });
 
     feedbackHistory.innerHTML = html;
+    
+    // Add event listeners for reply buttons
+    document.querySelectorAll('.send-feedback-reply-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.getAttribute('data-id');
+            const input = document.querySelector(`.feedback-reply-input[data-id="${id}"]`);
+            const replyText = input.value.trim();
+            if (!replyText) return;
+
+            try {
+                const docSnap = await getDoc(doc(db, "feedback", id));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const currentReplies = data.replies || [];
+                    
+                    // Add new reply to the array
+                    await updateDoc(doc(db, "feedback", id), {
+                        replies: [...currentReplies, {
+                            sender: 'user',
+                            text: replyText,
+                            timestamp: serverTimestamp()
+                        }]
+                    });
+                    showToast("Reply sent!");
+                    refreshFeedbackHistory(); // Refresh to show the new reply
+                }
+            } catch (e) {
+                showToast("Error: " + e.message, "ph-x", "var(--danger)");
+            }
+        });
+    });
 }
 
 if (closeFeedbackBtn) {
@@ -122,9 +190,23 @@ function listenForReplies(messageId) {
     onSnapshot(doc(db, "feedback", messageId), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
+            
+            // Check for old single reply (backward compatibility)
             if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
                 showToast(`Teacher replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
                 localStorage.setItem(`reply_seen_${messageId}`, 'true');
+            }
+            
+            // Check for new threaded replies
+            if (data.replies && Array.isArray(data.replies)) {
+                const lastReply = data.replies[data.replies.length - 1];
+                if (lastReply && lastReply.sender === 'admin') {
+                    const replyKey = `reply_seen_${messageId}_${data.replies.length - 1}`;
+                    if (!localStorage.getItem(replyKey)) {
+                        showToast(`Teacher replied: "${lastReply.text}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                        localStorage.setItem(replyKey, 'true');
+                    }
+                }
             }
         }
     });

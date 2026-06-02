@@ -285,6 +285,35 @@ function loadFeedback() {
 
             if (isResolved) return; // Hide resolved from inbox
 
+            // Build conversation thread - combine old reply field and new replies array
+            let conversationHtml = '';
+            
+            // Add old single reply if exists (backward compatibility)
+            if (data.reply) {
+                conversationHtml += `
+                    <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid var(--accent-color);">
+                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">TEACHER (Admin)</div>
+                        <div style="font-size: 0.85rem;">${data.reply}</div>
+                    </div>
+                `;
+            }
+            
+            // Add threaded replies
+            if (data.replies && Array.isArray(data.replies)) {
+                data.replies.forEach((reply, index) => {
+                    const isUser = reply.sender === 'user';
+                    const replyTime = reply.timestamp ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                    conversationHtml += `
+                        <div style="background: ${isUser ? 'var(--highlight-bg)' : 'var(--bg-color)'}; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+                            <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
+                                ${isUser ? 'STUDENT' : 'TEACHER'} ${replyTime ? `— ${replyTime}` : ''}
+                            </div>
+                            <div style="font-size: 0.85rem;">${reply.text}</div>
+                        </div>
+                    `;
+                });
+            }
+
             html += `
                 <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : 'var(--accent-color)'};">
                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
@@ -293,17 +322,17 @@ function loadFeedback() {
                     </div>
                     <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
                     
-                    ${data.reply ? `
-                        <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);">
-                            <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">YOUR REPLY:</div>
-                            <div style="font-size: 0.85rem;">${data.reply}</div>
+                    ${conversationHtml ? `
+                        <div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>
+                            ${conversationHtml}
                         </div>
-                    ` : `
-                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                            <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
-                            <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
-                        </div>
-                    `}
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
+                        <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
+                    </div>
 
                     <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
                         <button class="resolve-feedback-btn btn-secondary" data-id="${d.id}" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-height:auto;">
@@ -324,11 +353,22 @@ function loadFeedback() {
                 if (!replyText) return;
 
                 try {
-                    await updateDoc(doc(db, "feedback", id), {
-                        reply: replyText,
-                        repliedAt: serverTimestamp()
-                    });
-                    showToast("Reply sent!");
+                    const docSnap = await getDoc(doc(db, "feedback", id));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const currentReplies = data.replies || [];
+                        
+                        // Add new reply to the array
+                        await updateDoc(doc(db, "feedback", id), {
+                            replies: [...currentReplies, {
+                                sender: 'admin',
+                                text: replyText,
+                                timestamp: serverTimestamp()
+                            }],
+                            repliedAt: serverTimestamp()
+                        });
+                        showToast("Reply sent!");
+                    }
                 } catch (e) {
                     showToast("Error: " + e.message, "ph-x", "var(--danger)");
                 }
