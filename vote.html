@@ -153,17 +153,26 @@
                 if (!hasVoted) {
                     document.querySelectorAll('.poll-option-btn').forEach(btn => {
                         btn.addEventListener('click', async () => {
+                            // Immediate check to prevent double-clicks
+                            if (localStorage.getItem(`voted_${pollId}`)) return;
+                            
                             const option = btn.getAttribute('data-option');
+                            
+                            // Disable ALL buttons immediately in the UI
+                            document.querySelectorAll('.poll-option-btn').forEach(b => b.disabled = true);
+                            
                             try {
-                                btn.disabled = true;
                                 await updateDoc(doc(db, "polls", pollId), {
                                     [`votes.${option}`]: increment(1)
                                 });
+                                // Set localStorage BEFORE the UI re-renders from onSnapshot
                                 localStorage.setItem(`voted_${pollId}`, 'true');
                             } catch (e) {
                                 console.error("Vote failed", e);
+                                // Only re-enable if it truly failed
+                                localStorage.removeItem(`voted_${pollId}`);
+                                document.querySelectorAll('.poll-option-btn').forEach(b => b.disabled = false);
                                 alert("Failed to vote. Please try again.");
-                                btn.disabled = false;
                             }
                         });
                     });

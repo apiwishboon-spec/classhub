@@ -86,7 +86,15 @@ function fetchPolls() {
             btn.addEventListener('click', async (e) => {
                 const pollId = btn.getAttribute('data-poll-id');
                 const option = btn.getAttribute('data-option');
+                
+                // Immediate check
                 if (localStorage.getItem(`voted_${pollId}`)) return;
+
+                // Disable all buttons for THIS poll immediately
+                const pollCard = document.getElementById(`poll-${pollId}`);
+                if (pollCard) {
+                    pollCard.querySelectorAll('.poll-vote-btn').forEach(b => b.disabled = true);
+                }
 
                 try {
                     const pollRef = doc(db, "polls", pollId);
@@ -96,6 +104,10 @@ function fetchPolls() {
                     localStorage.setItem(`voted_${pollId}`, 'true');
                     showToast("Vote submitted!", "ph-check", "var(--success)");
                 } catch (e) {
+                    localStorage.removeItem(`voted_${pollId}`);
+                    if (pollCard) {
+                        pollCard.querySelectorAll('.poll-vote-btn').forEach(b => b.disabled = false);
+                    }
                     showToast("Error voting: " + e.message, "ph-x", "var(--danger)");
                 }
             });
