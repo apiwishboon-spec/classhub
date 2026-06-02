@@ -11,7 +11,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, onSnapshot, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // DOM Elements
@@ -36,8 +36,39 @@ const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
+const cleanupToggle = document.getElementById('cleanup-toggle');
 
-// Notification system
+// ... rest of imports and DOM elements ...
+
+async function performSystemCleanup() {
+    const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
+    if (settingsSnap.exists() && settingsSnap.data().cleanupEnabled === false) return;
+
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    let deletedCount = 0;
+
+    try {
+        const feedbackSnap = await getDocs(query(collection(db, "feedback"), where("status", "==", "resolved")));
+        for (const d of feedbackSnap.docs) {
+            const data = d.data();
+            if (data.resolvedAt && data.resolvedAt.toDate() < oneWeekAgo) {
+                await deleteDoc(d.ref);
+                deletedCount++;
+            }
+        }
+
+        const pollsSnap = await getDocs(query(collection(db, "polls"), where("isOpen", "==", false)));
+        for (const d of pollsSnap.docs) {
+            if (d.data().createdAt && d.data().createdAt.toDate() < oneWeekAgo) {
+                await deleteDoc(d.ref);
+                deletedCount++;
+            }
+        }
+    } catch (e) { console.error("Cleanup error:", e); }
+
+    if (deletedCount > 0) logAction("System Cleanup", `Deleted ${deletedCount} old items.`);
+}
 function showToast(message, icon, color) {
     const container = document.getElementById('toast-container');
     if (!container) return;
@@ -232,6 +263,70 @@ function loadPolls() {
     });
 }
 
+let feedbackListener = null;
+
+// Load Feedback (real-time)
+function loadFeedback() {
+    if (feedbackListener) { feedbackListener(); feedbackListener = null; }
+
+    const list = document.getElementById('feedback-list-admin');
+
+    feedbackListener = onSnapshot(query(collection(db, "feedback"), orderBy("createdAt", "desc")), (snap) => {
+        if (snap.empty) {
+            list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : 'Just now';
+            const isResolved = data.status === 'resolved';
+
+            if (isResolved) return; // Hide resolved from inbox
+
+            html += `
+                <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : 'var(--accent-color)'};">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
+                        ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
+                    </div>
+                    <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
+                    <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+                        <button class="resolve-feedback-btn btn-secondary" data-id="${d.id}" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-height:auto;">
+                            <i class="ph ph-check"></i> Mark as Solved
+                        </button>
+                        <button class="remove-feedback-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
+
+        document.querySelectorAll('.resolve-feedback-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                await updateDoc(doc(db, "feedback", id), {
+                    status: 'resolved',
+                    resolvedAt: serverTimestamp()
+                });
+                showToast("Message marked as solved!");
+                logAction("Resolve Feedback", `ID: ${id}`);
+            });
+        });
+
+        document.querySelectorAll('.remove-feedback-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (await customConfirm("Confirm Action", "Permanently delete this message?")) {
+                    const id = btn.getAttribute('data-id');
+                    await deleteDoc(doc(db, "feedback", id));
+                    logAction("Delete Feedback", `ID: ${id}`);
+                }
+            });
+        });
+    });
+}
+
 // ... existing code ...
 
 // Global Theme Management
@@ -339,8 +434,10 @@ onAuthStateChanged(auth, async (user) => {
                 loadAnnouncements();
                 loadHomework();
                 loadPolls();
+                loadFeedback();
                 loadSettings();
                 loadAuditLog();
+                performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -352,6 +449,8 @@ onAuthStateChanged(auth, async (user) => {
                 loadAnnouncements();
                 loadHomework();
                 loadPolls();
+                loadFeedback();
+                performSystemCleanup();
             } else if (currentUserRole === 'ta') {
                 manageUsersSection.style.display = 'none';
                 manageScheduleSection.style.display = 'none';
@@ -375,6 +474,7 @@ onAuthStateChanged(auth, async (user) => {
         if (annListener) { annListener(); annListener = null; }
         if (hwListener) { hwListener(); hwListener = null; }
         if (pollListener) { pollListener(); pollListener = null; }
+        if (feedbackListener) { feedbackListener(); feedbackListener = null; }
     }
 });
 
@@ -1206,7 +1306,6 @@ async function loadSettings() {
             passcodeField.value = data.lockoutPasscode;
         }
 
-        // 3. Global Alert Banner Mode
         const bannerBtn = document.getElementById('banner-toggle');
         if (data.bannerEnabled) {
             bannerBtn.textContent = 'ON';
@@ -1216,6 +1315,16 @@ async function loadSettings() {
             bannerBtn.className = 'btn-secondary';
         }
 
+        // 4. Smart Cleanup
+        const cleanupBtn = document.getElementById('cleanup-toggle');
+        if (data.cleanupEnabled !== false) {
+            cleanupBtn.textContent = 'ON';
+            cleanupBtn.className = 'btn-primary';
+        } else {
+            cleanupBtn.textContent = 'OFF';
+            cleanupBtn.className = 'btn-secondary';
+        }
+        
         const bannerText = document.getElementById('banner-text-input');
         if (data.bannerText) {
             bannerText.value = data.bannerText;
@@ -1227,6 +1336,21 @@ async function loadSettings() {
         }
     }
 }
+
+// Cleanup Toggle
+document.getElementById('cleanup-toggle').addEventListener('click', async () => {
+    const btn = document.getElementById('cleanup-toggle');
+    const newState = btn.textContent !== 'ON';
+    try {
+        await setDoc(doc(db, "settings", "maintenance"), {
+            cleanupEnabled: newState
+        }, { merge: true });
+        showToast(`Auto-Cleanup turned ${newState ? 'ON' : 'OFF'}`);
+        loadSettings();
+    } catch (e) {
+        showToast("Error updating settings: " + e.message);
+    }
+});
 
 // Maintenance Toggle
 document.getElementById('maintenance-toggle').addEventListener('click', async () => {

@@ -4,13 +4,24 @@ import { doc, setDoc, increment, getDoc } from "https://www.gstatic.com/firebase
 async function trackVisit() {
     try {
         let path = window.location.pathname;
-        // Handle root path
         if (path === '/' || path === '' || path.endsWith('/')) {
             path += 'index.html';
         }
-        
-        // Sanitize path for document ID
         const pageId = path.replace(/\//g, '_').replace(/^\_+|\_+$/g, '') || 'home';
+
+        // Save on Firestore WRITES: Only count visit if last tracked > 4 hours ago for this page
+        const lastTracked = localStorage.getItem(`visit_${pageId}`);
+        const now = Date.now();
+        if (lastTracked && (now - parseInt(lastTracked)) < (4 * 60 * 60 * 1000)) {
+            // Just update UI if element exists, don't write to DB
+            const countDisplay = document.getElementById('visit-count');
+            if (countDisplay) {
+                const docSnap = await getDoc(doc(db, 'page_visits', pageId));
+                if (docSnap.exists()) countDisplay.textContent = docSnap.data().count || 0;
+            }
+            return;
+        }
+
         const pageRef = doc(db, 'page_visits', pageId);
         
         // Increment visit count
@@ -20,9 +31,10 @@ async function trackVisit() {
             path: window.location.pathname
         }, { merge: true });
         
+        localStorage.setItem(`visit_${pageId}`, now.toString());
         console.log(`Visit tracked for: ${pageId}`);
 
-        // Update UI if element exists
+        // Update UI
         const countDisplay = document.getElementById('visit-count');
         if (countDisplay) {
             const docSnap = await getDoc(pageRef);

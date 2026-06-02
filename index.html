@@ -129,6 +129,30 @@
             </div>
         </footer>
     </div>
+
+    <!-- Feedback Modal -->
+    <div id="feedback-modal" class="modal-overlay">
+        <div class="modal-card" style="display: block; max-width: 450px;">
+            <h3><i class="ph ph-chat-centered-text"></i> Message Teacher</h3>
+            <p>Send an anonymous message, question, or bug report to the teacher.</p>
+            <div class="admin-form-stack">
+                <textarea id="feedback-text" placeholder="Type your message here..." class="form-input" rows="4" style="border-radius: 8px; border: 1px solid var(--border-color);"></textarea>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <input type="checkbox" id="feedback-urgent">
+                    <label for="feedback-urgent" style="font-size: 0.85rem; color: var(--danger); font-weight: 600;">Mark as Urgent</label>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary" id="close-feedback">Cancel</button>
+                    <button class="btn-primary" id="send-feedback">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Feedback Button -->
+    <button id="open-feedback" style="position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;">
+        <i class="ph ph-chat-centered-dots" style="font-size: 1.8rem;"></i>
+    </button>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>

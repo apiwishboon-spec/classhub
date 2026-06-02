@@ -88,5 +88,14 @@ service cloud.firestore {
       );
       allow update: if true; // Allow anyone to vote (increment)
     }
+
+    // 10. Feedback collection
+    match /feedback/{id} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher'
+      );
+    }
   }
 }

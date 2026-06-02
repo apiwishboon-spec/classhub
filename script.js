@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -11,6 +11,53 @@ const globalSearch = document.getElementById('global-search');
 const addNoteBtn = document.getElementById('add-note-btn');
 const pollsSection = document.getElementById('polls-section');
 const pollsContainer = document.getElementById('polls-container');
+const feedbackModal = document.getElementById('feedback-modal');
+const openFeedbackBtn = document.getElementById('open-feedback');
+const closeFeedbackBtn = document.getElementById('close-feedback');
+const sendFeedbackBtn = document.getElementById('send-feedback');
+const feedbackText = document.getElementById('feedback-text');
+const feedbackUrgent = document.getElementById('feedback-urgent');
+
+// Feedback Logic
+if (openFeedbackBtn) {
+    openFeedbackBtn.addEventListener('click', () => {
+        feedbackModal.style.display = 'flex';
+        feedbackText.value = '';
+        feedbackUrgent.checked = false;
+    });
+}
+
+if (closeFeedbackBtn) {
+    closeFeedbackBtn.addEventListener('click', () => {
+        feedbackModal.style.display = 'none';
+    });
+}
+
+if (sendFeedbackBtn) {
+    sendFeedbackBtn.addEventListener('click', async () => {
+        const text = feedbackText.value.trim();
+        if (!text) return;
+
+        sendFeedbackBtn.disabled = true;
+        sendFeedbackBtn.textContent = 'Sending...';
+
+        try {
+            await addDoc(collection(db, "feedback"), {
+                message: text,
+                urgent: feedbackUrgent.checked,
+                status: 'new', // new, resolved
+                createdAt: serverTimestamp()
+            });
+            showToast("Message sent to teacher!", "ph-paper-plane-tilt", "var(--success)");
+            feedbackModal.style.display = 'none';
+        } catch (e) {
+            showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
+        } finally {
+            sendFeedbackBtn.disabled = false;
+            sendFeedbackBtn.textContent = 'Send Message';
+        }
+    });
+}
 
 // State
 let dashboardData = {

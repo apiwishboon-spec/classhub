@@ -126,6 +126,18 @@
                 </div>
             </section>
 
+            <!-- Student Feedback Inbox -->
+            <section class="dashboard-card" id="feedback-inbox-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-tray"></i> Student Messages</h2>
+                </div>
+                <div class="card-content">
+                    <div id="feedback-list-admin" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- Manage Announcements -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
@@ -225,6 +237,17 @@
                                 </select>
                                 <button id="save-banner-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-megaphone"></i> Publish Banner</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Cleanup Logic -->
+                    <div style="padding-bottom: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600;">Smart Auto-Cleanup</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">Automatically delete solved items after 7 days</div>
+                            </div>
+                            <button id="cleanup-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
                         </div>
                     </div>
                 </div>
