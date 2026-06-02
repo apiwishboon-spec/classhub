@@ -292,6 +292,19 @@ function loadFeedback() {
                         ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
                     </div>
                     <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
+                    
+                    ${data.reply ? `
+                        <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 1rem; border-left: 3px solid var(--accent-color);">
+                            <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">YOUR REPLY:</div>
+                            <div style="font-size: 0.85rem;">${data.reply}</div>
+                        </div>
+                    ` : `
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
+                            <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
+                        </div>
+                    `}
+
                     <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
                         <button class="resolve-feedback-btn btn-secondary" data-id="${d.id}" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-height:auto;">
                             <i class="ph ph-check"></i> Mark as Solved
@@ -302,6 +315,25 @@ function loadFeedback() {
             `;
         });
         list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
+
+        document.querySelectorAll('.send-reply-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const input = document.querySelector(`.reply-input[data-id="${id}"]`);
+                const replyText = input.value.trim();
+                if (!replyText) return;
+
+                try {
+                    await updateDoc(doc(db, "feedback", id), {
+                        reply: replyText,
+                        repliedAt: serverTimestamp()
+                    });
+                    showToast("Reply sent!");
+                } catch (e) {
+                    showToast("Error: " + e.message, "ph-x", "var(--danger)");
+                }
+            });
+        });
 
         document.querySelectorAll('.resolve-feedback-btn').forEach(btn => {
             btn.addEventListener('click', async () => {

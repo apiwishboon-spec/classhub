@@ -42,12 +42,19 @@ if (sendFeedbackBtn) {
         sendFeedbackBtn.textContent = 'Sending...';
 
         try {
-            await addDoc(collection(db, "feedback"), {
+            const docRef = await addDoc(collection(db, "feedback"), {
                 message: text,
                 urgent: feedbackUrgent.checked,
                 status: 'new', // new, resolved
                 createdAt: serverTimestamp()
             });
+            
+            // Store ID to listen for replies
+            const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
+            myMessages.push(docRef.id);
+            localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
+            listenForReplies(docRef.id);
+
             showToast("Message sent to teacher!", "ph-paper-plane-tilt", "var(--success)");
             feedbackModal.style.display = 'none';
         } catch (e) {
@@ -55,6 +62,18 @@ if (sendFeedbackBtn) {
         } finally {
             sendFeedbackBtn.disabled = false;
             sendFeedbackBtn.textContent = 'Send Message';
+        }
+    });
+}
+
+function listenForReplies(messageId) {
+    onSnapshot(doc(db, "feedback", messageId), (docSnap) => {
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
+                showToast(`Teacher replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                localStorage.setItem(`reply_seen_${messageId}`, 'true');
+            }
         }
     });
 }
@@ -1271,6 +1290,10 @@ function init() {
     fetchDashboardData();
     fetchNotes();
     fetchPolls();
+    
+    // Resume listening for replies to my messages
+    const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
+    myMessages.forEach(id => listenForReplies(id));
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
