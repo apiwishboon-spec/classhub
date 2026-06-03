@@ -32,6 +32,7 @@ const manageAnnouncementsSection = document.getElementById('manage-announcements
 const manageHomeworkSection = document.getElementById('manage-homework-section');
 const systemSettingsSection = document.getElementById('system-settings-section');
 const auditLogSection = document.getElementById('audit-log-section');
+const errorLogSection = document.getElementById('error-log-section');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
@@ -500,6 +501,7 @@ onAuthStateChanged(auth, async (user) => {
                 manageHomeworkSection.style.display = 'block';
                 systemSettingsSection.style.display = 'block';
                 auditLogSection.style.display = 'block';
+                errorLogSection.style.display = 'block';
                 
                 loadUsers();
                 loadSchedule();
@@ -509,6 +511,7 @@ onAuthStateChanged(auth, async (user) => {
                 loadFeedback();
                 loadSettings();
                 loadAuditLog();
+                loadErrorLog();
                 performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
@@ -1604,6 +1607,66 @@ async function loadAuditLog() {
         list.innerHTML = `<p style="color:var(--danger); padding: 1rem;">Error: ${e.message}</p>`;
     }
 }
+
+// Load Error Log (Admin Only)
+async function loadErrorLog() {
+    const list = document.getElementById('error-log-list');
+    if (!list) return;
+    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
+
+    try {
+        const snap = await getDocs(query(collection(db, "error_logs"), orderBy("createdAt", "desc")));
+        if (snap.empty) {
+            list.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding: 1rem;">No errors reported.</p>';
+            return;
+        }
+
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const date = data.createdAt?.toDate
+                ? data.createdAt.toDate().toLocaleString()
+                : data.timestamp
+                    ? new Date(data.timestamp).toLocaleString()
+                    : 'Unknown';
+            const page = data.page || 'unknown';
+            const msg = data.message?.slice(0, 120) || 'Unknown error';
+            const stack = data.stack || '';
+
+            html += `
+                <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-weight:700; font-size:0.8rem; color:var(--danger);">${page}</span>
+                        <span style="color:var(--text-secondary); font-size:0.65rem;">${date}</span>
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--text-main); margin-top:0.25rem;">${msg}</div>
+                    ${stack ? `<details style="margin-top:0.25rem;"><summary style="font-size:0.65rem; color:var(--accent-color); cursor:pointer;">Stack trace</summary><pre style="font-size:0.6rem; color:var(--text-secondary); white-space:pre-wrap; margin-top:0.25rem;">${stack}</pre></details>` : ''}
+                    <div style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.25rem;">
+                        ${data.userAgent?.slice(0, 80) || ''} ${data.screen ? `· ${data.screen}` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    } catch (e) {
+        list.innerHTML = `<p style="color:var(--danger); padding: 1rem;">Error loading logs: ${e.message}</p>`;
+    }
+}
+
+// Clear Error Log
+document.getElementById('clear-error-log-btn')?.addEventListener('click', async () => {
+    if (!await customConfirm("Clear All Errors", "Delete all error logs permanently?")) return;
+    try {
+        const snap = await getDocs(collection(db, "error_logs"));
+        const batch = [];
+        snap.forEach(d => batch.push(deleteDoc(d.ref)));
+        await Promise.all(batch);
+        showToast("Error log cleared.");
+        loadErrorLog();
+    } catch (e) {
+        showToast("Error clearing logs: " + e.message);
+    }
+});
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {

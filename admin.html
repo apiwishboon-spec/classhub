@@ -281,6 +281,19 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Error Log (Admin Only) -->
+            <section class="dashboard-card card-scrollable" id="error-log-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-bug"></i> Error Log</h2>
+                    <button id="clear-error-log-btn" class="btn-secondary" style="padding: 0.3rem 0.8rem; min-height: auto; font-size: 0.75rem;">Clear All</button>
+                </div>
+                <div class="card-content">
+                    <div id="error-log-list" style="font-size: 0.75rem;">
+                        <p style="color: var(--text-secondary); text-align: center;">No errors reported.</p>
+                    </div>
+                </div>
+            </section>
         </main>
         
         <footer class="admin-footer">
@@ -340,6 +353,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
+    <script type="module" src="error-logger.js"></script>
     <script type="module" src="visits.js"></script>
     <script type="module" src="admin.js?v=10"></script>
     <script type="module" src="chat.js"></script>
