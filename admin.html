@@ -73,6 +73,22 @@
         </header>
 
         <main class="dashboard-grid">
+            <!-- Staff Bulletin (Private) -->
+            <section class="dashboard-card" id="staff-bulletin-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-note-pencil"></i> Staff Bulletin <span class="time-badge" style="background:var(--warning); color:black; font-size:0.6rem;">PRIVATE</span></h2>
+                </div>
+                <div class="card-content admin-form-stack">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="bulletin-input" placeholder="Note for other staff..." class="form-input" style="margin: 0;">
+                        <button id="add-bulletin-btn" class="btn-primary" style="padding: 0 1rem;"><i class="ph ph-paper-plane"></i></button>
+                    </div>
+                    <div id="bulletin-list" style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem;">
+                        <div class="loader" style="margin: 1rem auto;"></div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Post Announcement -->
             <section class="dashboard-card" id="add-announcement-section">
                 <div class="card-header">

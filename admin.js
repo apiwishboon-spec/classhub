@@ -509,6 +509,7 @@ onAuthStateChanged(auth, async (user) => {
                 loadFeedback();
                 loadSettings();
                 loadAuditLog();
+                loadStaffBulletin();
                 performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
@@ -522,6 +523,7 @@ onAuthStateChanged(auth, async (user) => {
                 loadHomework();
                 loadPolls();
                 loadFeedback();
+                loadStaffBulletin();
                 performSystemCleanup();
             } else if (currentUserRole === 'ta') {
                 manageUsersSection.style.display = 'none';
@@ -1773,4 +1775,61 @@ document.getElementById('save-archive-btn')?.addEventListener('click', async () 
     } catch (e) {
         showToast("Error saving: " + e.message);
     }
+});
+
+// Staff Bulletin Logic
+function loadStaffBulletin() {
+    const list = document.getElementById('bulletin-list');
+    if (!list) return;
+
+    onSnapshot(query(collection(db, "staff_bulletin"), orderBy("createdAt", "desc")), (snap) => {
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString([], { month: 'short', day: 'numeric' }) : '';
+            const author = data.authorEmail ? data.authorEmail.split('@')[0] : 'Staff';
+            
+            html += `
+                <div style="background: var(--bg-color); padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border-color); position: relative;">
+                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
+                        <span>${author.toUpperCase()} — ${date} ${time}</span>
+                        <button class="delete-bulletin-btn" data-id="${d.id}" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size: 1rem; padding: 0;">&times;</button>
+                    </div>
+                    <div style="font-size: 0.85rem; line-height: 1.4;">${data.message}</div>
+                </div>
+            `;
+        });
+        list.innerHTML = html || '<p style="text-align: center; font-size: 0.8rem; color: var(--text-secondary);">No active notes for staff.</p>';
+        
+        document.querySelectorAll('.delete-bulletin-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                if (confirm("Delete this bulletin note?")) {
+                    await deleteDoc(doc(db, "staff_bulletin", id));
+                }
+            });
+        });
+    });
+}
+
+document.getElementById('add-bulletin-btn')?.addEventListener('click', async () => {
+    const input = document.getElementById('bulletin-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    try {
+        await addDoc(collection(db, "staff_bulletin"), {
+            message: msg,
+            authorEmail: auth.currentUser.email,
+            createdAt: serverTimestamp()
+        });
+        input.value = '';
+    } catch (e) {
+        showToast("Error posting: " + e.message);
+    }
+});
+
+document.getElementById('bulletin-input')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('add-bulletin-btn').click();
 });
