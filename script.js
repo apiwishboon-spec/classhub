@@ -188,7 +188,7 @@ function checkScheduleUpdates(scheduleData) {
 }
 
 // Subject color mapping — consistent colors per subject
-const subjectColors = [
+const defaultSubjectColors = [
     { bg: '#e8f5e9', text: '#2e7d32' },
     { bg: '#e3f2fd', text: '#1565c0' },
     { bg: '#fce4ec', text: '#c62828' },
@@ -201,14 +201,37 @@ const subjectColors = [
     { bg: '#fce4ec', text: '#ad1457' },
 ];
 
+let customSubjectColors = {};
+
+async function fetchCustomColors() {
+    try {
+        const snap = await getDocs(collection(db, "subject_colors"));
+        customSubjectColors = {};
+        snap.forEach(d => {
+            const data = d.data();
+            customSubjectColors[data.name.toLowerCase().trim()] = data.color;
+        });
+        renderDashboard(); // Re-render to apply colors
+    } catch (e) { console.error("Error fetching custom colors", e); }
+}
+
 function getSubjectColor(subject) {
-    if (!subject) return subjectColors[0];
+    if (!subject) return defaultSubjectColors[0];
+    
+    // Check custom colors first
+    const cleanSubject = subject.toLowerCase().trim();
+    if (customSubjectColors[cleanSubject]) {
+        const color = customSubjectColors[cleanSubject];
+        return { bg: `${color}22`, text: color };
+    }
+
+    // Fallback to hashed colors
     let hash = 0;
     for (let i = 0; i < subject.length; i++) {
         hash = subject.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const idx = Math.abs(hash) % subjectColors.length;
-    return subjectColors[idx];
+    const idx = Math.abs(hash) % defaultSubjectColors.length;
+    return defaultSubjectColors[idx];
 }
 
 // Theme Management
@@ -859,9 +882,25 @@ function renderDesktopSchedule() {
 }
 
 function renderAnnouncements() {
-    const filteredAnn = dashboardData.announcements.filter(ann => 
+    let filteredAnn = dashboardData.announcements.filter(ann => 
         matchesSearch(ann.title || '') || matchesSearch(ann.message || '') || matchesSearch(ann.author || '')
     );
+
+    // Apply Auto-Archive Filter
+    const archiveDays = systemSettings?.archiveDays || 7;
+    const archiveEnabled = systemSettings?.archiveEnabled || false;
+    
+    if (archiveEnabled) {
+        const now = new Date();
+        const cutoff = new Date();
+        cutoff.setDate(now.getDate() - archiveDays);
+        
+        filteredAnn = filteredAnn.filter(ann => {
+            if (!ann.timestamp) return true;
+            const annDate = ann.timestamp.toDate ? ann.timestamp.toDate() : new Date(ann.timestamp);
+            return annDate >= cutoff;
+        });
+    }
 
     if (filteredAnn.length === 0) {
         announcementsContainer.innerHTML = searchTerm ? '<p>No results found.</p>' : '<p>No announcements right now.</p>';
@@ -1224,6 +1263,7 @@ function init() {
     fetchDashboardData();
     fetchNotes();
     fetchPolls();
+    fetchCustomColors();
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
@@ -1337,11 +1377,14 @@ function showAdBlockPopup() {
     document.body.appendChild(popup);
 }
 
+let systemSettings = null;
+
 async function syncSystemStates() {
     try {
         onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
+                systemSettings = data; // Store for other filters
 
                 // 1. Maintenance Mode Popup
                 if (data.enabled) {

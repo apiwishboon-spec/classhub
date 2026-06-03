@@ -241,13 +241,46 @@
                     </div>
 
                     <!-- Smart Cleanup Logic -->
-                    <div style="padding-bottom: 0.5rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
                             <div>
                                 <div style="font-weight: 600;">Smart Auto-Cleanup</div>
                                 <div style="font-size: 0.7rem; color: var(--text-secondary);">Automatically delete solved items after 7 days</div>
                             </div>
                             <button id="cleanup-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
+                        </div>
+                    </div>
+
+                    <!-- Announcement Auto-Archive -->
+                    <div style="padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <div>
+                                <div style="font-weight: 600;">Announcement Auto-Archive</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">Hide announcements after a certain number of days</div>
+                            </div>
+                            <button id="archive-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                        </div>
+                        <div id="archive-config-container" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+                            <label style="font-size: 0.8rem;">Show for:</label>
+                            <input type="number" id="archive-days-input" value="7" class="form-input" style="max-width: 80px; margin: 0; text-align: center;">
+                            <span style="font-size: 0.8rem;">days</span>
+                            <button id="save-archive-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-floppy-disk"></i> Save</button>
+                        </div>
+                    </div>
+
+                    <!-- Subject Colors Management -->
+                    <div style="padding-bottom: 0.5rem;">
+                        <div style="font-weight: 600; margin-bottom: 0.5rem;">Subject Color Mapping</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 1rem;">Assign specific colors to subjects for better visibility.</div>
+                        
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="text" id="subject-name-input" placeholder="e.g. Math" class="form-input" style="margin: 0; flex: 2;">
+                            <input type="color" id="subject-color-input" value="#0f62fe" class="form-input" style="margin: 0; flex: 1; padding: 0.2rem; height: 38px;">
+                            <button id="add-subject-color-btn" class="btn-primary" style="padding: 0 1rem;"><i class="ph ph-plus"></i> Add</button>
+                        </div>
+                        
+                        <div id="subject-colors-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem; max-height: 150px; overflow-y: auto;">
+                            <!-- Subject tags will be injected here -->
                         </div>
                     </div>
                 </div>
