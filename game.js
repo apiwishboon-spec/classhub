@@ -67,7 +67,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
         <div id="dino-leaderboard" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--card-bg,#fff);z-index:25;padding:40px 20px 20px;box-sizing:border-box;overflow-y:auto;"></div>
         <div id="dino-name-display" style="position:absolute;bottom:6px;left:10px;font-size:0.65rem;color:var(--text-secondary,#bbb);z-index:10;"></div>
         <button id="dino-close" style="position:absolute;top:4px;left:6px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-secondary,#999);z-index:30;line-height:1;">✕</button>
-        <button id="dino-lb-btn" style="position:absolute;top:4px;right:6px;background:none;border:none;font-size:0.75rem;cursor:pointer;color:var(--text-secondary,#999);z-index:30;display:none;">🏆 Scores</button>
+        <button id="dino-lb-btn" style="position:absolute;top:4px;right:6px;background:none;border:none;font-size:0.75rem;cursor:pointer;color:var(--text-secondary,#999);z-index:30;">🏆 Scores</button>
       </div>
     `;
 
@@ -105,7 +105,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
     function jump() {
       if (gameOver) { resetGame(); return; }
       if (!started) {
-        started = true; msgEl.style.display = 'none'; lbBtn.style.display = 'none';
+        started = true; msgEl.style.display = 'none';
         startObs(); startSpeed();
       }
       if (velY !== 0) return;
@@ -138,7 +138,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
       dinoY = 0; velY = 0; dino.style.bottom = GROUND_Y + 'px';
       obsList.forEach(o => o.el.remove()); obsList = [];
       scoreEl.textContent = '0'; clearInterval(obsTimer); clearInterval(speedTimer);
-      lbBtn.style.display = 'none'; lbDiv.style.display = 'none';
+      lbDiv.style.display = 'none';
       msgEl.style.display = 'block';
       msgEl.innerHTML = `<div style="font-size:1.2rem;font-weight:700;margin-bottom:4px;">🦖 Dino Runner</div><div style="font-size:0.8rem;color:var(--text-secondary,#999);">Tap / Space to jump</div>`;
     }
@@ -181,7 +181,6 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
               <div style="font-size:0.8rem;color:var(--text-secondary,#999);margin:4px 0;">Score: ${finalScore} | Best: ${highScore}</div>
               <div style="font-size:0.7rem;color:var(--text-secondary,#ccc);">Tap to restart</div>`;
           }
-          lbBtn.style.display = 'block';
           break;
         }
         if (o.x < -50) { o.el.remove(); obsList.splice(i, 1); }
@@ -199,6 +198,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
     document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape' && document.getElementById('dino-game-overlay')) { overlay.remove(); cancelAnimationFrame(animId); clearInterval(obsTimer); clearInterval(speedTimer); document.removeEventListener('keydown', esc); } });
 
     lbBtn.addEventListener('click', async () => {
+      if (lbDiv.style.display === 'block') { lbDiv.style.display = 'none'; return; }
       lbDiv.style.display = 'block';
       lbDiv.innerHTML = '<div style="font-size:0.7rem;color:var(--text-secondary,#999);text-align:center;padding:1rem;">Loading...</div>';
       const html = await fetchLeaderboard();
