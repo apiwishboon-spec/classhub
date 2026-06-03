@@ -1615,15 +1615,23 @@ async function loadErrorLog() {
     list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
 
     try {
-        const snap = await getDocs(query(collection(db, "error_logs"), orderBy("createdAt", "desc")));
+        const snap = await getDocs(collection(db, "error_logs"));
         if (snap.empty) {
             list.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding: 1rem;">No errors reported.</p>';
             return;
         }
 
+        // Sort by createdAt descending client-side
+        const docs = [];
+        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
+        docs.sort((a, b) => {
+            const aTime = a.createdAt?.toDate?.()?.getTime() || a.timestamp ? new Date(a.timestamp).getTime() : 0;
+            const bTime = b.createdAt?.toDate?.()?.getTime() || b.timestamp ? new Date(b.timestamp).getTime() : 0;
+            return bTime - aTime;
+        });
+
         let html = '';
-        snap.forEach(d => {
-            const data = d.data();
+        docs.forEach(data => {
             const date = data.createdAt?.toDate
                 ? data.createdAt.toDate().toLocaleString()
                 : data.timestamp
