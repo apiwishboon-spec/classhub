@@ -12,8 +12,8 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
   const CANVAS_W = 600;
   const CANVAS_H = 150;
   const GROUND_Y = 120;
-  const GRAVITY = 0.55;
-  const JUMP_VEL = -9.5;
+  const GRAVITY = -0.55;
+  const JUMP_VEL = 9.5;
   const INITIAL_SPEED = 5;
   const MAX_SPEED = 12;
   const ACCELERATION = 0.0008;
@@ -385,11 +385,8 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
       this.obstacles = [];
       this.clouds = [];
       this.scroll = 0;
-      this.lastObstacleX = CANVAS_W + 200;
-      this.minGap = 300;
       this.highScore = parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
       this.submitted = false;
-      this.lastMilestone = 0;
       this.flashTimer = 0;
       this.spawnTimer = Math.floor(Math.random() * 100) + 60;
 
@@ -457,9 +454,11 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
     }
 
     spawnObstacle() {
-      const minDist = Math.max(this.minGap, 200 + (MAX_SPEED - this.speed) * 20);
-      if (CANVAS_W - this.lastObstacleX < minDist) return;
-      if (this.obstacles.length >= 3) return;
+      if (this.obstacles.length >= 2) return;
+      if (this.obstacles.length > 0) {
+        const last = this.obstacles[this.obstacles.length - 1];
+        if (last.x + last.width > CANVAS_W * 0.4) return;
+      }
 
       const type = getRandomObstacle(this.speed);
       const isPterodactyl = type.type === 'pterodactyl';
@@ -471,7 +470,6 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
         y: isPterodactyl ? GROUND_Y - 35 + Math.random() * 15 : GROUND_Y,
       };
       this.obstacles.push(obs);
-      this.lastObstacleX = obs.x;
     }
 
     checkCollision(obs) {
