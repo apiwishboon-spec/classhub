@@ -270,6 +270,19 @@
                 </div>
             </section>
 
+            <!-- Bug Reports (Admin Only) -->
+            <section class="dashboard-card card-scrollable" id="bug-reports-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-bug-beetle" style="color: var(--danger);"></i> Bug Reports</h2>
+                    <span class="time-badge" id="bug-count-badge">0</span>
+                </div>
+                <div class="card-content">
+                    <div id="bug-reports-list" style="font-size: 0.85rem;">
+                        <p style="color: var(--text-secondary); text-align: center;">Loading bugs...</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- System Audit Log (Admin Only) -->
             <section class="dashboard-card card-scrollable" id="audit-log-section" style="display: none;">
                 <div class="card-header">
@@ -278,19 +291,6 @@
                 <div class="card-content">
                     <div id="audit-log-list" style="font-size: 0.75rem;">
                         <p style="color: var(--text-secondary); text-align: center;">Loading log...</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Error Log (Admin Only) -->
-            <section class="dashboard-card card-scrollable" id="error-log-section" style="display: none;">
-                <div class="card-header">
-                    <h2><i class="ph ph-bug"></i> Error Log</h2>
-                    <button id="clear-error-log-btn" class="btn-secondary" style="padding: 0.3rem 0.8rem; min-height: auto; font-size: 0.75rem;">Clear All</button>
-                </div>
-                <div class="card-content">
-                    <div id="error-log-list" style="font-size: 0.75rem;">
-                        <p style="color: var(--text-secondary); text-align: center;">No errors reported.</p>
                     </div>
                 </div>
             </section>
@@ -304,9 +304,8 @@
             </div>
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
             <div style="margin-top: 0.15rem;"><span class="app-version">V.3.2.1</span></div>
-            <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7; display: flex; justify-content: center; gap: 1.5rem;">
-                <span><i class="ph ph-eye"></i> <span id="visit-count">...</span> visits</span>
-                <span><i class="ph ph-bug"></i> <span id="error-count">0</span> errors</span>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.7;">
+                <i class="ph ph-eye"></i> <span id="visit-count">...</span> visits
             </div>
         </footer>
     </div>
@@ -354,11 +353,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
-    <script type="module" src="error-logger.js"></script>
     <script type="module" src="visits.js"></script>
     <script type="module" src="admin.js?v=10"></script>
     <script type="module" src="chat.js"></script>
     <script src="help.js?v=2"></script>
+    <script type="module" src="bug-report.js"></script>
 
 </body>
 </html>

@@ -98,12 +98,12 @@ service cloud.firestore {
       );
     }
 
-    // 11. Error Logs collection
-    // Write: Anyone (to catch errors even from unauthenticated users)
-    // Read: Admins only
-    match /error_logs/{id} {
+    // 11. Bug Reports collection
+    //  Create: Anyone (students and staff)
+    //  Read/Update/Delete: Admins only
+    match /bugs/{id} {
       allow create: if true;
-      allow read, delete: if request.auth != null && getUserRole() == 'admin';
+      allow read, update, delete: if request.auth != null && getUserRole() == 'admin';
     }
   }
 }

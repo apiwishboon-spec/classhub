@@ -32,7 +32,9 @@ const manageAnnouncementsSection = document.getElementById('manage-announcements
 const manageHomeworkSection = document.getElementById('manage-homework-section');
 const systemSettingsSection = document.getElementById('system-settings-section');
 const auditLogSection = document.getElementById('audit-log-section');
-const errorLogSection = document.getElementById('error-log-section');
+const bugReportsSection = document.getElementById('bug-reports-section');
+const bugReportsList = document.getElementById('bug-reports-list');
+const bugCountBadge = document.getElementById('bug-count-badge');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
@@ -501,7 +503,7 @@ onAuthStateChanged(auth, async (user) => {
                 manageHomeworkSection.style.display = 'block';
                 systemSettingsSection.style.display = 'block';
                 auditLogSection.style.display = 'block';
-                errorLogSection.style.display = 'block';
+                bugReportsSection.style.display = 'block';
                 
                 loadUsers();
                 loadSchedule();
@@ -511,7 +513,7 @@ onAuthStateChanged(auth, async (user) => {
                 loadFeedback();
                 loadSettings();
                 loadAuditLog();
-                loadErrorLog();
+                loadBugReports();
                 performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
@@ -1608,73 +1610,74 @@ async function loadAuditLog() {
     }
 }
 
-// Load Error Log (Admin Only)
-async function loadErrorLog() {
-    const list = document.getElementById('error-log-list');
-    if (!list) return;
-    list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
+// Load Bug Reports (real-time)
+let bugListener = null;
+function loadBugReports() {
+    if (bugListener) { bugListener(); bugListener = null; }
 
-    try {
-        const snap = await getDocs(collection(db, "error_logs"));
+    bugListener = onSnapshot(query(collection(db, "bugs"), orderBy("createdAt", "desc")), (snap) => {
+        const newCount = snap.docs.filter(d => d.data().status === 'new').length;
+        if (bugCountBadge) bugCountBadge.textContent = newCount;
+
         if (snap.empty) {
-            list.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding: 1rem;">No errors reported.</p>';
+            bugReportsList.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding: 1rem;">No bug reports yet.</p>';
             return;
         }
 
-        // Sort by createdAt descending client-side
-        const docs = [];
-        snap.forEach(d => docs.push({ id: d.id, ...d.data() }));
-        docs.sort((a, b) => {
-            const aTime = a.createdAt?.toDate?.()?.getTime() || a.timestamp ? new Date(a.timestamp).getTime() : 0;
-            const bTime = b.createdAt?.toDate?.()?.getTime() || b.timestamp ? new Date(b.timestamp).getTime() : 0;
-            return bTime - aTime;
-        });
-
         let html = '';
-        docs.forEach(data => {
-            const date = data.createdAt?.toDate
-                ? data.createdAt.toDate().toLocaleString()
-                : data.timestamp
-                    ? new Date(data.timestamp).toLocaleString()
-                    : 'Unknown';
-            const page = data.page || 'unknown';
-            const msg = data.message?.slice(0, 120) || 'Unknown error';
-            const stack = data.stack || '';
+        snap.forEach(d => {
+            const data = d.data();
+            const date = data.createdAt ? data.createdAt.toDate().toLocaleString('en-US', {
+                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            }) : 'Just now';
+            const isNew = data.status === 'new';
 
             html += `
-                <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:700; font-size:0.8rem; color:var(--danger);">${page}</span>
-                        <span style="color:var(--text-secondary); font-size:0.65rem;">${date}</span>
+                <div class="admin-sched-card" style="border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--success)'}; margin-bottom: 0.75rem;">
+                    <div class="admin-sched-card-header">
+                        <div style="display:flex; flex-direction:column; gap:0.15rem;">
+                            <span style="font-weight:700; font-size:0.9rem;">${escapeHtml(data.subject)}</span>
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date} — ${data.page || 'unknown page'}</span>
+                        </div>
+                        <div class="admin-sched-card-actions">
+                            ${isNew ? `<button class="resolve-bug-btn admin-btn-icon" data-id="${d.id}" style="color:var(--success);" title="Mark as Resolved"><i class="ph ph-check"></i></button>` : ''}
+                            <button class="delete-bug-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" title="Delete"><i class="ph ph-trash"></i></button>
+                        </div>
                     </div>
-                    <div style="font-size:0.75rem; color:var(--text-main); margin-top:0.25rem;">${msg}</div>
-                    ${stack ? `<details style="margin-top:0.25rem;"><summary style="font-size:0.65rem; color:var(--accent-color); cursor:pointer;">Stack trace</summary><pre style="font-size:0.6rem; color:var(--text-secondary); white-space:pre-wrap; margin-top:0.25rem;">${stack}</pre></details>` : ''}
-                    <div style="font-size:0.6rem; color:var(--text-secondary); margin-top:0.25rem;">
-                        ${data.userAgent?.slice(0, 80) || ''} ${data.screen ? `· ${data.screen}` : ''}
+                    <div style="font-size:0.85rem; color:var(--text-main); margin-top:0.5rem; white-space:pre-wrap; background:var(--bg-color); padding:0.75rem; border-radius:6px;">
+                        ${escapeHtml(data.description)}
                     </div>
+                    ${!isNew ? '<div style="margin-top:0.5rem; font-size:0.7rem; color:var(--success); font-weight:600;"><i class="ph ph-check-circle"></i> Resolved</div>' : ''}
                 </div>
             `;
         });
-        list.innerHTML = html;
-    } catch (e) {
-        list.innerHTML = `<p style="color:var(--danger); padding: 1rem;">Error loading logs: ${e.message}</p>`;
-    }
+        bugReportsList.innerHTML = html;
+
+        document.querySelectorAll('.resolve-bug-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                await updateDoc(doc(db, "bugs", id), { status: 'resolved' });
+                logAction("Resolve Bug Report", `ID: ${id}`);
+            });
+        });
+
+        document.querySelectorAll('.delete-bug-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (await customConfirm("Delete Bug Report", "Permanently delete this bug report?")) {
+                    const id = btn.getAttribute('data-id');
+                    await deleteDoc(doc(db, "bugs", id));
+                    logAction("Delete Bug Report", `ID: ${id}`);
+                }
+            });
+        });
+    });
 }
 
-// Clear Error Log
-document.getElementById('clear-error-log-btn')?.addEventListener('click', async () => {
-    if (!await customConfirm("Clear All Errors", "Delete all error logs permanently?")) return;
-    try {
-        const snap = await getDocs(collection(db, "error_logs"));
-        const batch = [];
-        snap.forEach(d => batch.push(deleteDoc(d.ref)));
-        await Promise.all(batch);
-        showToast("Error log cleared.");
-        loadErrorLog();
-    } catch (e) {
-        showToast("Error clearing logs: " + e.message);
-    }
-});
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // Initialization
 document.addEventListener('DOMContentLoaded', () => {

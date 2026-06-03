@@ -120,14 +120,10 @@
                 <a href="terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
                 <a href="contact.html" style="color: var(--text-secondary); text-decoration: none;">Contact Admin</a>
             </div>
-            <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem;">
-                <a href="#" id="report-error-link" style="color: var(--accent-color); text-decoration: none; font-size: 0.8rem;"><i class="ph ph-bug"></i> Report an Issue</a>
-            </div>
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
             <div style="margin-top: 0.25rem;"><span class="app-version">V.3.2.1</span></div>
-            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); display: flex; justify-content: center; gap: 1.5rem;">
-                <span><i class="ph ph-eye"></i> <span id="visit-count">...</span> visits</span>
-                <span id="footer-error-count" style="display:none;"><i class="ph ph-bug"></i> <span id="error-count">0</span> error(s)</span>
+            <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary);">
+                <i class="ph ph-eye"></i> <span id="visit-count">...</span> visits
             </div>
         </footer>
     </div>
@@ -135,18 +131,11 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
-    <script type="module" src="error-logger.js"></script>
     <script type="module" src="visits.js"></script>
     <script type="module" src="script.js?v=10"></script>
     <script type="module" src="chat.js"></script>
     <script src="help.js?v=2"></script>
-    <script>
-        document.getElementById('report-error-link')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('open-feedback');
-            if (btn) btn.click();
-        });
-    </script>
+    <script type="module" src="bug-report.js"></script>
 
 </body>
 </html>
