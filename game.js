@@ -44,7 +44,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
     const name = localStorage.getItem(PLAYER_NAME_KEY) || 'Anonymous';
     try {
       await addDoc(collection(db, "game_scores"), { name, score: scoreVal, createdAt: serverTimestamp() });
-    } catch (e) { /* silently fail */ }
+    } catch (e) {}
   }
 
   function launchGame() {
@@ -52,42 +52,36 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
 
     const overlay = document.createElement('div');
     overlay.id = 'dino-game-overlay';
-    overlay.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;background:#f7f7f7;z-index:100000;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Sans',monospace;`;
+    overlay.style.cssText = `position:fixed;top:0;left:0;width:100vw;height:100vh;background:var(--bg-color,#f4f4f4);z-index:100000;display:flex;align-items:center;justify-content:center;font-family:system-ui,sans-serif;`;
 
     overlay.innerHTML = `
-      <div id="dino-game" style="position:relative;width:600px;max-width:96vw;height:280px;overflow:hidden;background:#fff;border:2px solid #e0e0e0;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,0.2);">
-        <div id="dino-score" style="position:absolute;top:10px;right:14px;font-size:1.1rem;font-weight:700;color:#535353;z-index:10;">0</div>
-        <div id="dino-ground" style="position:absolute;bottom:0;width:100%;height:2px;background:#535353;"></div>
-        <div id="dino-character" style="position:absolute;bottom:0;left:40px;width:30px;height:40px;z-index:5;">
-          <div style="width:100%;height:100%;background:#535353;border-radius:4px 4px 2px 2px;position:relative;">
-            <div style="position:absolute;top:-6px;left:4px;width:8px;height:6px;background:#535353;border-radius:3px 3px 0 0;"></div>
-            <div style="position:absolute;top:2px;right:-4px;width:6px;height:6px;background:#fff;border-radius:50%;border:2px solid #535353;"></div>
-          </div>
-        </div>
+      <div id="dino-game" style="position:relative;width:600px;max-width:94vw;height:260px;overflow:hidden;background:var(--card-bg,#fff);border:2px solid var(--border-color,#e0e0e0);border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.15);">
+        <div id="dino-score" style="position:absolute;top:10px;right:14px;font-size:1.2rem;font-weight:700;color:var(--text-main,#333);z-index:10;">0</div>
+        <div id="dino-ground" style="position:absolute;bottom:16px;left:10%;right:10%;height:3px;background:var(--text-secondary,#999);border-radius:2px;"></div>
+        <div id="dino-character" style="position:absolute;bottom:16px;left:40px;font-size:2.8rem;line-height:1;z-index:5;user-select:none;">🦖</div>
         <div id="dino-obstacles" style="position:absolute;top:0;left:0;width:100%;height:100%;"></div>
-        <div id="dino-msg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:20;color:#535353;">
-          <div style="font-size:1rem;font-weight:700;margin-bottom:4px;">🏃 Dino Runner</div>
-          <div style="font-size:0.75rem;color:#999;">Tap / Space to jump</div>
+        <div id="dino-msg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:20;color:var(--text-main,#333);">
+          <div style="font-size:1.2rem;font-weight:700;margin-bottom:4px;">🦖 Dino Runner</div>
+          <div style="font-size:0.8rem;color:var(--text-secondary,#999);">Tap / Space to jump</div>
         </div>
-        <div id="dino-leaderboard" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;z-index:25;padding:40px 20px 20px;box-sizing:border-box;overflow-y:auto;"></div>
-        <div id="dino-name-display" style="position:absolute;bottom:8px;left:8px;font-size:0.65rem;color:#bbb;z-index:10;"></div>
-        <button id="dino-close" style="position:absolute;top:4px;left:6px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;z-index:30;line-height:1;">✕</button>
-        <button id="dino-lb-btn" style="position:absolute;top:4px;right:6px;background:none;border:none;font-size:0.75rem;cursor:pointer;color:#999;z-index:30;display:none;">🏆 Scores</button>
+        <div id="dino-leaderboard" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:var(--card-bg,#fff);z-index:25;padding:40px 20px 20px;box-sizing:border-box;overflow-y:auto;"></div>
+        <div id="dino-name-display" style="position:absolute;bottom:6px;left:10px;font-size:0.65rem;color:var(--text-secondary,#bbb);z-index:10;"></div>
+        <button id="dino-close" style="position:absolute;top:4px;left:6px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text-secondary,#999);z-index:30;line-height:1;">✕</button>
+        <button id="dino-lb-btn" style="position:absolute;top:4px;right:6px;background:none;border:none;font-size:0.75rem;cursor:pointer;color:var(--text-secondary,#999);z-index:30;display:none;">🏆 Scores</button>
       </div>
     `;
 
     document.body.appendChild(overlay);
 
-    // Ask for name immediately if not saved
+    // Name prompt
     if (!localStorage.getItem(PLAYER_NAME_KEY)) {
       const name = prompt('🏆 Enter your name for the leaderboard:');
       if (name && name.trim()) localStorage.setItem(PLAYER_NAME_KEY, name.trim().slice(0, 15));
       else localStorage.setItem(PLAYER_NAME_KEY, 'Anonymous');
     }
-    // Show name on screen
     setTimeout(() => {
-      const nameDisplay = document.getElementById('dino-name-display');
-      if (nameDisplay) nameDisplay.textContent = '👤 ' + localStorage.getItem(PLAYER_NAME_KEY);
+      const nd = document.getElementById('dino-name-display');
+      if (nd) nd.textContent = '👤 ' + localStorage.getItem(PLAYER_NAME_KEY);
     }, 0);
 
     const game = document.getElementById('dino-game');
@@ -99,98 +93,101 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
     const lbBtn = document.getElementById('dino-lb-btn');
     const lbDiv = document.getElementById('dino-leaderboard');
 
-    let isJumping = false, jumpVel = 0, dinoBottom = 0, score = 0;
-    let gameOver = false, started = false, animId = null;
-    let obsTimer = null, speedTimer = null, speed = 5;
-    let obstaclesList = [], frame = 0, submitted = false;
-    const GRAVITY = -0.6, JUMP_FORCE = 10;
-    const DINO_WIDTH = 30, DINO_HEIGHT = 40;
+    let dinoY = 0, velY = 0, score = 0, gameOver = false, started = false;
+    let animId = null, obsTimer = null, speedTimer = null;
+    let speed = 3.5, frame = 0, submitted = false;
+    let obsList = [];
+    const GRAVITY = -0.5, JUMP_VEL = 7.5;
+    const GROUND_Y = 16;
 
-    dino.style.bottom = '0px';
-
-    if (document.documentElement.hasAttribute('data-theme')) {
-      overlay.style.background = '#1a1a1a';
-      game.style.background = '#222';
-      game.style.borderColor = '#444';
-    }
+    dino.style.bottom = GROUND_Y + 'px';
 
     function jump() {
       if (gameOver) { resetGame(); return; }
-      if (!started) { started = true; msgEl.style.display = 'none'; lbBtn.style.display = 'none'; startObstacles(); startSpeedUp(); }
-      if (isJumping) return;
-      isJumping = true; jumpVel = JUMP_FORCE;
+      if (!started) {
+        started = true; msgEl.style.display = 'none'; lbBtn.style.display = 'none';
+        startObs(); startSpeed();
+      }
+      if (velY !== 0) return;
+      velY = JUMP_VEL;
     }
 
-    function spawnObstacle() {
+    function spawnObs() {
       if (gameOver) return;
       const obs = document.createElement('div');
-      const h = 18 + Math.random() * 22;
-      obs.style.cssText = `position:absolute;bottom:0;right:-20px;width:14px;height:${h}px;background:#535353;border-radius:3px 3px 0 0;z-index:5;`;
+      obs.textContent = '🌵';
+      obs.style.cssText = `position:absolute;bottom:${GROUND_Y}px;right:-40px;font-size:2rem;line-height:1;z-index:5;user-select:none;`;
       obstacles.appendChild(obs);
-      obstaclesList.push({ el: obs, x: 600, w: 14, h });
+      obsList.push({ el: obs, x: 600 });
     }
 
-    let minObsInterval = 60;
-    function startObstacles() {
-      obsTimer = setInterval(() => { if (!gameOver) { spawnObstacle(); minObsInterval = Math.max(25, minObsInterval - 0.3); } }, Math.max(minObsInterval, 400 + Math.random() * 300));
-    }
-    function startSpeedUp() {
-      speedTimer = setInterval(() => { if (!gameOver) speed += 0.1; }, 500);
+    function startObs() {
+      obsTimer = setInterval(() => {
+        if (!gameOver) spawnObs();
+      }, 900 + Math.random() * 600);
     }
 
-    async function resetGame() {
-      gameOver = false; started = false; score = 0; speed = 5; minObsInterval = 60; submitted = false;
-      dinoBottom = 0; dino.style.bottom = '0px';
-      obstaclesList.forEach(o => o.el.remove()); obstaclesList = [];
-      scoreEl.textContent = '0'; dino.style.transform = '';
-      clearInterval(obsTimer); clearInterval(speedTimer);
-      isJumping = false; jumpVel = 0; lbBtn.style.display = 'none'; lbDiv.style.display = 'none';
+    function startSpeed() {
+      speedTimer = setInterval(() => {
+        if (!gameOver && speed < 8) speed += 0.05;
+      }, 500);
+    }
+
+    function resetGame() {
+      gameOver = false; started = false; score = 0; speed = 3.5; submitted = false;
+      dinoY = 0; velY = 0; dino.style.bottom = GROUND_Y + 'px';
+      obsList.forEach(o => o.el.remove()); obsList = [];
+      scoreEl.textContent = '0'; clearInterval(obsTimer); clearInterval(speedTimer);
+      lbBtn.style.display = 'none'; lbDiv.style.display = 'none';
       msgEl.style.display = 'block';
-      msgEl.innerHTML = `<div style="font-size:1rem;font-weight:700;margin-bottom:4px;">🏃 Dino Runner</div><div style="font-size:0.75rem;color:#999;">Tap / Space to jump</div>`;
+      msgEl.innerHTML = `<div style="font-size:1.2rem;font-weight:700;margin-bottom:4px;">🦖 Dino Runner</div><div style="font-size:0.8rem;color:var(--text-secondary,#999);">Tap / Space to jump</div>`;
     }
 
     function gameLoop() {
       if (gameOver) { animId = requestAnimationFrame(gameLoop); return; }
       frame++;
-      if (isJumping) {
-        dinoBottom += jumpVel; jumpVel += GRAVITY;
-        if (dinoBottom <= 0) { dinoBottom = 0; isJumping = false; jumpVel = 0; }
-        dino.style.bottom = dinoBottom + 'px';
+
+      // Physics
+      if (velY !== 0 || dinoY > 0) {
+        dinoY += velY;
+        velY += GRAVITY;
+        if (dinoY <= 0) { dinoY = 0; velY = 0; }
+        dino.style.bottom = (GROUND_Y + dinoY) + 'px';
       }
-      for (let i = obstaclesList.length - 1; i >= 0; i--) {
-        const o = obstaclesList[i];
+
+      // Scroll obstacles
+      for (let i = obsList.length - 1; i >= 0; i--) {
+        const o = obsList[i];
         o.x -= speed;
         o.el.style.right = (600 - o.x) + 'px';
-        if (40 + DINO_WIDTH > o.x + 4 && 40 < o.x + 14 - 4 && dinoBottom < o.h && dinoBottom + DINO_HEIGHT > 0) {
+
+        // Collision (simple bounding box)
+        const DINOX = 40, DINOW = 44, DINOH = 44;
+        if (o.x < DINOX + DINOW - 8 && o.x + 32 > DINOX + 8 && dinoY < 40) {
           gameOver = true; clearInterval(obsTimer); clearInterval(speedTimer);
-          dino.style.transform = 'rotate(90deg)'; dino.style.transformOrigin = 'bottom center';
+          dino.style.transform = 'rotate(90deg)';
           const finalScore = score;
           msgEl.style.display = 'block';
           const highScore = parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
-          const isNewHigh = finalScore > highScore;
-          if (isNewHigh) {
+          const isNew = finalScore > highScore;
+          if (isNew) {
             localStorage.setItem(HIGH_SCORE_KEY, finalScore);
-            msgEl.innerHTML = `
-              <div style="font-size:1rem;font-weight:700;color:#da1e28;">Game Over!</div>
-              <div style="font-size:0.8rem;margin:4px 0;">
-                <span style="color:#f1c21b;">🌟 New High Score: ${finalScore}</span>
-              </div>
-              <div style="font-size:0.7rem;color:#999;">Tap to restart</div>
-            `;
+            msgEl.innerHTML = `<div style="font-size:1rem;font-weight:700;color:#da1e28;">Game Over!</div>
+              <div style="font-size:0.8rem;margin:4px 0;"><span style="color:#f1c21b;">🌟 New: ${finalScore}</span></div>
+              <div style="font-size:0.7rem;color:var(--text-secondary,#999);">Tap to restart</div>`;
             if (!submitted) { submitted = true; submitScore(finalScore); }
           } else {
-            msgEl.innerHTML = `
-              <div style="font-size:1rem;font-weight:700;color:#da1e28;">Game Over!</div>
-              <div style="font-size:0.8rem;color:#999;margin:4px 0;">Score: ${finalScore} | Best: ${highScore}</div>
-              <div style="font-size:0.7rem;color:#ccc;">Tap to restart</div>
-            `;
+            msgEl.innerHTML = `<div style="font-size:1rem;font-weight:700;color:#da1e28;">Game Over!</div>
+              <div style="font-size:0.8rem;color:var(--text-secondary,#999);margin:4px 0;">Score: ${finalScore} | Best: ${highScore}</div>
+              <div style="font-size:0.7rem;color:var(--text-secondary,#ccc);">Tap to restart</div>`;
           }
           lbBtn.style.display = 'block';
           break;
         }
-        if (o.x < -30) { o.el.remove(); obstaclesList.splice(i, 1); }
+        if (o.x < -50) { o.el.remove(); obsList.splice(i, 1); }
       }
-      if (started && frame % 4 === 0) { score++; scoreEl.textContent = score; }
+
+      if (started && frame % 5 === 0) { score++; scoreEl.textContent = score; }
       animId = requestAnimationFrame(gameLoop);
     }
 
@@ -203,16 +200,11 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
 
     lbBtn.addEventListener('click', async () => {
       lbDiv.style.display = 'block';
-      lbBtn.textContent = '✕ Close';
-      lbDiv.innerHTML = '<div style="font-size:0.7rem;color:#999;text-align:center;padding:1rem;">Loading...</div>';
+      lbDiv.innerHTML = '<div style="font-size:0.7rem;color:var(--text-secondary,#999);text-align:center;padding:1rem;">Loading...</div>';
       const html = await fetchLeaderboard();
-      lbDiv.innerHTML = `
-        <div style="font-size:0.9rem;font-weight:700;margin-bottom:8px;">🏆 Leaderboard</div>
-        ${html}
-        <button id="dino-lb-close" style="margin-top:10px;width:100%;padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-size:0.8rem;">Close</button>
-      `;
-      lbBtn.onclick = () => { lbDiv.style.display = 'none'; lbBtn.textContent = '🏆 Scores'; };
-      document.getElementById('dino-lb-close')?.addEventListener('click', () => { lbDiv.style.display = 'none'; lbBtn.textContent = '🏆 Scores'; });
+      lbDiv.innerHTML = `<div style="font-size:0.9rem;font-weight:700;margin-bottom:8px;">🏆 Leaderboard</div>${html}
+        <button id="dino-lb-close" style="margin-top:10px;width:100%;padding:6px;border:1px solid var(--border-color,#ddd);border-radius:4px;background:var(--card-bg,#fff);cursor:pointer;font-size:0.8rem;">Close</button>`;
+      document.getElementById('dino-lb-close')?.addEventListener('click', () => { lbDiv.style.display = 'none'; });
     });
 
     animId = requestAnimationFrame(gameLoop);
