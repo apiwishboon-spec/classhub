@@ -41,13 +41,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
   }
 
   async function submitScore(scoreVal) {
-    let name = localStorage.getItem(PLAYER_NAME_KEY);
-    if (!name) {
-      name = prompt('🏆 New High Score! Enter your name for the leaderboard:');
-      if (!name || name.trim() === '') name = 'Anonymous';
-      name = name.trim().slice(0, 15);
-      localStorage.setItem(PLAYER_NAME_KEY, name);
-    }
+    const name = localStorage.getItem(PLAYER_NAME_KEY) || 'Anonymous';
     try {
       await addDoc(collection(db, "game_scores"), { name, score: scoreVal, createdAt: serverTimestamp() });
     } catch (e) { /* silently fail */ }
@@ -76,12 +70,25 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
           <div style="font-size:0.75rem;color:#999;">Tap / Space to jump</div>
         </div>
         <div id="dino-leaderboard" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;z-index:25;padding:40px 20px 20px;box-sizing:border-box;overflow-y:auto;"></div>
+        <div id="dino-name-display" style="position:absolute;bottom:8px;left:8px;font-size:0.65rem;color:#bbb;z-index:10;"></div>
         <button id="dino-close" style="position:absolute;top:4px;left:6px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#999;z-index:30;line-height:1;">✕</button>
         <button id="dino-lb-btn" style="position:absolute;top:4px;right:6px;background:none;border:none;font-size:0.75rem;cursor:pointer;color:#999;z-index:30;display:none;">🏆 Scores</button>
       </div>
     `;
 
     document.body.appendChild(overlay);
+
+    // Ask for name immediately if not saved
+    if (!localStorage.getItem(PLAYER_NAME_KEY)) {
+      const name = prompt('🏆 Enter your name for the leaderboard:');
+      if (name && name.trim()) localStorage.setItem(PLAYER_NAME_KEY, name.trim().slice(0, 15));
+      else localStorage.setItem(PLAYER_NAME_KEY, 'Anonymous');
+    }
+    // Show name on screen
+    setTimeout(() => {
+      const nameDisplay = document.getElementById('dino-name-display');
+      if (nameDisplay) nameDisplay.textContent = '👤 ' + localStorage.getItem(PLAYER_NAME_KEY);
+    }, 0);
 
     const game = document.getElementById('dino-game');
     const dino = document.getElementById('dino-character');
