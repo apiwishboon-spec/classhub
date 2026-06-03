@@ -509,7 +509,6 @@ onAuthStateChanged(auth, async (user) => {
                 loadFeedback();
                 loadSettings();
                 loadAuditLog();
-                loadSubjectColors();
                 performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
@@ -1773,54 +1772,5 @@ document.getElementById('save-archive-btn')?.addEventListener('click', async () 
         logAction("Update Archive Days", `Days: ${days}`);
     } catch (e) {
         showToast("Error saving: " + e.message);
-    }
-});
-
-// Subject Colors Logic
-async function loadSubjectColors() {
-    const list = document.getElementById('subject-colors-list');
-    if (!list) return;
-    
-    try {
-        const snap = await getDocs(collection(db, "subject_colors"));
-        let html = '';
-        snap.forEach(d => {
-            const data = d.data();
-            html += `
-                <div class="subject-color-tag" style="background: ${data.color}22; border: 1px solid ${data.color}; color: ${data.color}; padding: 0.3rem 0.6rem; border-radius: 4px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; font-weight: 600;">
-                    ${data.name}
-                    <button class="remove-subject-color-btn" data-id="${d.id}" style="background: none; border: none; color: ${data.color}; cursor: pointer; padding: 0; font-size: 1rem; display: flex;">&times;</button>
-                </div>
-            `;
-        });
-        list.innerHTML = html || '<p style="font-size: 0.75rem; color: var(--text-secondary);">No custom colors defined.</p>';
-        
-        document.querySelectorAll('.remove-subject-color-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                await deleteDoc(doc(db, "subject_colors", id));
-                showToast("Subject color removed");
-                loadSubjectColors();
-            });
-        });
-    } catch (e) { console.error(e); }
-}
-
-document.getElementById('add-subject-color-btn')?.addEventListener('click', async () => {
-    const name = document.getElementById('subject-name-input').value.trim();
-    const color = document.getElementById('subject-color-input').value;
-    
-    if (!name) return showToast("Please enter a subject name");
-    
-    try {
-        await setDoc(doc(db, "subject_colors", name.toLowerCase()), {
-            name: name,
-            color: color
-        });
-        document.getElementById('subject-name-input').value = '';
-        showToast("Subject color added");
-        loadSubjectColors();
-    } catch (e) {
-        showToast("Error: " + e.message);
     }
 });

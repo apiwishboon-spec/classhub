@@ -188,7 +188,7 @@ function checkScheduleUpdates(scheduleData) {
 }
 
 // Subject color mapping — consistent colors per subject
-const defaultSubjectColors = [
+const subjectColors = [
     { bg: '#e8f5e9', text: '#2e7d32' },
     { bg: '#e3f2fd', text: '#1565c0' },
     { bg: '#fce4ec', text: '#c62828' },
@@ -201,37 +201,14 @@ const defaultSubjectColors = [
     { bg: '#fce4ec', text: '#ad1457' },
 ];
 
-let customSubjectColors = {};
-
-async function fetchCustomColors() {
-    try {
-        const snap = await getDocs(collection(db, "subject_colors"));
-        customSubjectColors = {};
-        snap.forEach(d => {
-            const data = d.data();
-            customSubjectColors[data.name.toLowerCase().trim()] = data.color;
-        });
-        renderDashboard(); // Re-render to apply colors
-    } catch (e) { console.error("Error fetching custom colors", e); }
-}
-
 function getSubjectColor(subject) {
-    if (!subject) return defaultSubjectColors[0];
-    
-    // Check custom colors first
-    const cleanSubject = subject.toLowerCase().trim();
-    if (customSubjectColors[cleanSubject]) {
-        const color = customSubjectColors[cleanSubject];
-        return { bg: `${color}22`, text: color };
-    }
-
-    // Fallback to hashed colors
+    if (!subject) return subjectColors[0];
     let hash = 0;
     for (let i = 0; i < subject.length; i++) {
         hash = subject.charCodeAt(i) + ((hash << 5) - hash);
     }
-    const idx = Math.abs(hash) % defaultSubjectColors.length;
-    return defaultSubjectColors[idx];
+    const idx = Math.abs(hash) % subjectColors.length;
+    return subjectColors[idx];
 }
 
 // Theme Management
@@ -1263,7 +1240,6 @@ function init() {
     fetchDashboardData();
     fetchNotes();
     fetchPolls();
-    fetchCustomColors();
     
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
