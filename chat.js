@@ -31,8 +31,8 @@ const chatHTML = `
 
     <div id="feedback-modal" class="modal-overlay">
         <div class="modal-card" style="display: block; max-width: 500px; padding: 1.5rem !important;">
-            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Teacher</h3>
-            <p style="margin-bottom: 1rem !important; font-size: 0.9rem !important;">Send an anonymous message or question to the teacher.</p>
+            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Admin/Teacher</h3>
+            <p style="margin-bottom: 1rem !important; font-size: 0.9rem !important;">Send an anonymous message or question to the staff.</p>
             
             <!-- Message History -->
             <div id="feedback-history" style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; padding-right: 5px;">
@@ -112,7 +112,7 @@ function injectChat() {
                 localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
                 listenForReplies(docRef.id);
 
-                showToast("Message sent to teacher!", "ph-paper-plane-tilt", "var(--success)");
+                showToast("Message sent to staff!", "ph-paper-plane-tilt", "var(--success)");
                 feedbackModal.style.display = 'none';
             } catch (e) {
                 showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
@@ -161,7 +161,7 @@ async function refreshFeedbackHistory() {
         if (msg.reply) {
             conversationHtml += `
                 <div style="background: var(--highlight-bg); border-radius: 6px; padding: 0.6rem; border-left: 3px solid var(--accent-color); margin-top: 0.5rem;">
-                    <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">TEACHER:</div>
+                    <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">STAFF:</div>
                     <div style="font-size: 0.8rem;">${msg.reply}</div>
                 </div>
             `;
@@ -174,7 +174,7 @@ async function refreshFeedbackHistory() {
                 conversationHtml += `
                     <div style="background: ${isUser ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 6px; padding: 0.6rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-top: 0.5rem;">
                         <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
-                            ${isUser ? 'YOU' : 'TEACHER'} ${replyTime ? `— ${replyTime}` : ''}
+                            ${isUser ? 'YOU' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
                         </div>
                         <div style="font-size: 0.8rem;">${reply.text}</div>
                     </div>
@@ -198,7 +198,7 @@ async function refreshFeedbackHistory() {
                 
                 ${conversationHtml ? `
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                        <input type="text" class="form-input feedback-reply-input" placeholder="Reply to teacher..." style="font-size: 0.8rem; padding: 0.4rem; flex: 1;" data-id="${msg.id}">
+                        <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.8rem; padding: 0.4rem; flex: 1;" data-id="${msg.id}">
                         <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 0.8rem; min-height: auto; font-size: 0.75rem;">Reply</button>
                     </div>
                 ` : ''}
@@ -244,7 +244,7 @@ function listenForReplies(messageId) {
             const data = docSnap.data();
             
             if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
-                showToast(`Teacher replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                showToast(`Staff replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
                 localStorage.setItem(`reply_seen_${messageId}`, 'true');
             }
             
@@ -253,7 +253,7 @@ function listenForReplies(messageId) {
                 if (lastReply && lastReply.sender === 'admin') {
                     const replyKey = `reply_seen_${messageId}_${data.replies.length - 1}`;
                     if (!localStorage.getItem(replyKey)) {
-                        showToast(`Teacher replied: "${lastReply.text}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                        showToast(`Staff replied: "${lastReply.text}"`, "ph-chat-centered-dots", "var(--accent-color)");
                         localStorage.setItem(replyKey, 'true');
                     }
                 }

@@ -292,7 +292,7 @@ function loadFeedback() {
             if (data.reply) {
                 conversationHtml += `
                     <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid var(--accent-color);">
-                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">TEACHER (Admin)</div>
+                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">STAFF (Admin)</div>
                         <div style="font-size: 0.85rem;">${data.reply}</div>
                     </div>
                 `;
@@ -306,7 +306,7 @@ function loadFeedback() {
                     conversationHtml += `
                         <div style="background: ${isUser ? 'var(--highlight-bg)' : 'var(--bg-color)'}; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'};">
                             <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
-                                ${isUser ? 'STUDENT' : 'TEACHER'} ${replyTime ? `— ${replyTime}` : ''}
+                                ${isUser ? 'STUDENT' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
                             </div>
                             <div style="font-size: 0.85rem;">${reply.text}</div>
                         </div>
