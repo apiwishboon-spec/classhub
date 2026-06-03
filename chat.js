@@ -31,7 +31,7 @@ const chatHTML = `
 
     <div id="feedback-modal" class="modal-overlay">
         <div class="modal-card" style="display: block; max-width: 500px; padding: 1.5rem !important;">
-            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Admin/Teacher</h3>
+            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Staff</h3>
             <p style="margin-bottom: 1rem !important; font-size: 0.9rem !important;">Send an anonymous message or question to the staff.</p>
             
             <!-- Message History -->
