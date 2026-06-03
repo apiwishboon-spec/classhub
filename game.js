@@ -14,9 +14,9 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
   const GROUND_Y = 120;
   const GRAVITY = -0.55;
   const JUMP_VEL = 9.5;
-  const INITIAL_SPEED = 5;
-  const MAX_SPEED = 12;
-  const ACCELERATION = 0.0008;
+  const INITIAL_SPEED = 7;
+  const MAX_SPEED = 14;
+  const ACCELERATION = 0.003;
 
   // Audio context for generated sound effects
   let audioCtx = null;
@@ -388,7 +388,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
       this.highScore = parseInt(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
       this.submitted = false;
       this.flashTimer = 0;
-      this.spawnTimer = Math.floor(Math.random() * 100) + 60;
+      this.spawnTimer = Math.floor(Math.random() * 60) + 30;
 
       for (let i = 0; i < 2; i++) {
         this.clouds.push({ x: Math.random() * CANVAS_W, y: 20 + Math.random() * 30, speed: 0.3 + Math.random() * 0.4 });
@@ -457,7 +457,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
       if (this.obstacles.length >= 2) return;
       if (this.obstacles.length > 0) {
         const last = this.obstacles[this.obstacles.length - 1];
-        if (last.x + last.width > CANVAS_W * 0.4) return;
+        if (last.x + last.width > CANVAS_W * 0.5) return;
       }
 
       const type = getRandomObstacle(this.speed);
@@ -530,7 +530,7 @@ import { collection, addDoc, query, orderBy, limit, getDocs, serverTimestamp } f
       this.spawnTimer--;
       if (this.spawnTimer <= 0) {
         this.spawnObstacle();
-        this.spawnTimer = Math.floor(Math.random() * 60) + 50;
+        this.spawnTimer = Math.floor(Math.random() * 40) + 30;
       }
 
       // Move obstacles
