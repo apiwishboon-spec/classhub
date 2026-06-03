@@ -262,4 +262,8 @@ function listenForReplies(messageId) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', injectChat);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', injectChat);
+} else {
+    injectChat();
+}
