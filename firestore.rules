@@ -105,5 +105,12 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if request.auth != null && getUserRole() == 'admin';
     }
+
+    // 12. Game Scores collection (Secret Dino Runner)
+    match /game_scores/{id} {
+      allow create: if true;
+      allow read: if true;
+      allow update, delete: if false;
+    }
   }
 }
