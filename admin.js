@@ -35,9 +35,6 @@ const auditLogSection = document.getElementById('audit-log-section');
 const bugReportsSection = document.getElementById('bug-reports-section');
 const bugReportsList = document.getElementById('bug-reports-list');
 const bugCountBadge = document.getElementById('bug-count-badge');
-const gameScoresSection = document.getElementById('game-scores-section');
-const gameScoresList = document.getElementById('game-scores-list');
-const scoresCountBadge = document.getElementById('scores-count-badge');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
@@ -507,7 +504,6 @@ onAuthStateChanged(auth, async (user) => {
                 systemSettingsSection.style.display = 'block';
                 auditLogSection.style.display = 'block';
                 bugReportsSection.style.display = 'block';
-                gameScoresSection.style.display = 'block';
                 
                 loadUsers();
                 loadSchedule();
@@ -518,7 +514,6 @@ onAuthStateChanged(auth, async (user) => {
                 loadSettings();
                 loadAuditLog();
                 loadBugReports();
-                loadGameScores();
                 performSystemCleanup();
             } else if (currentUserRole === 'teacher') {
                 manageUsersSection.style.display = 'none';
@@ -1676,65 +1671,6 @@ function loadBugReports() {
             });
         });
     });
-}
-
-// Load Game Scores
-async function loadGameScores() {
-    try {
-        const q = query(collection(db, "game_scores"), orderBy("score", "desc"), limit(50));
-        const snap = await getDocs(q);
-
-        const count = snap.size;
-        if (scoresCountBadge) scoresCountBadge.textContent = count;
-
-        if (snap.empty) {
-            gameScoresList.innerHTML = '<p style="text-align:center; color:var(--text-secondary); padding: 1rem;">No scores yet.</p>';
-            return;
-        }
-
-        let html = '', rank = 1;
-        snap.forEach(d => {
-            const data = d.data();
-            const date = data.createdAt ? data.createdAt.toDate().toLocaleString('en-US', {
-                month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-            }) : '';
-
-            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
-            html += `
-                <div class="admin-sched-card" style="border-left: 4px solid ${rank <= 3 ? 'var(--accent-color)' : 'var(--border-color)'}; margin-bottom: 0.5rem;">
-                    <div class="admin-sched-card-header">
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-weight:700; font-size:1rem; min-width:2rem;">${medal}</span>
-                            <div style="display:flex; flex-direction:column;">
-                                <span style="font-weight:600; font-size:0.9rem;">${escapeHtml(data.name || 'Anonymous')}</span>
-                                <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
-                            </div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:0.5rem;">
-                            <span style="font-size:1.1rem; font-weight:700; color:var(--accent-color);">${data.score}</span>
-                            <button class="delete-score-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" title="Delete Score"><i class="ph ph-trash"></i></button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            rank++;
-        });
-        gameScoresList.innerHTML = html;
-
-        document.querySelectorAll('.delete-score-btn').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                if (await customConfirm("Delete Score", "Permanently delete this score?")) {
-                    const id = btn.getAttribute('data-id');
-                    await deleteDoc(doc(db, "game_scores", id));
-                    showToast("Score deleted.");
-                    logAction("Delete Score", `ID: ${id}`);
-                    loadGameScores();
-                }
-            });
-        });
-    } catch (e) {
-        gameScoresList.innerHTML = `<p style="color:var(--danger); padding: 1rem;">Error: ${e.message}</p>`;
-    }
 }
 
 function escapeHtml(text) {

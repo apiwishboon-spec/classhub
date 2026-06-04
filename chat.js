@@ -23,191 +23,167 @@ function showToast(message, icon, color) {
     }, 4500);
 }
 
-const chatHTML = `
-    <!-- Floating Feedback Button -->
-    <button id="open-feedback" style="position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;">
-        <img src="chaticon.png" alt="Chat" style="width: 35px; height: 35px; object-fit: contain;">
-    </button>
+function injectFloatingButton() {
+    if (document.getElementById('open-chat-page')) return;
+    // Don't inject on chat.html itself
+    if (window.location.pathname.includes('chat.html')) return;
 
-    <div id="feedback-modal" class="modal-overlay">
-        <div class="modal-card" style="display: block; max-width: 500px; padding: 1.5rem !important;">
-            <h3 style="margin-bottom: 0.5rem !important;"><i class="ph ph-chat-centered-text"></i> Message Staff</h3>
-            <p style="margin-bottom: 1rem !important; font-size: 0.9rem !important;">Send an anonymous message or question to the staff.</p>
-            
-            <!-- Message History -->
-            <div id="feedback-history" style="max-height: 250px; overflow-y: auto; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 1rem; padding-right: 5px;">
-                <!-- Messages will be injected here -->
-            </div>
-
-            <div class="admin-form-stack">
-                <textarea id="feedback-text" placeholder="Type a new message..." class="form-input" rows="3" style="border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;"></textarea>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                    <input type="checkbox" id="feedback-urgent">
-                    <label for="feedback-urgent" style="font-size: 0.8rem; color: var(--danger); font-weight: 600;">Mark as Urgent</label>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-secondary" id="close-feedback">Cancel</button>
-                    <button class="btn-primary" id="send-feedback">Send Message</button>
-                </div>
-            </div>
-        </div>
-    </div>
-`;
-
-function injectChat() {
-    if (document.getElementById('open-feedback')) return;
-    const div = document.createElement('div');
-    div.innerHTML = chatHTML;
-    document.body.appendChild(div);
-
-    const openFeedbackBtn = document.getElementById('open-feedback');
-    const closeFeedbackBtn = document.getElementById('close-feedback');
-    const sendFeedbackBtn = document.getElementById('send-feedback');
-    const feedbackModal = document.getElementById('feedback-modal');
-    const feedbackText = document.getElementById('feedback-text');
-    const feedbackUrgent = document.getElementById('feedback-urgent');
-    const feedbackHistory = document.getElementById('feedback-history');
-
-    if (openFeedbackBtn) {
-        openFeedbackBtn.addEventListener('click', () => {
-            feedbackModal.style.display = 'flex';
-            feedbackText.value = '';
-            feedbackUrgent.checked = false;
-            refreshFeedbackHistory();
-        });
-
-        // Hover effect
-        openFeedbackBtn.addEventListener('mouseenter', () => {
-            openFeedbackBtn.style.transform = 'scale(1.1)';
-        });
-        openFeedbackBtn.addEventListener('mouseleave', () => {
-            openFeedbackBtn.style.transform = 'scale(1)';
-        });
-    }
-
-    if (closeFeedbackBtn) {
-        closeFeedbackBtn.addEventListener('click', () => {
-            feedbackModal.style.display = 'none';
-        });
-    }
-
-    if (sendFeedbackBtn) {
-        sendFeedbackBtn.addEventListener('click', async () => {
-            const text = feedbackText.value.trim();
-            if (!text) return;
-
-            sendFeedbackBtn.disabled = true;
-            sendFeedbackBtn.textContent = 'Sending...';
-
-            try {
-                const docRef = await addDoc(collection(db, "feedback"), {
-                    message: text,
-                    urgent: feedbackUrgent.checked,
-                    status: 'new',
-                    createdAt: serverTimestamp()
-                });
-                
-                const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
-                myMessages.push(docRef.id);
-                localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
-                listenForReplies(docRef.id);
-
-                showToast("Message sent to staff!", "ph-paper-plane-tilt", "var(--success)");
-                feedbackModal.style.display = 'none';
-            } catch (e) {
-                showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
-            } finally {
-                sendFeedbackBtn.disabled = false;
-                sendFeedbackBtn.textContent = 'Send Message';
-            }
-        });
-    }
-
-    // Resume listening for replies
-    const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
-    myMessages.forEach(id => listenForReplies(id));
+    const btn = document.createElement('a');
+    btn.id = 'open-chat-page';
+    btn.href = 'chat.html';
+    btn.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;';
+    btn.innerHTML = `<img src="chaticon.png" alt="Chat" style="width: 35px; height: 35px; object-fit: contain;">`;
+    
+    btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.1)');
+    btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
+    
+    document.body.appendChild(btn);
 }
 
-async function refreshFeedbackHistory() {
-    const feedbackHistory = document.getElementById('feedback-history');
-    if (!feedbackHistory) return;
+async function initChatPage() {
+    const historyContainer = document.getElementById('chat-page-history');
+    const inputField = document.getElementById('chat-page-input');
+    const sendBtn = document.getElementById('chat-page-send');
+    const urgentCheckbox = document.getElementById('chat-page-urgent');
+
+    if (!historyContainer) return;
+
+    // Load initial history
+    await refreshChatHistory();
+
+    // Setup Send Message
+    sendBtn.addEventListener('click', async () => {
+        const text = inputField.value.trim();
+        if (!text) return;
+
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<div class="loader" style="width: 16px; height: 16px; border-width: 2px;"></div>';
+
+        try {
+            const docRef = await addDoc(collection(db, "feedback"), {
+                message: text,
+                urgent: urgentCheckbox.checked,
+                status: 'new',
+                createdAt: serverTimestamp()
+            });
+            
+            const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
+            myMessages.push(docRef.id);
+            localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
+            
+            inputField.value = '';
+            urgentCheckbox.checked = false;
+            showToast("Message sent to staff!", "ph-paper-plane-tilt", "var(--success)");
+            
+            // Re-render and listen
+            await refreshChatHistory();
+            listenForReplies(docRef.id);
+        } catch (e) {
+            showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
+        } finally {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Message';
+        }
+    });
+
+    // Enter to send
+    inputField.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendBtn.click();
+        }
+    });
+}
+
+async function refreshChatHistory() {
+    const historyContainer = document.getElementById('chat-page-history');
+    if (!historyContainer) return;
+
     const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
     
     if (myMessages.length === 0) {
-        feedbackHistory.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-secondary); text-align: center;">No message history yet.</p>';
+        historyContainer.innerHTML = `
+            <div style="text-align: center; color: var(--text-secondary); margin-top: 2rem;">
+                <i class="ph ph-chat-circle-dots" style="font-size: 3rem; opacity: 0.2; display: block; margin-bottom: 1rem;"></i>
+                <p>No messages yet. Send a message to start a conversation with the staff.</p>
+            </div>
+        `;
         return;
     }
 
-    feedbackHistory.innerHTML = '<div class="loader" style="margin: 1rem auto; width: 20px; height: 20px;"></div>';
-    
-    let html = '';
-    const sortedMessages = [];
-
+    let allDocs = [];
     for (const id of myMessages) {
         try {
             const docSnap = await getDoc(doc(db, "feedback", id));
             if (docSnap.exists()) {
-                sortedMessages.push({ id, ...docSnap.data() });
+                allDocs.push({ id, ...docSnap.data() });
+                listenForReplies(id); // Ensure we are listening for everything in history
             }
-        } catch (e) { console.error("Error fetching message history", e); }
+        } catch (e) { console.error("Error fetching", id, e); }
     }
 
-    sortedMessages.sort((a, b) => (b.createdAt?.toDate() || 0) - (a.createdAt?.toDate() || 0));
+    // Sort by creation date
+    allDocs.sort((a, b) => (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0));
 
-    sortedMessages.forEach(msg => {
-        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-        let conversationHtml = '';
+    let html = '';
+    allDocs.forEach(msg => {
+        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
         
+        // Initial Message (Student)
+        html += `
+            <div class="chat-thread" style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                    <div style="background: var(--accent-color); color: white; padding: 0.75rem 1rem; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                        ${msg.message}
+                    </div>
+                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You</span>
+                </div>
+        `;
+
+        // Old Single Reply (Backward Compatibility)
         if (msg.reply) {
-            conversationHtml += `
-                <div style="background: var(--highlight-bg); border-radius: 6px; padding: 0.6rem; border-left: 3px solid var(--accent-color); margin-top: 0.5rem;">
-                    <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.2rem;">STAFF:</div>
-                    <div style="font-size: 0.8rem;">${msg.reply}</div>
+            html += `
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                    <div style="background: var(--highlight-bg); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.95rem; line-height: 1.5; border: 1px solid var(--border-color);">
+                        ${msg.reply}
+                    </div>
+                    <span style="font-size: 0.65rem; color: var(--text-secondary);">Staff Reply</span>
                 </div>
             `;
         }
-        
+
+        // Threaded Replies
         if (msg.replies && Array.isArray(msg.replies)) {
-            msg.replies.forEach((reply) => {
+            msg.replies.forEach(reply => {
                 const isUser = reply.sender === 'user';
                 const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
-                conversationHtml += `
-                    <div style="background: ${isUser ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 6px; padding: 0.6rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-top: 0.5rem;">
-                        <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
-                            ${isUser ? 'YOU' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
+                
+                html += `
+                    <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
+                        <div style="background: ${isUser ? 'var(--accent-color)' : 'var(--highlight-bg)'}; color: ${isUser ? 'white' : 'var(--text-main)'}; padding: 0.75rem 1rem; border-radius: ${isUser ? '12px 12px 0 12px' : '12px 12px 12px 0'}; max-width: 85%; font-size: 0.95rem; line-height: 1.5; ${!isUser ? 'border: 1px solid var(--border-color);' : 'box-shadow: 0 2px 5px rgba(0,0,0,0.05);'}">
+                            ${reply.text}
                         </div>
-                        <div style="font-size: 0.8rem;">${reply.text}</div>
+                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${isUser ? 'You' : 'Staff'}</span>
                     </div>
                 `;
             });
         }
-        
+
+        // Reply Input for this thread
         html += `
-            <div style="background: var(--bg-color); border-radius: 8px; padding: 0.75rem; border: 1px solid var(--border-color);">
-                <div style="display:flex; justify-content:space-between; font-size:0.65rem; color:var(--text-secondary); margin-bottom:0.25rem;">
-                    <span>You — ${date}</span>
-                    ${msg.status === 'resolved' ? '<span style="color:var(--success);">✔ Solved</span>' : ''}
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; max-width: 100%;">
+                    <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.85rem; padding: 0.6rem; flex: 1; border-radius: 20px;" data-id="${msg.id}">
+                    <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 1.25rem; min-height: auto; font-size: 0.8rem; border-radius: 20px;">
+                        <i class="ph ph-paper-plane-right"></i>
+                    </button>
                 </div>
-                <div style="font-size:0.85rem; margin-bottom:0.5rem;">${msg.message}</div>
-                
-                ${conversationHtml ? `
-                    <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--border-color);">
-                        ${conversationHtml}
-                    </div>
-                ` : ''}
-                
-                ${conversationHtml ? `
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                        <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.8rem; padding: 0.4rem; flex: 1;" data-id="${msg.id}">
-                        <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 0.8rem; min-height: auto; font-size: 0.75rem;">Reply</button>
-                    </div>
-                ` : ''}
             </div>
         `;
     });
 
-    feedbackHistory.innerHTML = html;
+    historyContainer.innerHTML = html;
     
+    // Setup Reply Buttons
     document.querySelectorAll('.send-feedback-reply-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
@@ -215,6 +191,7 @@ async function refreshFeedbackHistory() {
             const replyText = input.value.trim();
             if (!replyText) return;
 
+            btn.disabled = true;
             try {
                 const docSnap = await getDoc(doc(db, "feedback", id));
                 if (docSnap.exists()) {
@@ -228,21 +205,48 @@ async function refreshFeedbackHistory() {
                             timestamp: new Date()
                         }]
                     });
+                    input.value = '';
                     showToast("Reply sent!");
-                    refreshFeedbackHistory();
+                    refreshChatHistory();
                 }
             } catch (e) {
                 showToast("Error: " + e.message, "ph-x", "var(--danger)");
+                btn.disabled = false;
             }
         });
     });
+
+    // Enter to reply in thread
+    document.querySelectorAll('.feedback-reply-input').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const id = input.getAttribute('data-id');
+                document.querySelector(`.send-feedback-reply-btn[data-id="${id}"]`)?.click();
+            }
+        });
+    });
+
+    // Scroll to bottom
+    setTimeout(() => {
+        historyContainer.scrollTop = historyContainer.scrollHeight;
+    }, 100);
 }
 
+const activeListeners = new Set();
 function listenForReplies(messageId) {
+    if (activeListeners.has(messageId)) return;
+    activeListeners.add(messageId);
+
     onSnapshot(doc(db, "feedback", messageId), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             
+            // If on chat page, refresh history to show new replies immediately
+            if (document.getElementById('chat-page-history')) {
+                refreshChatHistory();
+            }
+
+            // Notification logic
             if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
                 showToast(`Staff replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
                 localStorage.setItem(`reply_seen_${messageId}`, 'true');
@@ -255,6 +259,7 @@ function listenForReplies(messageId) {
                     if (!localStorage.getItem(replyKey)) {
                         showToast(`Staff replied: "${lastReply.text}"`, "ph-chat-centered-dots", "var(--accent-color)");
                         localStorage.setItem(replyKey, 'true');
+                        if (document.getElementById('chat-page-history')) refreshChatHistory();
                     }
                 }
             }
@@ -262,8 +267,13 @@ function listenForReplies(messageId) {
     });
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectChat);
-} else {
-    injectChat();
-}
+document.addEventListener('DOMContentLoaded', () => {
+    injectFloatingButton();
+    if (document.getElementById('chat-page-history')) {
+        initChatPage();
+    }
+    
+    // Resume listening for all previous messages
+    const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
+    myMessages.forEach(id => listenForReplies(id));
+});
