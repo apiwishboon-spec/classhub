@@ -57,7 +57,7 @@ async function initChatPage() {
         if (!text) return;
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = '<div class="chat-loader" style="padding:0; gap:2px;"><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span></div>';
+        sendBtn.style.opacity = '0.5';
 
         try {
             const docRef = await addDoc(collection(db, "feedback"), {
@@ -72,8 +72,8 @@ async function initChatPage() {
             localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
             
             inputField.value = '';
+            inputField.style.height = 'auto'; // Reset height
             urgentCheckbox.checked = false;
-            showToast("Message sent to staff!", "ph-paper-plane-tilt", "var(--success)");
             
             // Re-render and listen
             await refreshChatHistory();
@@ -82,8 +82,14 @@ async function initChatPage() {
             showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
         } finally {
             sendBtn.disabled = false;
-            sendBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Message';
+            sendBtn.style.opacity = '1';
         }
+    });
+
+    // Auto-resize textarea
+    inputField.addEventListener('input', () => {
+        inputField.style.height = 'auto';
+        inputField.style.height = (inputField.scrollHeight) + 'px';
     });
 
     // Enter to send
@@ -127,28 +133,20 @@ async function refreshChatHistory() {
 
     let html = '';
     allDocs.forEach(msg => {
-        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
+        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
         
         // Initial Message (Student)
         html += `
-            <div class="chat-thread" style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                    <div class="chat-bubble user">
-                        ${msg.message}
-                    </div>
-                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You</span>
-                </div>
+            <div class="chat-thread">
+                <div class="chat-bubble user">${msg.message}</div>
+                <div class="chat-time">${date}</div>
         `;
 
         // Old Single Reply (Backward Compatibility)
         if (msg.reply) {
             html += `
-                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
-                    <div class="chat-bubble staff">
-                        ${msg.reply}
-                    </div>
-                    <span style="font-size: 0.65rem; color: var(--text-secondary);">Staff Reply</span>
-                </div>
+                <div class="chat-bubble staff">${msg.reply}</div>
+                <div class="chat-time" style="color:rgba(0,0,0,0.5); align-self:flex-start;">Staff</div>
             `;
         }
 
@@ -159,26 +157,13 @@ async function refreshChatHistory() {
                 const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
                 
                 html += `
-                    <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
-                        <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
-                            ${reply.text}
-                        </div>
-                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${isUser ? 'You' : 'Staff'}</span>
-                    </div>
+                    <div class="chat-bubble ${isUser ? 'user' : 'staff'}">${reply.text}</div>
+                    <div class="chat-time" style="${!isUser ? 'color:rgba(0,0,0,0.5); align-self:flex-start;' : ''}">${replyTime}</div>
                 `;
             });
         }
 
-        // Reply Input for this thread
-        html += `
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; max-width: 100%;">
-                    <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.85rem; padding: 0.6rem; flex: 1; border-radius: 20px;" data-id="${msg.id}">
-                    <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 1.25rem; min-height: auto; font-size: 0.8rem; border-radius: 20px;">
-                        <i class="ph ph-paper-plane-right"></i>
-                    </button>
-                </div>
-            </div>
-        `;
+        html += `</div>`;
     });
 
     historyContainer.innerHTML = html;

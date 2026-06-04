@@ -19,54 +19,43 @@
     <div id="toast-container"></div>
     
     <div class="app-container">
-        <header class="top-nav">
+        <header class="top-nav" style="background: #fff; border-bottom: 1px solid #ddd;">
             <div class="nav-brand">
-                <a href="index.html" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
-                    <i class="ph ph-arrow-left" style="color: var(--accent-color); font-size: 1.2rem;"></i>
-                    <h1 style="color: var(--accent-color); font-size: 1.25rem;">MyClassHub</h1>
+                <a href="index.html" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem; color: #000;">
+                    <i class="ph ph-caret-left" style="font-size: 1.5rem;"></i>
+                    <span style="font-weight: 600; font-size: 1.1rem;">Staff</span>
                 </a>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
-                <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode">
-                    <i class="ph ph-moon"></i>
-                </button>
+                <i class="ph ph-magnifying-glass" style="font-size: 1.2rem; color: #555;"></i>
+                <i class="ph ph-list" style="font-size: 1.2rem; color: #555;"></i>
             </div>
         </header>
 
-        <main class="dashboard-grid">
-            <section class="dashboard-card span-2" style="display: flex; flex-direction: column; min-height: calc(100vh - 120px);">
-                <div class="card-header">
-                    <h2><i class="ph ph-chat-centered-text"></i> Message Staff</h2>
-                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Your messages are anonymous to the staff.</p>
+        <main style="display: flex; flex-direction: column; height: calc(100vh - 60px); position: relative;">
+            <!-- Chat History -->
+            <div id="chat-page-history" style="flex: 1; overflow-y: auto;">
+                <div style="display: flex; justify-content: center; padding: 2rem;">
+                    <div class="chat-loader"><span></span><span></span><span></span></div>
                 </div>
-                
-                <div class="card-content" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-top: 0;">
-                    <!-- Chat History Container -->
-                    <div id="chat-page-history" style="flex: 1; overflow-y: auto; padding: 1.5rem 0.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div class="chat-loader">
-                            <span></span>
-                            <span></span>
-                            <span></span>
-                        </div>
-                    </div>
+            </div>
 
-                    <!-- Input Area -->
-                    <div style="padding: 1.5rem 0; border-top: 1px solid var(--border-color); background: var(--card-bg);">
-                        <div class="admin-form-stack">
-                            <textarea id="chat-page-input" placeholder="Type a new message to staff..." class="form-input" rows="3" style="border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.95rem; resize: none;"></textarea>
-                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-                                <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <input type="checkbox" id="chat-page-urgent">
-                                    <label for="chat-page-urgent" style="font-size: 0.85rem; color: var(--danger); font-weight: 600; cursor: pointer;">Mark as Urgent</label>
-                                </div>
-                                <button class="btn-primary" id="chat-page-send" style="padding: 0.75rem 2rem; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="ph ph-paper-plane-tilt"></i> Send Message
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+            <!-- LINE style Input -->
+            <div class="chat-input-container">
+                <i class="ph ph-plus" style="font-size: 1.5rem; color: #555; cursor: pointer;"></i>
+                <i class="ph ph-camera" style="font-size: 1.5rem; color: #555; cursor: pointer;"></i>
+                <i class="ph ph-image" style="font-size: 1.5rem; color: #555; cursor: pointer;"></i>
+                <div style="flex: 1; position: relative; display: flex; align-items: center;">
+                    <textarea id="chat-page-input" class="chat-input-field" placeholder="Aa" rows="1"></textarea>
+                    <i class="ph ph-smiley" style="position: absolute; right: 10px; font-size: 1.2rem; color: #555; cursor: pointer;"></i>
                 </div>
-            </section>
+                <button id="chat-page-send" class="chat-send-btn">
+                    <i class="ph ph-paper-plane-right-fill"></i>
+                </button>
+            </div>
+            
+            <!-- Hidden urgent toggle -->
+            <input type="checkbox" id="chat-page-urgent" style="display: none;">
         </main>
     </div>
 

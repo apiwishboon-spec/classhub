@@ -348,6 +348,20 @@ function loadFeedback() {
         });
         list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
 
+        document.querySelectorAll('.reply-input').forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const id = input.getAttribute('data-id');
+                    document.querySelector(`.send-reply-btn[data-id="${id}"]`)?.click();
+                }
+            });
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            });
+        });
+
         document.querySelectorAll('.send-reply-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
