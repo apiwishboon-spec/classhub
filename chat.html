@@ -43,9 +43,10 @@
                 <div class="card-content" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; padding-top: 0;">
                     <!-- Chat History Container -->
                     <div id="chat-page-history" style="flex: 1; overflow-y: auto; padding: 1.5rem 0.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
-                        <div class="loading-placeholder">
-                            <div class="loader"></div>
-                            <p>Loading messages...</p>
+                        <div class="chat-loader">
+                            <span></span>
+                            <span></span>
+                            <span></span>
                         </div>
                     </div>
 
@@ -70,7 +71,7 @@
     </div>
 
     <script type="module" src="chat.js"></script>
-    <script type="module">
+<script type="module" src="game.js"></script>    <script type="module">
         import { initTheme } from './admin.js';
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');

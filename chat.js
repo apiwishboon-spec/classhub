@@ -57,7 +57,7 @@ async function initChatPage() {
         if (!text) return;
 
         sendBtn.disabled = true;
-        sendBtn.innerHTML = '<div class="loader" style="width: 16px; height: 16px; border-width: 2px;"></div>';
+        sendBtn.innerHTML = '<div class="chat-loader" style="padding:0; gap:2px;"><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span></div>';
 
         try {
             const docRef = await addDoc(collection(db, "feedback"), {
@@ -133,7 +133,7 @@ async function refreshChatHistory() {
         html += `
             <div class="chat-thread" style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
-                    <div style="background: var(--accent-color); color: white; padding: 0.75rem 1rem; border-radius: 12px 12px 0 12px; max-width: 85%; font-size: 0.95rem; line-height: 1.5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                    <div class="chat-bubble user">
                         ${msg.message}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You</span>
@@ -144,7 +144,7 @@ async function refreshChatHistory() {
         if (msg.reply) {
             html += `
                 <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
-                    <div style="background: var(--highlight-bg); color: var(--text-main); padding: 0.75rem 1rem; border-radius: 12px 12px 12px 0; max-width: 85%; font-size: 0.95rem; line-height: 1.5; border: 1px solid var(--border-color);">
+                    <div class="chat-bubble staff">
                         ${msg.reply}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">Staff Reply</span>
@@ -160,7 +160,7 @@ async function refreshChatHistory() {
                 
                 html += `
                     <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
-                        <div style="background: ${isUser ? 'var(--accent-color)' : 'var(--highlight-bg)'}; color: ${isUser ? 'white' : 'var(--text-main)'}; padding: 0.75rem 1rem; border-radius: ${isUser ? '12px 12px 0 12px' : '12px 12px 12px 0'}; max-width: 85%; font-size: 0.95rem; line-height: 1.5; ${!isUser ? 'border: 1px solid var(--border-color);' : 'box-shadow: 0 2px 5px rgba(0,0,0,0.05);'}">
+                        <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
                             ${reply.text}
                         </div>
                         <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${isUser ? 'You' : 'Staff'}</span>
