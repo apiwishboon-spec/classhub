@@ -47,15 +47,15 @@ async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
     if (settingsSnap.exists() && settingsSnap.data().cleanupEnabled === false) return;
 
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
     let deletedCount = 0;
 
     try {
         const feedbackSnap = await getDocs(query(collection(db, "feedback"), where("status", "==", "resolved")));
         for (const d of feedbackSnap.docs) {
             const data = d.data();
-            if (data.resolvedAt && data.resolvedAt.toDate() < oneWeekAgo) {
+            if (data.resolvedAt && data.resolvedAt.toDate() < oneMonthAgo) {
                 await deleteDoc(d.ref);
                 deletedCount++;
             }
@@ -469,27 +469,37 @@ onAuthStateChanged(auth, async (user) => {
         adminContainer.style.display = 'block';
         
         try {
-            // Fetch user role from Firestore
+            // Fetch user role and session status from Firestore
             const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
+            
+            // Set up a real-time listener for the user document to sync logout
+            onSnapshot(userDocRef, async (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // If sessionRevoked is true, force logout on this device
+                    if (data.sessionRevoked) {
+                        await signOut(auth);
+                        // Reset the flag for the next time they login
+                        await updateDoc(userDocRef, { sessionRevoked: false });
+                        window.location.reload();
+                        return;
+                    }
+
+                    // Check if account is disabled
+                    if (data.disabled) {
+                        await signOut(auth);
+                        showToast("This account has been disabled.", "ph-prohibit", "var(--danger)");
+                        return;
+                    }
+
+                    currentUserRole = (data.role || 'teacher').toLowerCase().trim();
+                    syncAdminSystemStates();
+                }
+            });
             
             // Update last login
             const lastLoginTs = serverTimestamp();
-            
-            if (userDoc.exists()) {
-                const data = userDoc.data();
-                
-                // Check if account is disabled
-                if (data.disabled) {
-                    await signOut(auth);
-                    showToast("This account has been disabled. Please contact the administrator.", "ph-prohibit", "var(--danger)");
-                    return;
-                }
-                
-                currentUserRole = (data.role || 'teacher').toLowerCase().trim();
-                // Update last login for existing user
-                await setDoc(userDocRef, { lastLogin: lastLoginTs }, { merge: true });
-            } else {
                 // For the very first user ever, we might want to make them admin.
                 const usersSnap = await getDocs(collection(db, "users"));
                 if (usersSnap.empty) {
@@ -625,8 +635,18 @@ sendLinkBtn.addEventListener('click', async () => {
 });
 
 // Logout
-logoutBtn.addEventListener('click', () => {
-    signOut(auth);
+logoutBtn.addEventListener('click', async () => {
+    if (auth.currentUser) {
+        try {
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            // Trigger cross-device logout
+            await updateDoc(userRef, { sessionRevoked: true });
+        } catch (e) {
+            console.error("Session sync failed:", e);
+        }
+    }
+    await signOut(auth);
+    window.location.reload();
 });
 
 // Forgot Password

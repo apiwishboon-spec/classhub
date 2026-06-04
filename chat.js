@@ -134,12 +134,13 @@ async function refreshChatHistory() {
     let html = '';
     allDocs.forEach(msg => {
         const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const isResolved = msg.status === 'resolved';
         
         // Initial Message (Student)
         html += `
-            <div class="chat-thread">
+            <div class="chat-thread ${isResolved ? 'solved' : ''}">
                 <div class="chat-bubble user">${msg.message}</div>
-                <div class="chat-time">${date}</div>
+                <div class="chat-time">${date} ${isResolved ? '· Solved' : ''}</div>
         `;
 
         // Old Single Reply (Backward Compatibility)

@@ -148,6 +148,12 @@
     border-top-left-radius: 2px;
 }
 
+.chat-thread.solved {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+    pointer-events: none; /* Disable interaction */
+}
+
 .chat-time {
     font-size: 0.65rem;
     color: rgba(255,255,255,0.8);
