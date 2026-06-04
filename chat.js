@@ -25,7 +25,6 @@ function showToast(message, icon, color) {
 
 function injectFloatingButton() {
     if (document.getElementById('open-chat-page')) return;
-    // Don't inject on chat.html itself
     if (window.location.pathname.includes('chat.html')) return;
 
     const btn = document.createElement('a');
@@ -48,16 +47,14 @@ async function initChatPage() {
 
     if (!historyContainer) return;
 
-    // Load initial history
     await refreshChatHistory();
 
-    // Setup Send Message
     sendBtn.addEventListener('click', async () => {
         const text = inputField.value.trim();
         if (!text) return;
 
         sendBtn.disabled = true;
-        sendBtn.style.opacity = '0.5';
+        sendBtn.innerHTML = '<div class="chat-loader" style="padding:0; gap:2px;"><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span><span style="width:4px;height:4px;background:white;"></span></div>';
 
         try {
             const docRef = await addDoc(collection(db, "feedback"), {
@@ -72,27 +69,19 @@ async function initChatPage() {
             localStorage.setItem('my_feedback_ids', JSON.stringify(myMessages));
             
             inputField.value = '';
-            inputField.style.height = 'auto'; // Reset height
             urgentCheckbox.checked = false;
+            showToast("Message sent to staff!", "ph-paper-plane-tilt", "var(--success)");
             
-            // Re-render and listen
             await refreshChatHistory();
             listenForReplies(docRef.id);
         } catch (e) {
             showToast("Error sending message: " + e.message, "ph-x", "var(--danger)");
         } finally {
             sendBtn.disabled = false;
-            sendBtn.style.opacity = '1';
+            sendBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Message';
         }
     });
 
-    // Auto-resize textarea
-    inputField.addEventListener('input', () => {
-        inputField.style.height = 'auto';
-        inputField.style.height = (inputField.scrollHeight) + 'px';
-    });
-
-    // Enter to send
     inputField.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -123,45 +112,64 @@ async function refreshChatHistory() {
             const docSnap = await getDoc(doc(db, "feedback", id));
             if (docSnap.exists()) {
                 allDocs.push({ id, ...docSnap.data() });
-                listenForReplies(id); // Ensure we are listening for everything in history
+                listenForReplies(id);
             }
         } catch (e) { console.error("Error fetching", id, e); }
     }
 
-    // Sort by creation date
     allDocs.sort((a, b) => (a.createdAt?.toDate() || 0) - (b.createdAt?.toDate() || 0));
 
     let html = '';
     allDocs.forEach(msg => {
-        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const date = msg.createdAt ? msg.createdAt.toDate().toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Just now';
         const isResolved = msg.status === 'resolved';
         
-        // Initial Message (Student)
         html += `
-            <div class="chat-thread ${isResolved ? 'solved' : ''}">
-                <div class="chat-bubble user">${msg.message}</div>
-                <div class="chat-time">${date} ${isResolved ? '· Solved' : ''}</div>
+            <div class="chat-thread ${isResolved ? 'solved' : ''}" style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                    <div class="chat-bubble user">
+                        ${msg.message}
+                    </div>
+                    <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You${isResolved ? ' · Solved' : ''}</span>
+                </div>
         `;
 
-        // Old Single Reply (Backward Compatibility)
         if (msg.reply) {
             html += `
-                <div class="chat-bubble staff">${msg.reply}</div>
-                <div class="chat-time" style="color:rgba(0,0,0,0.5); align-self:flex-start;">Staff</div>
+                <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                    <div class="chat-bubble staff">
+                        ${msg.reply}
+                    </div>
+                    <span style="font-size: 0.65rem; color: var(--text-secondary);">Staff Reply</span>
+                </div>
             `;
         }
 
-        // Threaded Replies
         if (msg.replies && Array.isArray(msg.replies)) {
             msg.replies.forEach(reply => {
                 const isUser = reply.sender === 'user';
                 const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
                 
                 html += `
-                    <div class="chat-bubble ${isUser ? 'user' : 'staff'}">${reply.text}</div>
-                    <div class="chat-time" style="${!isUser ? 'color:rgba(0,0,0,0.5); align-self:flex-start;' : ''}">${replyTime}</div>
+                    <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
+                        <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
+                            ${reply.text}
+                        </div>
+                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${isUser ? 'You' : 'Staff'}</span>
+                    </div>
                 `;
             });
+        }
+
+        if (!isResolved) {
+            html += `
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; max-width: 100%;">
+                    <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.85rem; padding: 0.6rem; flex: 1; border-radius: 20px;" data-id="${msg.id}">
+                    <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 1.25rem; min-height: auto; font-size: 0.8rem; border-radius: 20px;">
+                        <i class="ph ph-paper-plane-right"></i>
+                    </button>
+                </div>
+            `;
         }
 
         html += `</div>`;
@@ -169,7 +177,6 @@ async function refreshChatHistory() {
 
     historyContainer.innerHTML = html;
     
-    // Setup Reply Buttons
     document.querySelectorAll('.send-feedback-reply-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
@@ -202,7 +209,6 @@ async function refreshChatHistory() {
         });
     });
 
-    // Enter to reply in thread
     document.querySelectorAll('.feedback-reply-input').forEach(input => {
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
@@ -212,7 +218,6 @@ async function refreshChatHistory() {
         });
     });
 
-    // Scroll to bottom
     setTimeout(() => {
         historyContainer.scrollTop = historyContainer.scrollHeight;
     }, 100);
@@ -226,18 +231,13 @@ function listenForReplies(messageId) {
     onSnapshot(doc(db, "feedback", messageId), (docSnap) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
-            
-            // If on chat page, refresh history to show new replies immediately
             if (document.getElementById('chat-page-history')) {
                 refreshChatHistory();
             }
-
-            // Notification logic
             if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
                 showToast(`Staff replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
                 localStorage.setItem(`reply_seen_${messageId}`, 'true');
             }
-            
             if (data.replies && Array.isArray(data.replies)) {
                 const lastReply = data.replies[data.replies.length - 1];
                 if (lastReply && lastReply.sender === 'admin') {
@@ -258,8 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('chat-page-history')) {
         initChatPage();
     }
-    
-    // Resume listening for all previous messages
     const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
     myMessages.forEach(id => listenForReplies(id));
 });
