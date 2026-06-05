@@ -751,10 +751,6 @@ document.getElementById('forgot-pass-link').addEventListener('click', async (e) 
         loginError.style.display = 'block';
     }
 });
-
-        }
-    });
-}
 // Homework Quick Add Parser
 document.getElementById('hw-quick-add').addEventListener('input', (e) => {
     const text = e.target.value.trim();
