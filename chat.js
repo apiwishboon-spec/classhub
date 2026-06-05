@@ -23,22 +23,6 @@ function showToast(message, icon, color) {
     }, 4500);
 }
 
-function injectFloatingButton() {
-    if (document.getElementById('open-chat-page')) return;
-    if (window.location.pathname.includes('chat.html')) return;
-
-    const btn = document.createElement('a');
-    btn.id = 'open-chat-page';
-    btn.href = 'chat.html';
-    btn.style.cssText = 'position: fixed; bottom: 2rem; right: 2rem; width: 60px; height: 60px; border-radius: 30px; background: var(--accent-color); color: white; border: none; box-shadow: 0 4px 15px rgba(15, 98, 254, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000; transition: transform 0.2s ease;';
-    btn.innerHTML = `<img src="chaticon.png" alt="Chat" style="width: 35px; height: 35px; object-fit: contain;">`;
-    
-    btn.addEventListener('mouseenter', () => btn.style.transform = 'scale(1.1)');
-    btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
-    
-    document.body.appendChild(btn);
-}
-
 async function initChatPage() {
     const historyContainer = document.getElementById('chat-page-history');
     const inputField = document.getElementById('chat-page-input');
@@ -254,7 +238,6 @@ function listenForReplies(messageId) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    injectFloatingButton();
     if (document.getElementById('chat-page-history')) {
         initChatPage();
     }
