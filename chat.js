@@ -269,12 +269,15 @@ function listenForStaffStatus() {
         }
     });
 }
-
 document.addEventListener('DOMContentLoaded', () => {
+    // ONLY initialize chat page features if we are on the dedicated chat page
     if (document.getElementById('chat-page-history')) {
         initChatPage();
     }
+
+    // Always listen for status for the navigation icon
     listenForStaffStatus();
+
     const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
     myMessages.forEach(id => listenForReplies(id));
 });
