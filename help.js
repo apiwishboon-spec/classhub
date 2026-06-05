@@ -122,7 +122,7 @@ function getHelpLanguage() {
 }
 
 function renderHelpContent(modal, lang) {
-    const context = (typeof currentUserRole !== 'undefined' && currentUserRole) ? 'admin' : 'user';
+    const context = window.location.pathname.includes('admin') ? 'admin' : 'user';
     const content = HELP_CONTENT[context][lang] || HELP_CONTENT.user.en;
     modal.innerHTML = `
         <div class="help-modal-header">
