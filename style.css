@@ -163,6 +163,29 @@
     pointer-events: none;
 }
 
+/* --- Status & Seen Indicators --- */
+.status-dot {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-color);
+    background: #999;
+}
+.status-dot.online { background: #24a148; }
+.status-dot.busy { background: #da1e28; }
+
+.seen-indicator {
+    font-size: 0.65rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    margin-top: 0.1rem;
+    align-self: flex-end;
+}
+
+
 
 
 /* --- T-Rex Easter Egg Overlay --- */

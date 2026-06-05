@@ -115,6 +115,7 @@ async function refreshChatHistory() {
                         ${msg.message}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You${isResolved ? ' · Solved' : ''}</span>
+                    ${msg.status !== 'new' && msg.status !== 'solved' ? `<span class="seen-indicator">Seen</span>` : ''}
                 </div>
         `;
 
@@ -237,10 +238,34 @@ function listenForReplies(messageId) {
     });
 }
 
+function listenForStaffStatus() {
+    const chatBtn = document.getElementById('open-chat-page') || document.querySelector('a[href="./chat.html"]') || document.querySelector('a[href="chat.html"]');
+    if (!chatBtn) return;
+
+    // Ensure icon has relative position for dot
+    chatBtn.style.position = 'relative';
+    let dot = chatBtn.querySelector('.status-dot');
+    if (!dot) {
+        dot = document.createElement('div');
+        dot.className = 'status-dot';
+        chatBtn.appendChild(dot);
+    }
+
+    onSnapshot(doc(db, "settings", "staff_status"), (docSnap) => {
+        if (docSnap.exists()) {
+            const status = docSnap.data().status; // 'online', 'busy', 'offline'
+            dot.className = `status-dot ${status}`;
+        } else {
+            dot.className = 'status-dot offline';
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('chat-page-history')) {
         initChatPage();
     }
+    listenForStaffStatus();
     const myMessages = JSON.parse(localStorage.getItem('my_feedback_ids') || '[]');
     myMessages.forEach(id => listenForReplies(id));
 });

@@ -65,7 +65,7 @@ service cloud.firestore {
     }
 
     // 7. Settings collection
-    // Read: Anyone (to check maintenance mode)
+    // Read: Anyone (to check maintenance mode and staff status)
     // Write: Admins only
     match /settings/{id} {
       allow read: if true;

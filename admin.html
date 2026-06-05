@@ -66,6 +66,11 @@
                 <h1 style="color: var(--accent-color);">Admin Panel</h1>
             </div>
             <div class="admin-header-actions">
+                <select id="staff-status-toggle" class="time-badge" style="background: var(--bg-color); border: 1px solid var(--border-color); cursor: pointer; padding: 2px 8px;">
+                    <option value="online">🟢 Available</option>
+                    <option value="busy">🔴 Busy</option>
+                    <option value="offline">⚪ Offline</option>
+                </select>
                 <span id="user-role-badge" class="time-badge">Role: Teacher</span>
                 <a href="chat.html" class="icon-button" aria-label="Message Staff"><i class="ph ph-chat-centered-text"></i></a>
                 <button id="logout-btn" class="icon-button" aria-label="Logout"><i class="ph ph-sign-out"></i></button>

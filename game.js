@@ -41,16 +41,15 @@
         // Game State
         let gameActive = false;
         let score = 0;
-        let speed = 6;
+        let speed = 8; // Faster starting speed
         let groundX = 0;
         let trexY = 0;
         let trexVelocity = 0;
         let obstacles = [];
-        let clouds = [];
         let animId;
 
-        const gravity = 0.6;
-        const jumpStrength = -10;
+        const gravity = 0.65; // Slightly heavier physics
+        const jumpStrength = -11;
 
         // Load images
         const images = {};
@@ -62,17 +61,20 @@
 
         function reset() {
             score = 0;
-            speed = 6;
+            speed = 8;
             groundX = 0;
             trexY = 0;
             trexVelocity = 0;
             obstacles = [];
-            clouds = [];
             gameActive = true;
         }
 
         function spawnObstacle() {
             const type = Math.random() > 0.5 ? 'LARGE' : 'SMALL';
+            // Increase gap randomly to prevent impossible jumps
+            const minGap = 400 + (speed * 10);
+            if (obstacles.length > 0 && (600 - obstacles[obstacles.length-1].x) < minGap) return;
+
             obstacles.push({
                 x: 600,
                 type: type,
@@ -84,7 +86,7 @@
         function update() {
             if (!gameActive) return;
 
-            // Ground & Clouds
+            // Ground
             groundX -= speed;
             if (groundX <= -600) groundX = 0;
 
@@ -96,22 +98,28 @@
                 trexVelocity = 0;
             }
 
-            // Obstacles
-            if (Math.random() < 0.01 && (obstacles.length === 0 || obstacles[obstacles.length-1].x < 400)) {
+            // Obstacles spawning
+            if (Math.random() < 0.02) {
                 spawnObstacle();
             }
 
-            obstacles.forEach((obs, i) => {
+            obstacles.forEach((obs) => {
                 obs.x -= speed;
-                // Collision
-                if (obs.x < 84 && obs.x > 34 && trexY > -obs.height + 10) {
+                // Precise Collision
+                const trexBox = { x: 50, y: 80 + trexY, w: 34, h: 40 };
+                const obsBox = { x: obs.x + 5, y: (obs.type === 'LARGE' ? 80 : 95) + 5, w: obs.width - 10, h: obs.height - 5 };
+                
+                if (trexBox.x < obsBox.x + obsBox.w &&
+                    trexBox.x + trexBox.w > obsBox.x &&
+                    trexBox.y < obsBox.y + obsBox.h &&
+                    trexBox.y + trexBox.h > obsBox.y) {
                     gameActive = false;
                 }
             });
             obstacles = obstacles.filter(o => o.x > -100);
 
             score++;
-            if (score % 500 === 0) speed += 0.5;
+            if (score % 200 === 0) speed += 0.25; // Constant acceleration
         }
 
         function draw() {
@@ -121,13 +129,23 @@
             ctx.drawImage(images.HORIZON, groundX, 127, 600, 12);
             ctx.drawImage(images.HORIZON, groundX + 600, 127, 600, 12);
 
-            // Trex (Simplified sprite animation)
-            const trexFrame = Math.floor(score / 10) % 2 === 0 ? 88 : 132;
-            ctx.drawImage(images.TREX, gameActive ? trexFrame : 220, 0, 44, 47, 44, 80 + trexY, 44, 47);
+            // Trex Animation
+            // wait:0, run:88/132, crash:220
+            let trexFrame = 0;
+            if (gameActive) {
+                if (trexY < 0) trexFrame = 0; // Jumping frame
+                else trexFrame = Math.floor(score / 8) % 2 === 0 ? 88 : 132;
+            } else {
+                trexFrame = score === 0 ? 0 : 220; // Crash or Idle
+            }
+            
+            // Fix "half body" by using exact Chromium sprite dimensions (44x47)
+            ctx.drawImage(images.TREX, trexFrame, 0, 44, 47, 44, 80 + trexY, 44, 47);
 
             // Obstacles
             obstacles.forEach(obs => {
                 const img = obs.type === 'LARGE' ? images.OBSTACLE_LARGE : images.OBSTACLE_SMALL;
+                // Large cacti are 50x50, Small are 34x35 approx.
                 ctx.drawImage(img, obs.x, obs.type === 'LARGE' ? 80 : 95, obs.width, obs.height);
             });
 

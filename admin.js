@@ -288,6 +288,11 @@ function loadFeedback() {
 
             if (isResolved) return; // Hide resolved from inbox
 
+            // Mark as 'seen' if currently 'new'
+            if (data.status === 'new') {
+                updateDoc(doc(db, "feedback", d.id), { status: 'seen' });
+            }
+
             // Build conversation thread - combine old reply field and new replies array
             let conversationHtml = '';
             
@@ -464,11 +469,23 @@ async function checkEmailLinkSignIn() {
 // Auth State Observer
 let userListener = null;
 
+async function setStaffStatus(status) {
+    try {
+        await setDoc(doc(db, "settings", "staff_status"), { 
+            status: status,
+            lastUpdated: serverTimestamp() 
+        }, { merge: true });
+    } catch (e) { console.error("Status update failed:", e); }
+}
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Logged in
         loginContainer.style.display = 'none';
         adminContainer.style.display = 'block';
+        
+        // Set status to online
+        setStaffStatus('online');
         
         try {
             const userDocRef = doc(db, "users", user.uid);
@@ -559,6 +576,13 @@ function updateAdminSectionsVisibility() {
         loadAuditLog();
         loadBugReports();
         performSystemCleanup();
+        
+        // Sync status toggle with DB
+        const statusToggle = document.getElementById('staff-status-toggle');
+        onSnapshot(doc(db, "settings", "staff_status"), (snap) => {
+            if (snap.exists()) statusToggle.value = snap.data().status;
+        });
+        statusToggle.onchange = () => setStaffStatus(statusToggle.value);
     } else if (currentUserRole === 'teacher') {
         manageUsersSection.style.display = 'none';
         manageScheduleSection.style.display = 'none';
@@ -646,6 +670,8 @@ logoutBtn.addEventListener('click', async () => {
             const userRef = doc(db, "users", auth.currentUser.uid);
             // Trigger cross-device logout
             await updateDoc(userRef, { sessionRevoked: true });
+            // Set status to offline
+            await setStaffStatus('offline');
         } catch (e) {
             console.error("Session sync failed:", e);
         }
