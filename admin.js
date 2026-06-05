@@ -495,8 +495,8 @@ async function setStaffStatus(status) {
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Logged in
-        loginContainer.style.display = 'none';
-        adminContainer.style.display = 'block';
+        if (loginContainer) loginContainer.style.display = 'none';
+        if (adminContainer) adminContainer.style.display = 'block';
         
         // Set status to online
         setStaffStatus('online');
@@ -556,8 +556,8 @@ onAuthStateChanged(auth, async (user) => {
     } else {
         // Logged out
         if (userListener) { userListener(); userListener = null; }
-        loginContainer.style.display = 'block';
-        adminContainer.style.display = 'none';
+        if (loginContainer) loginContainer.style.display = 'block';
+        if (adminContainer) adminContainer.style.display = 'none';
         checkEmailLinkSignIn();
         // Clear other listeners...
         if (systemStatesListener) { systemStatesListener(); systemStatesListener = null; }
