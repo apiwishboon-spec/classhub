@@ -240,23 +240,35 @@ function listenForReplies(messageId) {
 
 function listenForStaffStatus() {
     const chatBtn = document.getElementById('open-chat-page') || document.querySelector('a[href="./chat.html"]') || document.querySelector('a[href="chat.html"]');
-    if (!chatBtn) return;
+    const statusTextEl = document.getElementById('staff-status-text');
+    const statusDotEl = document.getElementById('staff-status-dot');
 
-    // Ensure icon has relative position for dot
-    chatBtn.style.position = 'relative';
-    let dot = chatBtn.querySelector('.status-dot');
-    if (!dot) {
-        dot = document.createElement('div');
-        dot.className = 'status-dot';
-        chatBtn.appendChild(dot);
+    // Dot for the floating icon
+    let dot;
+    if (chatBtn) {
+        chatBtn.style.position = 'relative';
+        dot = chatBtn.querySelector('.status-dot');
+        if (!dot) {
+            dot = document.createElement('div');
+            dot.className = 'status-dot';
+            chatBtn.appendChild(dot);
+        }
     }
 
     onSnapshot(doc(db, "settings", "staff_status"), (docSnap) => {
+        let status = 'offline';
         if (docSnap.exists()) {
-            const status = docSnap.data().status; // 'online', 'busy', 'offline'
-            dot.className = `status-dot ${status}`;
-        } else {
-            dot.className = 'status-dot offline';
+            status = docSnap.data().status;
+        }
+
+        // Update dot on icon
+        if (dot) dot.className = `status-dot ${status}`;
+        
+        // Update header display if on chat page
+        if (statusTextEl && statusDotEl) {
+            statusDotEl.className = `status-dot ${status}`;
+            const label = status.charAt(0).toUpperCase() + status.slice(1);
+            statusTextEl.textContent = `Staff is ${label}`;
         }
     });
 }

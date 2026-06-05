@@ -555,6 +555,8 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 function updateAdminSectionsVisibility() {
+    const statusToggle = document.getElementById('staff-status-toggle');
+    
     if (currentUserRole === 'admin') {
         manageUsersSection.style.display = 'block';
         manageScheduleSection.style.display = 'block';
@@ -565,6 +567,7 @@ function updateAdminSectionsVisibility() {
         systemSettingsSection.style.display = 'block';
         auditLogSection.style.display = 'block';
         bugReportsSection.style.display = 'block';
+        feedbackInboxSection.style.display = 'block';
         
         loadUsers();
         loadSchedule();
@@ -577,12 +580,11 @@ function updateAdminSectionsVisibility() {
         loadBugReports();
         performSystemCleanup();
         
-        // Sync status toggle with DB
-        const statusToggle = document.getElementById('staff-status-toggle');
-        onSnapshot(doc(db, "settings", "staff_status"), (snap) => {
-            if (snap.exists()) statusToggle.value = snap.data().status;
-        });
-        statusToggle.onchange = () => setStaffStatus(statusToggle.value);
+        // Admins can change status
+        if (statusToggle) {
+            statusToggle.disabled = false;
+            syncStatusToggle();
+        }
     } else if (currentUserRole === 'teacher') {
         manageUsersSection.style.display = 'none';
         manageScheduleSection.style.display = 'none';
@@ -590,22 +592,46 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
+        feedbackInboxSection.style.display = 'block';
         
         loadAnnouncements();
         loadHomework();
         loadPolls();
         loadFeedback();
         performSystemCleanup();
+
+        // Teachers can change status
+        if (statusToggle) {
+            statusToggle.disabled = false;
+            syncStatusToggle();
+        }
     } else if (currentUserRole === 'ta') {
+        // TAs can ONLY manage homework
         manageUsersSection.style.display = 'none';
         manageScheduleSection.style.display = 'none';
         addAnnouncementSection.style.display = 'none';
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'none';
         manageHomeworkSection.style.display = 'block';
+        systemSettingsSection.style.display = 'none';
+        auditLogSection.style.display = 'none';
+        bugReportsSection.style.display = 'none';
+        feedbackInboxSection.style.display = 'none';
         
         loadHomework();
+
+        // TAs CANNOT change status
+        if (statusToggle) statusToggle.disabled = true;
     }
+}
+
+function syncStatusToggle() {
+    const statusToggle = document.getElementById('staff-status-toggle');
+    if (!statusToggle) return;
+    onSnapshot(doc(db, "settings", "staff_status"), (snap) => {
+        if (snap.exists()) statusToggle.value = snap.data().status;
+    });
+    statusToggle.onchange = () => setStaffStatus(statusToggle.value);
 }
 
 // Password Login

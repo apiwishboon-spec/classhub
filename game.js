@@ -41,14 +41,14 @@
         // Game State
         let gameActive = false;
         let score = 0;
-        let speed = 8; // Faster starting speed
+        let speed = 7; // User requested 7
         let groundX = 0;
         let trexY = 0;
         let trexVelocity = 0;
         let obstacles = [];
         let animId;
 
-        const gravity = 0.65; // Slightly heavier physics
+        const gravity = 0.65;
         const jumpStrength = -11;
 
         // Load images
@@ -61,7 +61,7 @@
 
         function reset() {
             score = 0;
-            speed = 8;
+            speed = 7;
             groundX = 0;
             trexY = 0;
             trexVelocity = 0;
@@ -71,8 +71,8 @@
 
         function spawnObstacle() {
             const type = Math.random() > 0.5 ? 'LARGE' : 'SMALL';
-            // Increase gap randomly to prevent impossible jumps
-            const minGap = 400 + (speed * 10);
+            // Minimum gap between obstacles
+            const minGap = 350 + (speed * 10);
             if (obstacles.length > 0 && (600 - obstacles[obstacles.length-1].x) < minGap) return;
 
             obstacles.push({
@@ -105,8 +105,8 @@
 
             obstacles.forEach((obs) => {
                 obs.x -= speed;
-                // Precise Collision
-                const trexBox = { x: 50, y: 80 + trexY, w: 34, h: 40 };
+                // Precise Collision (T-Rex is at X:50)
+                const trexBox = { x: 50, y: 80 + trexY, w: 30, h: 40 };
                 const obsBox = { x: obs.x + 5, y: (obs.type === 'LARGE' ? 80 : 95) + 5, w: obs.width - 10, h: obs.height - 5 };
                 
                 if (trexBox.x < obsBox.x + obsBox.w &&
@@ -119,18 +119,17 @@
             obstacles = obstacles.filter(o => o.x > -100);
 
             score++;
-            if (score % 200 === 0) speed += 0.25; // Constant acceleration
+            if (score % 250 === 0) speed += 0.2; // Slower acceleration
         }
 
         function draw() {
             ctx.clearRect(0, 0, 600, 150);
 
             // Ground
-            ctx.drawImage(images.HORIZON, groundX, 127, 600, 12);
-            ctx.drawImage(images.HORIZON, groundX + 600, 127, 600, 12);
+            ctx.drawImage(images.HORIZON, Math.round(groundX), 127, 600, 12);
+            ctx.drawImage(images.HORIZON, Math.round(groundX + 600), 127, 600, 12);
 
             // Trex Animation
-            // wait:0, run:88/132, crash:220
             let trexFrame = 0;
             if (gameActive) {
                 if (trexY < 0) trexFrame = 0; // Jumping frame
@@ -139,14 +138,13 @@
                 trexFrame = score === 0 ? 0 : 220; // Crash or Idle
             }
             
-            // Fix "half body" by using exact Chromium sprite dimensions (44x47)
-            ctx.drawImage(images.TREX, trexFrame, 0, 44, 47, 44, 80 + trexY, 44, 47);
+            // Draw T-Rex at X:50 to align with collision box
+            ctx.drawImage(images.TREX, trexFrame, 0, 44, 47, 50, Math.round(80 + trexY), 44, 47);
 
             // Obstacles
             obstacles.forEach(obs => {
                 const img = obs.type === 'LARGE' ? images.OBSTACLE_LARGE : images.OBSTACLE_SMALL;
-                // Large cacti are 50x50, Small are 34x35 approx.
-                ctx.drawImage(img, obs.x, obs.type === 'LARGE' ? 80 : 95, obs.width, obs.height);
+                ctx.drawImage(img, Math.round(obs.x), obs.type === 'LARGE' ? 80 : 95, obs.width, obs.height);
             });
 
             // Score
