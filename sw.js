@@ -1,7 +1,6 @@
 const CACHE_NAME = 'classhub-v1';
 const ASSETS = [
   '/',
-  '/index.html',
   '/style.css',
   '/script.js',
   '/favicon.png',

@@ -5,7 +5,7 @@ async function trackVisit() {
     try {
         let path = window.location.pathname;
         if (path === '/' || path === '' || path.endsWith('/')) {
-            path += 'index.html';
+            path = '/index'; // Use a clean internal ID
         }
         const pageId = path.replace(/\//g, '_').replace(/^\_+|\_+$/g, '') || 'home';
 

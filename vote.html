@@ -99,7 +99,7 @@
         const pollId = urlParams.get('pollId');
 
         if (!pollId) {
-            voteUi.innerHTML = '<i class="ph ph-warning-circle" style="font-size:3rem; color:var(--danger);"></i><p>Invalid Poll Link</p><a href="index.html" class="btn-secondary" style="text-decoration:none;">Go Home</a>';
+            voteUi.innerHTML = '<i class="ph ph-warning-circle" style="font-size:3rem; color:var(--danger);"></i><p>Invalid Poll Link</p><a href="./" class="btn-secondary" style="text-decoration:none;">Go Home</a>';
         } else {
             initPoll();
         }
