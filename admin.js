@@ -655,49 +655,52 @@ function syncStatusToggle() {
 }
 
 // Password Login
-loginBtn.addEventListener('click', async () => {
-    loginError.style.display = 'none';
-    loginSuccess.style.display = 'none';
-    const email = emailInput.value.trim();
-    const pass = passInput.value.trim();
-    
-    if (!email || !pass) {
-        loginError.textContent = 'Please enter email and password.';
-        loginError.style.display = 'block';
-        return;
-    }
-    
-    loginBtn.textContent = 'Logging in...';
-    try {
-        await signInWithEmailAndPassword(auth, email, pass);
-    } catch (error) {
-        loginError.textContent = error.message;
-        loginError.style.display = 'block';
-    } finally {
-        loginBtn.textContent = 'Login with Password';
-    }
-});
+if (loginBtn) {
+    loginBtn.addEventListener('click', async () => {
+        loginError.style.display = 'none';
+        loginSuccess.style.display = 'none';
+        const email = emailInput.value.trim();
+        const pass = passInput.value.trim();
+        
+        if (!email || !pass) {
+            loginError.textContent = 'Please enter email and password.';
+            loginError.style.display = 'block';
+            return;
+        }
+        
+        loginBtn.textContent = 'Logging in...';
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+        } catch (error) {
+            loginError.textContent = error.message;
+            loginError.style.display = 'block';
+        } finally {
+            loginBtn.textContent = 'Login with Password';
+        }
+    });
+}
 
 // Email Link Login
-sendLinkBtn.addEventListener('click', async () => {
-    loginError.style.display = 'none';
-    loginSuccess.style.display = 'none';
-    const email = emailLinkInput.value.trim();
-    
-    if (!email) {
-        loginError.textContent = 'Please enter your email.';
-        loginError.style.display = 'block';
-        return;
-    }
-    
-    const actionCodeSettings = {
-        url: window.location.href, // Redirect back to this page
-        handleCodeInApp: true
-    };
-    
-    sendLinkBtn.textContent = 'Sending...';
-    try {
-        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+if (sendLinkBtn) {
+    sendLinkBtn.addEventListener('click', async () => {
+        loginError.style.display = 'none';
+        loginSuccess.style.display = 'none';
+        const email = emailLinkInput.value.trim();
+        
+        if (!email) {
+            loginError.textContent = 'Please enter your email.';
+            loginError.style.display = 'block';
+            return;
+        }
+        
+        const actionCodeSettings = {
+            url: window.location.href, // Redirect back to this page
+            handleCodeInApp: true
+        };
+        
+        sendLinkBtn.textContent = 'Sending...';
+        try {
+            await sendSignInLinkToEmail(auth, email, actionCodeSettings);
         window.localStorage.setItem('emailForSignIn', email);
         loginSuccess.textContent = 'Login link sent! Please check your email.';
         loginSuccess.style.display = 'block';

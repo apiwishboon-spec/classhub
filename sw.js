@@ -20,6 +20,12 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Ignore external API/analytics requests
+  if (event.request.url.startsWith('https://www.googletagmanager.com') || 
+      event.request.url.startsWith('https://www.google-analytics.com')) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
