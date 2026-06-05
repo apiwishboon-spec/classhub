@@ -558,6 +558,12 @@ onAuthStateChanged(auth, async (user) => {
 function updateAdminSectionsVisibility() {
     const statusToggle = document.getElementById('staff-status-toggle');
     
+    // Safety check for critical DOM elements
+    if (!manageUsersSection || !manageScheduleSection || !addAnnouncementSection || !feedbackInboxSection) {
+        console.warn("Admin sections not fully loaded in DOM.");
+        return;
+    }
+    
     if (currentUserRole === 'admin') {
         manageUsersSection.style.display = 'block';
         manageScheduleSection.style.display = 'block';
