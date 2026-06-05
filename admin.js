@@ -35,6 +35,7 @@ const auditLogSection = document.getElementById('audit-log-section');
 const bugReportsSection = document.getElementById('bug-reports-section');
 const bugReportsList = document.getElementById('bug-reports-list');
 const bugCountBadge = document.getElementById('bug-count-badge');
+const feedbackInboxSection = document.getElementById('feedback-inbox-section');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
@@ -132,7 +133,7 @@ function closeModal() {
 
 // Global modal close listeners
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('close-modal')) {
+    if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-overlay')) {
         closeModal();
     }
 });
