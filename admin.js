@@ -133,7 +133,11 @@ function closeModal() {
     
     // Hide staff chat overlay
     const staffOverlay = document.getElementById('staff-chat-overlay');
-    if (staffOverlay) staffOverlay.style.display = 'none';
+    if (staffOverlay) {
+        staffOverlay.style.display = 'none';
+        const modal = staffOverlay.querySelector('.modal-card');
+        if (modal) modal.style.display = 'none';
+    }
     
     document.querySelectorAll('.modal-card').forEach(m => m.style.display = 'none');
 }
@@ -756,6 +760,8 @@ let staffChatListener = null;
 if (openStaffChatBtn) {
     openStaffChatBtn.addEventListener('click', () => {
         staffChatOverlay.style.display = 'flex';
+        const modal = staffChatOverlay.querySelector('.modal-card');
+        if (modal) modal.style.display = 'block';
         initStaffChat();
     });
 }
