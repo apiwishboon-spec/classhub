@@ -711,14 +711,14 @@ document.getElementById('forgot-pass-link').addEventListener('click', async (e) 
     e.preventDefault();
     loginError.style.display = 'none';
     loginSuccess.style.display = 'none';
-    
+
     const email = emailInput.value.trim();
     if (!email) {
         loginError.textContent = 'Please enter your email address first.';
         loginError.style.display = 'block';
         return;
     }
-    
+
     try {
         await sendPasswordResetEmail(auth, email);
         loginSuccess.textContent = 'Password reset email sent! Check your inbox.';
@@ -729,6 +729,78 @@ document.getElementById('forgot-pass-link').addEventListener('click', async (e) 
     }
 });
 
+// Staff Chat Logic
+const openStaffChatBtn = document.getElementById('open-staff-chat');
+const staffChatOverlay = document.getElementById('staff-chat-overlay');
+const staffChatMessages = document.getElementById('staff-chat-messages');
+const staffChatInput = document.getElementById('staff-chat-input');
+const sendStaffMsgBtn = document.getElementById('send-staff-msg-btn');
+let staffChatListener = null;
+
+if (openStaffChatBtn) {
+    openStaffChatBtn.addEventListener('click', () => {
+        staffChatOverlay.style.display = 'flex';
+        initStaffChat();
+    });
+}
+
+function initStaffChat() {
+    if (staffChatListener) return;
+
+    staffChatListener = onSnapshot(query(collection(db, "staff_messages"), orderBy("createdAt", "asc"), limit(50)), (snap) => {
+        let html = '';
+        snap.forEach(doc => {
+            const data = doc.data();
+            const isMe = auth.currentUser && data.uid === auth.currentUser.uid;
+            const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+            html += `
+                <div style="display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'};">
+                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 0.2rem; margin-${isMe ? 'right' : 'left'}: 0.5rem;">
+                        ${data.userName} · ${time}
+                    </div>
+                    <div class="chat-bubble ${isMe ? 'user' : 'staff'}" style="max-width: 85%; background: ${isMe ? 'var(--accent-color)' : 'var(--card-bg)'}; color: ${isMe ? 'white' : 'var(--text-main)'}; border-radius: 12px; padding: 0.6rem 0.9rem; font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: ${isMe ? 'none' : '1px solid var(--border-color)'};">
+                        ${data.text}
+                    </div>
+                </div>
+            `;
+        });
+        staffChatMessages.innerHTML = html;
+        staffChatMessages.scrollTop = staffChatMessages.scrollHeight;
+    });
+}
+
+async function sendStaffMessage() {
+    const text = staffChatInput.value.trim();
+    if (!text || !auth.currentUser) return;
+
+    staffChatInput.value = '';
+    staffChatInput.style.height = 'auto';
+
+    try {
+        await addDoc(collection(db, "staff_messages"), {
+            text: text,
+            uid: auth.currentUser.uid,
+            userName: auth.currentUser.email.split('@')[0],
+            createdAt: serverTimestamp()
+        });
+    } catch (e) {
+        showToast("Error: " + e.message);
+    }
+}
+
+if (sendStaffMsgBtn) {
+    sendStaffMsgBtn.addEventListener('click', sendStaffMessage);
+}
+
+if (staffChatInput) {
+    staffChatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendStaffMessage();
+        }
+    });
+}
 // Homework Quick Add Parser
 document.getElementById('hw-quick-add').addEventListener('input', (e) => {
     const text = e.target.value.trim();

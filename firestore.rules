@@ -106,5 +106,14 @@ service cloud.firestore {
       allow create: if true;
       allow read, update, delete: if request.auth != null && getUserRole() == 'admin';
     }
+
+    // 12. Staff Chat collection (Private)
+    match /staff_messages/{id} {
+      allow read, write: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher' || 
+        getUserRole() == 'ta'
+      );
+    }
   }
 }
