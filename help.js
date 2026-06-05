@@ -1,37 +1,53 @@
 /**
  * MyClassHub Bilingual Help Manual
- * Shows on first visit as a popup, accessible via "?" icon button.
- * Supports EN/TH language toggle.
- * Works on both index.html and admin.html.
  */
 
 const HELP_CONTENT = {
-    en: {
-        title: "Welcome to MyClassHub! 👋",
-        sections: [
-            { icon: "ph-calendar", title: "Schedule", desc: "View your weekly class schedule. The current day is highlighted. On mobile, you can tap a day to filter. Subjects are color-coded by course." },
-            { icon: "ph-megaphone", title: "Announcements", desc: "Important updates from your teacher appear here. New announcements are marked with a badge." },
-            { icon: "ph-pencil-simple", title: "Homework", desc: "View all assignments with due dates. Filter by: All, Due Soon, Overdue, or Completed. Mark homework as done by clicking the checkbox." },
-            { icon: "ph-note", title: "Quick Notes", desc: "Jot down anything you need to remember. Notes auto-save and sync across devices." },
-            { icon: "ph-moon", title: "Dark Mode", desc: "Toggle between light and dark themes using the moon icon in the header." },
-            { icon: "ph-user-gear", title: "Admin Panel", desc: "Teachers can log in to post announcements, add homework, manage schedules, and more." },
-            { icon: "ph-bell", title: "Push Notifications", desc: "Enable notifications to get alerts when new homework or announcements are posted." },
-            { icon: "ph-magnifying-glass", title: "Search", desc: "Use the search bar to quickly find anything — schedule entries, homework, or notes." }
-        ],
-        footer: "Need more help? Contact your admin from the footer link."
+    user: {
+        en: {
+            title: "Welcome to MyClassHub! 👋",
+            sections: [
+                { icon: "ph-calendar", title: "Schedule", desc: "View your weekly class schedule. The current day is highlighted." },
+                { icon: "ph-megaphone", title: "Announcements", desc: "Important updates from your teacher appear here." },
+                { icon: "ph-pencil-simple", title: "Homework", desc: "View all assignments with due dates. Mark them as done!" },
+                { icon: "ph-chat-centered-text", title: "Message Staff", desc: "Use the chat icon in the top header to send anonymous messages to your staff." },
+                { icon: "ph-magnifying-glass", title: "Search", desc: "Quickly find schedule entries, homework, or announcements." }
+            ],
+            footer: "Need more help? Contact your admin."
+        },
+        th: {
+            title: "ยินดีต้อนรับสู่ MyClassHub! 👋",
+            sections: [
+                { icon: "ph-calendar", title: "ตารางเรียน", desc: "ดูตารางเรียนประจำสัปดาห์ของคุณ วันปัจจุบันจะถูกไฮไลต์" },
+                { icon: "ph-megaphone", title: "ประกาศ", desc: "ประกาศสำคัญจากครูจะแสดงที่นี่" },
+                { icon: "ph-pencil-simple", title: "การบ้าน", desc: "ดูงานที่มอบหมายพร้อมกำหนดส่ง สามารถทำเครื่องหมายว่าเสร็จสิ้นได้" },
+                { icon: "ph-chat-centered-text", title: "ติดต่อเจ้าหน้าที่", desc: "ใช้ไอคอนแชทที่แถบด้านบนเพื่อส่งข้อความแบบไม่ระบุตัวตน" }
+            ],
+            footer: "ต้องการความช่วยเหลือเพิ่มเติม? ติดต่อผู้ดูแลระบบ"
+        }
     },
-    th: {
-        title: "ยินดีต้อนรับสู่ MyClassHub! 👋",
-        sections: [
-            { icon: "ph-calendar", title: "ตารางเรียน", desc: "ดูตารางเรียนประจำสัปดาห์ วันปัจจุบันจะถูกไฮไลต์ บนมือถือสามารถแตะวันเพื่อกรองได้ แต่ละวิชามีสีประจำวิชา" },
-            { icon: "ph-megaphone", title: "ประกาศ", desc: "ประกาศสำคัญจากครูจะแสดงที่นี่ ประกาศใหม่จะมีการแสดงสัญลักษณ์แจ้งเตือน" },
-            { icon: "ph-pencil-simple", title: "การบ้าน", desc: "ดูงานที่มอบหมายทั้งหมดพร้อมกำหนดส่ง กรองตาม: ทั้งหมด, ใกล้กำหนด, เลยกำหนด, หรือ เสร็จแล้ว สามารถทำเครื่องหมายว่าทำเสร็จได้" },
-            { icon: "ph-note", title: "บันทึกด่วน", desc: "จดสิ่งที่ต้องจำ บันทึกจะบันทึกอัตโนมัติและซิงค์ข้ามอุปกรณ์" },
-            { icon: "ph-moon", title: "โหมดมืด", desc: "สลับระหว่างธีมสว่างและมืดโดยใช้ไอคอนพระจันทร์ที่แถบด้านบน" },
-            { icon: "ph-user-gear", title: "แผงผู้ดูแล", desc: "ครูสามารถเข้าสู่ระบบเพื่อโพสต์ประกาศ เพิ่มการบ้าน จัดการตารางเรียน และอื่นๆ" },
-            { icon: "ph-magnifying-glass", title: "ค้นหา", desc: "ใช้แถบค้นหาเพื่อค้นหาข้อมูลได้อย่างรวดเร็ว ไม่ว่าจะเป็นตารางเรียน การบ้าน หรือบันทึก" }
-        ],
-        footer: "ต้องการความช่วยเหลือเพิ่มเติม? ติดต่อผู้ดูแลระบบได้ที่ลิงก์ท้ายหน้า"
+    admin: {
+        en: {
+            title: "Admin Dashboard Guide ⚙️",
+            sections: [
+                { icon: "ph-user-gear", title: "Admin Panel", desc: "Manage users, announcements, homework, and schedules from here." },
+                { icon: "ph-chats-teardrop", title: "Staff Chat", desc: "Use the private Staff Chat icon (top right) for internal communication." },
+                { icon: "ph-tray", title: "Feedback Inbox", desc: "Review student questions. You can reply, mark as solved (which locks the thread), or delete." },
+                { icon: "ph-chart-bar", title: "Class Polls", desc: "Create polls and generate QR codes for students to vote instantly." },
+                { icon: "ph-check-circle", title: "Auto-Cleanup", desc: "Resolved messages and closed polls are automatically deleted after 1 month." }
+            ],
+            footer: "Ensure your staff status is set to 'Available' to receive student inquiries."
+        },
+        th: {
+            title: "คู่มือแผงผู้ดูแลระบบ ⚙️",
+            sections: [
+                { icon: "ph-user-gear", title: "แผงควบคุม", desc: "จัดการผู้ใช้ ประกาศ การบ้าน และตารางเรียนจากที่นี่" },
+                { icon: "ph-chats-teardrop", title: "แชทเจ้าหน้าที่", desc: "ใช้ไอคอนแชทส่วนตัว (ขวาบน) เพื่อสื่อสารกับเจ้าหน้าที่ภายใน" },
+                { icon: "ph-tray", title: "ข้อความนักเรียน", desc: "อ่านคำถามจากนักเรียน สามารถตอบ, ทำเครื่องหมายว่าแก้ไขแล้ว (ล็อกแชท), หรือลบ" },
+                { icon: "ph-chart-bar", title: "แบบสำรวจ", desc: "สร้างแบบสำรวจและสร้าง QR Code เพื่อให้นักเรียนลงคะแนน" }
+            ],
+            footer: "ตั้งสถานะของคุณเป็น 'Available' เพื่อรับคำถามจากนักเรียน"
+        }
     }
 };
 
@@ -60,7 +76,6 @@ function buildHelpElements() {
 }
 
 function setupHelpButton() {
-    // Try both page layouts: index.html or admin.html
     const target = document.querySelector('.admin-header-actions') || document.querySelector('.top-nav > div:last-child');
     if (!target || document.getElementById('help-btn')) return;
 
@@ -107,7 +122,8 @@ function getHelpLanguage() {
 }
 
 function renderHelpContent(modal, lang) {
-    const content = HELP_CONTENT[lang] || HELP_CONTENT.en;
+    const context = (typeof currentUserRole !== 'undefined' && currentUserRole) ? 'admin' : 'user';
+    const content = HELP_CONTENT[context][lang] || HELP_CONTENT.user.en;
     modal.innerHTML = `
         <div class="help-modal-header">
             <div class="help-lang-tabs">
