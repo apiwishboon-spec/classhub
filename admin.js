@@ -777,20 +777,22 @@ function initStaffChat() {
             const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
 
             html += `
-                <div style="display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'};">
-                    <div style="font-size: 0.65rem; color: var(--text-secondary); margin-bottom: 0.2rem; margin-${isMe ? 'right' : 'left'}: 0.5rem;">
-                        ${data.userName} · ${time}
+                <div style="display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.5rem;">
+                    <div style="font-size: 0.7rem; color: #888; margin-${isMe ? 'right' : 'left'}: 5px; margin-bottom: 2px;">
+                        ${isMe ? 'You' : data.userName}
                     </div>
-                    <div class="chat-bubble ${isMe ? 'user' : 'staff'}" style="max-width: 85%; background: ${isMe ? 'var(--accent-color)' : 'var(--card-bg)'}; color: ${isMe ? 'white' : 'var(--text-main)'}; border-radius: 12px; padding: 0.6rem 0.9rem; font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: ${isMe ? 'none' : '1px solid var(--border-color)'};">
+                    <div class="chat-bubble ${isMe ? 'user' : 'staff'}" style="max-width: 75%; background: ${isMe ? 'var(--accent-color)' : '#e5e7eb'}; color: ${isMe ? 'white' : '#000'}; border-radius: 12px; padding: 0.6rem 0.9rem; font-size: 0.9rem; line-height: 1.4; border: none;">
                         ${data.text}
+                    </div>
+                    <div style="font-size: 0.6rem; color: #aaa; margin-${isMe ? 'right' : 'left'}: 5px; margin-top: 2px;">
+                        ${time}
                     </div>
                 </div>
             `;
         });
         staffChatMessages.innerHTML = html;
         staffChatMessages.scrollTop = staffChatMessages.scrollHeight;
-    });
-}
+    });}
 
 async function sendStaffMessage() {
     const text = staffChatInput.value.trim();
