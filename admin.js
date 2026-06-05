@@ -1936,9 +1936,9 @@ function showAdminLockoutOverlay(correctPasscode) {
     if (document.getElementById('lockout-overlay')) return;
 
     const appContainer = document.getElementById('admin-container');
-    const loginContainer = document.getElementById('login-container');
+    const lContainer = document.getElementById('login-container');
     if (appContainer) appContainer.style.display = 'none';
-    if (loginContainer) loginContainer.style.display = 'none';
+    if (lContainer) lContainer.style.display = 'none';
 
     const overlay = document.createElement('div');
     overlay.id = 'lockout-overlay';
