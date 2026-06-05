@@ -249,7 +249,7 @@ function listenForStaffStatus() {
         }
 
         // Update all possible chat icons with the status dot
-        const chatIcons = document.querySelectorAll('a[href="./chat.html"], a[href="chat.html"], #open-chat-page, #open-staff-chat');
+        const chatIcons = document.querySelectorAll('a[href="./chat.html"], a[href="chat.html"], #open-chat-page');
         chatIcons.forEach(btn => {
             btn.style.position = 'relative';
             let dot = btn.querySelector('.status-dot');

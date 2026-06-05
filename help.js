@@ -38,7 +38,6 @@ const HELP_CONTENT = {
                 { icon: "ph-user-gear", title: "User Management", desc: "Manage teacher/TA accounts. You can create, edit, or disable user accounts and assign roles (Admin, Teacher, TA)." },
                 { icon: "ph-megaphone", title: "Announcements", desc: "Draft and post announcements that appear on the student dashboard immediately." },
                 { icon: "ph-notebook", title: "Homework Management", desc: "Add homework tasks with specific due dates. You can also edit or delete past assignments." },
-                { icon: "ph-chats-teardrop", title: "Staff Chat", desc: "Private channel for internal staff coordination. Accessible via the chat icon in the admin header." },
                 { icon: "ph-tray", title: "Feedback Inbox", desc: "Read student messages. Use the 'Reply' button to answer. Mark as 'Solved' to lock the thread and mark it for auto-cleanup." },
                 { icon: "ph-chart-bar", title: "Class Polls", desc: "Create polls with multiple options. Each poll generates a unique QR code for student voting." },
                 { icon: "ph-check-circle", title: "System Maintenance", desc: "The system automatically cleans up resolved feedback and expired polls older than 1 month to keep the database fast." },
@@ -52,7 +51,6 @@ const HELP_CONTENT = {
                 { icon: "ph-user-gear", title: "การจัดการผู้ใช้", desc: "เพิ่มหรือระงับบัญชีผู้ใช้งาน และกำหนดสิทธิ์ (Admin, Teacher, TA)" },
                 { icon: "ph-megaphone", title: "ประกาศ", desc: "สร้างและประกาศข้อมูลไปยังแดชบอร์ดนักเรียนทันที" },
                 { icon: "ph-notebook", title: "จัดการการบ้าน", desc: "เพิ่ม แก้ไข หรือลบการบ้านและกำหนดวันส่ง" },
-                { icon: "ph-chats-teardrop", title: "แชทเจ้าหน้าที่", desc: "ช่องทางพูดคุยภายในสำหรับทีมงาน" },
                 { icon: "ph-tray", title: "ข้อความนักเรียน", desc: "ตอบคำถามนักเรียน สามารถกด 'Solved' เพื่อล็อกการสนทนา" },
                 { icon: "ph-chart-bar", title: "แบบสำรวจ", desc: "สร้างโพลและ QR Code สำหรับการลงคะแนน" }
             ],

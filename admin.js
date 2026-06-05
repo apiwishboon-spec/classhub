@@ -752,79 +752,6 @@ document.getElementById('forgot-pass-link').addEventListener('click', async (e) 
     }
 });
 
-// Staff Chat Logic
-const openStaffChatBtn = document.getElementById('open-staff-chat');
-const staffChatOverlay = document.getElementById('staff-chat-overlay');
-const staffChatMessages = document.getElementById('staff-chat-messages');
-const staffChatInput = document.getElementById('staff-chat-input');
-const sendStaffMsgBtn = document.getElementById('send-staff-msg-btn');
-let staffChatListener = null;
-
-if (openStaffChatBtn) {
-    openStaffChatBtn.addEventListener('click', () => {
-        staffChatOverlay.style.display = 'flex';
-        const modal = staffChatOverlay.querySelector('.modal-card');
-        if (modal) modal.style.display = 'block';
-        initStaffChat();
-    });
-}
-
-function initStaffChat() {
-    if (staffChatListener) return;
-
-    staffChatListener = onSnapshot(query(collection(db, "staff_messages"), orderBy("createdAt", "asc"), limit(50)), (snap) => {
-        let html = '';
-        snap.forEach(doc => {
-            const data = doc.data();
-            const isMe = auth.currentUser && data.uid === auth.currentUser.uid;
-            const time = data.createdAt ? data.createdAt.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-
-            html += `
-                <div style="display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'}; margin-bottom: 0.5rem;">
-                    <div style="font-size: 0.7rem; color: #888; margin-${isMe ? 'right' : 'left'}: 5px; margin-bottom: 2px;">
-                        ${isMe ? 'You' : data.userName}
-                    </div>
-                    <div class="chat-bubble ${isMe ? 'user' : 'staff'}" style="max-width: 75%; background: ${isMe ? 'var(--accent-color)' : '#e5e7eb'}; color: ${isMe ? 'white' : '#000'}; border-radius: 12px; padding: 0.6rem 0.9rem; font-size: 0.9rem; line-height: 1.4; border: none;">
-                        ${data.text}
-                    </div>
-                    <div style="font-size: 0.6rem; color: #aaa; margin-${isMe ? 'right' : 'left'}: 5px; margin-top: 2px;">
-                        ${time}
-                    </div>
-                </div>
-            `;
-        });
-        staffChatMessages.innerHTML = html;
-        staffChatMessages.scrollTop = staffChatMessages.scrollHeight;
-    });}
-
-async function sendStaffMessage() {
-    const text = staffChatInput.value.trim();
-    if (!text || !auth.currentUser) return;
-
-    staffChatInput.value = '';
-    staffChatInput.style.height = 'auto';
-
-    try {
-        await addDoc(collection(db, "staff_messages"), {
-            text: text,
-            uid: auth.currentUser.uid,
-            userName: auth.currentUser.email.split('@')[0],
-            createdAt: serverTimestamp()
-        });
-    } catch (e) {
-        showToast("Error: " + e.message);
-    }
-}
-
-if (sendStaffMsgBtn) {
-    sendStaffMsgBtn.addEventListener('click', sendStaffMessage);
-}
-
-if (staffChatInput) {
-    staffChatInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendStaffMessage();
         }
     });
 }
@@ -2045,4 +1972,3 @@ document.getElementById('save-archive-btn')?.addEventListener('click', async () 
         showToast("Error saving: " + e.message);
     }
 });
-}
