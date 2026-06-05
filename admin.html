@@ -369,8 +369,8 @@
 
     <!-- Staff Chat Modal (Private) -->
     <div class="modal-overlay" id="staff-chat-overlay" style="display: none;">
-        <div class="modal-card" style="max-width: 600px; padding: 0 !important; overflow: hidden; display: flex; flex-direction: column; height: 80vh;">
-            <div class="card-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: var(--card-bg); display: flex; justify-content: space-between; align-items: center;">
+        <div class="modal-card" style="max-width: 600px; padding: 0 !important; overflow: hidden; display: flex; flex-direction: column; height: 80vh; max-height: 80vh;">
+            <div class="card-header" style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); background: var(--card-bg); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                 <h2 style="margin: 0; font-size: 1.1rem;"><i class="ph ph-chats-teardrop" style="color: var(--accent-color);"></i> Private Staff Chat</h2>
                 <button class="icon-button close-modal" style="padding: 0;"><i class="ph ph-x"></i></button>
             </div>
@@ -379,8 +379,8 @@
                 <!-- Messages load here -->
             </div>
 
-            <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background: var(--card-bg); display: flex; gap: 0.75rem;">
-                <textarea id="staff-chat-input" placeholder="Type a message to other staff..." class="form-input" rows="1" style="resize: none; border-radius: 20px; padding: 0.6rem 1.2rem;"></textarea>
+            <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background: var(--card-bg); display: flex; gap: 0.75rem; flex-shrink: 0;">
+                <textarea id="staff-chat-input" placeholder="Type a message to other staff..." class="form-input" rows="1" style="resize: none; border-radius: 20px; padding: 0.6rem 1.2rem; min-height: 40px;"></textarea>
                 <button id="send-staff-msg-btn" class="chat-send-btn" style="color: var(--accent-color); padding: 0 1rem; font-size: 1.8rem;">
                     <i class="ph ph-paper-plane-right-fill"></i>
                 </button>
