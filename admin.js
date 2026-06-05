@@ -462,6 +462,8 @@ async function checkEmailLinkSignIn() {
 }
 
 // Auth State Observer
+let userListener = null;
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Logged in
@@ -469,108 +471,64 @@ onAuthStateChanged(auth, async (user) => {
         adminContainer.style.display = 'block';
         
         try {
-            // Fetch user role and session status from Firestore
             const userDocRef = doc(db, "users", user.uid);
+            const userDoc = await getDoc(userDocRef);
+            const lastLoginTs = serverTimestamp();
             
-            // Set up a real-time listener for the user document to sync logout
-            onSnapshot(userDocRef, async (docSnap) => {
+            if (userDoc.exists()) {
+                // Clear any existing revocation flag upon a fresh login
+                await updateDoc(userDocRef, { 
+                    sessionRevoked: false,
+                    lastLogin: lastLoginTs,
+                    email: user.email // Ensure email is synced
+                });
+            } else {
+                // First-time user setup
+                const usersSnap = await getDocs(collection(db, "users"));
+                currentUserRole = usersSnap.empty ? 'admin' : 'teacher';
+                
+                await setDoc(userDocRef, { 
+                    role: currentUserRole, 
+                    email: user.email,
+                    lastLogin: lastLoginTs,
+                    sessionRevoked: false
+                });
+            }
+
+            // Start the real-time listener for this user
+            if (userListener) userListener();
+            userListener = onSnapshot(userDocRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    
-                    // If sessionRevoked is true, force logout on this device
                     if (data.sessionRevoked) {
+                        if (userListener) { userListener(); userListener = null; }
                         await signOut(auth);
-                        // Reset the flag for the next time they login
-                        await updateDoc(userDocRef, { sessionRevoked: false });
                         window.location.reload();
                         return;
                     }
-
-                    // Check if account is disabled
                     if (data.disabled) {
                         await signOut(auth);
                         showToast("This account has been disabled.", "ph-prohibit", "var(--danger)");
                         return;
                     }
-
                     currentUserRole = (data.role || 'teacher').toLowerCase().trim();
+                    const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
+                    userRoleBadge.textContent = `Role: ${displayRole}`;
                     syncAdminSystemStates();
+                    updateAdminSectionsVisibility();
                 }
             });
-            
-            // Update last login
-            const lastLoginTs = serverTimestamp();
-                // For the very first user ever, we might want to make them admin.
-                const usersSnap = await getDocs(collection(db, "users"));
-                if (usersSnap.empty) {
-                    currentUserRole = 'admin';
-                } else {
-                    currentUserRole = 'teacher'; // Default for new signups
-                }
-                await setDoc(userDocRef, { 
-                    role: currentUserRole, 
-                    email: user.email,
-                    lastLogin: lastLoginTs
-                });
-            }
-            
-            const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
-            userRoleBadge.textContent = `Role: ${displayRole}`;
-            
-            // Manage Section Visibility based on Role
-            if (currentUserRole === 'admin') {
-                manageUsersSection.style.display = 'block';
-                manageScheduleSection.style.display = 'block';
-                addAnnouncementSection.style.display = 'block';
-                addHomeworkSection.style.display = 'block';
-                manageAnnouncementsSection.style.display = 'block';
-                manageHomeworkSection.style.display = 'block';
-                systemSettingsSection.style.display = 'block';
-                auditLogSection.style.display = 'block';
-                bugReportsSection.style.display = 'block';
-                
-                loadUsers();
-                loadSchedule();
-                loadAnnouncements();
-                loadHomework();
-                loadPolls();
-                loadFeedback();
-                loadSettings();
-                loadAuditLog();
-                loadBugReports();
-                performSystemCleanup();
-            } else if (currentUserRole === 'teacher') {
-                manageUsersSection.style.display = 'none';
-                manageScheduleSection.style.display = 'none';
-                addAnnouncementSection.style.display = 'block';
-                addHomeworkSection.style.display = 'block';
-                manageAnnouncementsSection.style.display = 'block';
-                manageHomeworkSection.style.display = 'block';
-                
-                loadAnnouncements();
-                loadHomework();
-                loadPolls();
-                loadFeedback();
-                performSystemCleanup();
-            } else if (currentUserRole === 'ta') {
-                manageUsersSection.style.display = 'none';
-                manageScheduleSection.style.display = 'none';
-                addAnnouncementSection.style.display = 'none';
-                addHomeworkSection.style.display = 'block';
-                manageAnnouncementsSection.style.display = 'none';
-                manageHomeworkSection.style.display = 'block';
-                
-                loadHomework();
-            }
-            syncAdminSystemStates();
+
         } catch (error) {
-            console.error("Error fetching user role:", error);
+            console.error("Auth state processing failed:", error);
         }
     } else {
         // Logged out
+        if (userListener) { userListener(); userListener = null; }
         loginContainer.style.display = 'block';
         adminContainer.style.display = 'none';
         checkEmailLinkSignIn();
+        // Clear other listeners...
         if (systemStatesListener) { systemStatesListener(); systemStatesListener = null; }
         if (annListener) { annListener(); annListener = null; }
         if (hwListener) { hwListener(); hwListener = null; }
@@ -578,6 +536,53 @@ onAuthStateChanged(auth, async (user) => {
         if (feedbackListener) { feedbackListener(); feedbackListener = null; }
     }
 });
+
+function updateAdminSectionsVisibility() {
+    if (currentUserRole === 'admin') {
+        manageUsersSection.style.display = 'block';
+        manageScheduleSection.style.display = 'block';
+        addAnnouncementSection.style.display = 'block';
+        addHomeworkSection.style.display = 'block';
+        manageAnnouncementsSection.style.display = 'block';
+        manageHomeworkSection.style.display = 'block';
+        systemSettingsSection.style.display = 'block';
+        auditLogSection.style.display = 'block';
+        bugReportsSection.style.display = 'block';
+        
+        loadUsers();
+        loadSchedule();
+        loadAnnouncements();
+        loadHomework();
+        loadPolls();
+        loadFeedback();
+        loadSettings();
+        loadAuditLog();
+        loadBugReports();
+        performSystemCleanup();
+    } else if (currentUserRole === 'teacher') {
+        manageUsersSection.style.display = 'none';
+        manageScheduleSection.style.display = 'none';
+        addAnnouncementSection.style.display = 'block';
+        addHomeworkSection.style.display = 'block';
+        manageAnnouncementsSection.style.display = 'block';
+        manageHomeworkSection.style.display = 'block';
+        
+        loadAnnouncements();
+        loadHomework();
+        loadPolls();
+        loadFeedback();
+        performSystemCleanup();
+    } else if (currentUserRole === 'ta') {
+        manageUsersSection.style.display = 'none';
+        manageScheduleSection.style.display = 'none';
+        addAnnouncementSection.style.display = 'none';
+        addHomeworkSection.style.display = 'block';
+        manageAnnouncementsSection.style.display = 'none';
+        manageHomeworkSection.style.display = 'block';
+        
+        loadHomework();
+    }
+}
 
 // Password Login
 loginBtn.addEventListener('click', async () => {
