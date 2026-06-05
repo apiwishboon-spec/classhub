@@ -127,13 +127,22 @@ function openModal(modalId) {
 }
 
 function closeModal() {
-    document.getElementById('modal-overlay').style.display = 'none';
+    // Hide standard modal overlay
+    const modalOverlay = document.getElementById('modal-overlay');
+    if (modalOverlay) modalOverlay.style.display = 'none';
+    
+    // Hide staff chat overlay
+    const staffOverlay = document.getElementById('staff-chat-overlay');
+    if (staffOverlay) staffOverlay.style.display = 'none';
+    
     document.querySelectorAll('.modal-card').forEach(m => m.style.display = 'none');
 }
 
 // Global modal close listeners
 document.addEventListener('click', (e) => {
-    if (e.target.classList.contains('close-modal') || e.target.classList.contains('modal-overlay')) {
+    // Also handle clicks on the close button icon (i) within the close button
+    const closeBtn = e.target.closest('.close-modal');
+    if (closeBtn || e.target.classList.contains('modal-overlay')) {
         closeModal();
     }
 });
