@@ -32,20 +32,14 @@
         <div class="dashboard-card admin-login-card">
             <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
             
-            <form id="password-login-fields">
-                <div style="margin-bottom: 1rem;">
-                    <label for="email" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Email" class="form-input" autocomplete="username">
-                </div>
-                <div style="margin-bottom: 0.5rem;">
-                    <label for="password" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Password" class="form-input" autocomplete="current-password">
-                </div>
+            <div id="password-login-fields">
+                <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
+                <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 0.5rem;">
                 <div style="text-align: right; margin-bottom: 1.5rem;">
                     <a href="#" id="forgot-pass-link" style="font-size: 0.8rem; color: var(--accent-color); text-decoration: none;">Forgot Password?</a>
                 </div>
-                <button type="button" id="login-btn" class="btn-primary btn-full">Login with Password</button>
-            </form>
+                <button id="login-btn" class="btn-primary btn-full">Login with Password</button>
+            </div>
 
             <div class="login-divider">
                 <hr>
@@ -53,8 +47,7 @@
             </div>
 
             <div id="email-link-login-fields">
-                <label for="email-link-input" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Email for login link</label>
-                <input type="email" id="email-link-input" name="email-link" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;" autocomplete="email">
+                <input type="email" id="email-link-input" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;">
                 <button id="send-link-btn" class="btn-primary btn-full">Send Login Link</button>
             </div>
 

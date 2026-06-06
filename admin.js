@@ -42,15 +42,6 @@ const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
 const cleanupToggle = document.getElementById('cleanup-toggle');
 
-// Global Listeners
-let userListener = null;
-let systemStatesListener = null;
-let annListener = null;
-let hwListener = null;
-let pollListener = null;
-let feedbackListener = null;
-let bugListener = null;
-
 // ... rest of imports and DOM elements ...
 
 async function performSystemCleanup() {
@@ -498,70 +489,64 @@ async function setStaffStatus(status) {
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Logged in: Switch UI immediately
+        // Logged in
         if (loginContainer) loginContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
         
+        // Set status to online
+        setStaffStatus('online');
+        
         try {
-            // Set status to online (don't let this block the rest)
-            setStaffStatus('online');
-            
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
             const lastLoginTs = serverTimestamp();
             
             if (userDoc.exists()) {
+                // Clear any existing revocation flag upon a fresh login
                 await updateDoc(userDocRef, { 
                     sessionRevoked: false,
                     lastLogin: lastLoginTs,
-                    email: user.email 
+                    email: user.email // Ensure email is synced
                 });
             } else {
                 // First-time user setup
-                // We'll default to teacher if we can't read the whole collection
-                let initialRole = 'teacher';
-                try {
-                    const usersSnap = await getDocs(query(collection(db, "users"), limit(1)));
-                    if (usersSnap.empty) initialRole = 'admin';
-                } catch (e) { console.warn("Could not check users collection, defaulting to teacher role."); }
+                const usersSnap = await getDocs(collection(db, "users"));
+                currentUserRole = usersSnap.empty ? 'admin' : 'teacher';
                 
                 await setDoc(userDocRef, { 
-                    role: initialRole, 
+                    role: currentUserRole, 
                     email: user.email,
                     lastLogin: lastLoginTs,
                     sessionRevoked: false
                 });
-                currentUserRole = initialRole;
             }
 
             // Start the real-time listener for this user
             if (userListener) userListener();
-            userListener = onSnapshot(userDocRef, (docSnap) => {
+            userListener = onSnapshot(userDocRef, async (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if (data.sessionRevoked) {
                         if (userListener) { userListener(); userListener = null; }
-                        signOut(auth).then(() => window.location.reload());
+                        await signOut(auth);
+                        window.location.reload();
                         return;
                     }
                     if (data.disabled) {
-                        signOut(auth);
+                        await signOut(auth);
                         showToast("This account has been disabled.", "ph-prohibit", "var(--danger)");
                         return;
                     }
                     currentUserRole = (data.role || 'teacher').toLowerCase().trim();
                     const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
-                    if (userRoleBadge) userRoleBadge.textContent = `Role: ${displayRole}`;
+                    userRoleBadge.textContent = `Role: ${displayRole}`;
                     syncAdminSystemStates();
                     updateAdminSectionsVisibility();
                 }
             });
 
         } catch (error) {
-            console.error("Auth document sync failed:", error);
-            showToast("Sync Error: Dashboard limited functionality.");
-            // Still try to show what we can
-            updateAdminSectionsVisibility();
+            console.error("Auth state processing failed:", error);
         }
     } else {
         // Logged out
