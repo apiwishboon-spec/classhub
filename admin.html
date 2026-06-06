@@ -32,14 +32,20 @@
         <div class="dashboard-card admin-login-card">
             <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
             
-            <div id="password-login-fields">
-                <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
-                <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 0.5rem;">
+            <form id="password-login-fields">
+                <div style="margin-bottom: 1rem;">
+                    <label for="email" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Email</label>
+                    <input type="email" id="email" name="email" placeholder="Email" class="form-input" autocomplete="username">
+                </div>
+                <div style="margin-bottom: 0.5rem;">
+                    <label for="password" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Password" class="form-input" autocomplete="current-password">
+                </div>
                 <div style="text-align: right; margin-bottom: 1.5rem;">
                     <a href="#" id="forgot-pass-link" style="font-size: 0.8rem; color: var(--accent-color); text-decoration: none;">Forgot Password?</a>
                 </div>
-                <button id="login-btn" class="btn-primary btn-full">Login with Password</button>
-            </div>
+                <button type="button" id="login-btn" class="btn-primary btn-full">Login with Password</button>
+            </form>
 
             <div class="login-divider">
                 <hr>
@@ -47,7 +53,8 @@
             </div>
 
             <div id="email-link-login-fields">
-                <input type="email" id="email-link-input" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;">
+                <label for="email-link-input" style="display: block; font-size: 0.8rem; margin-bottom: 0.3rem;">Email for login link</label>
+                <input type="email" id="email-link-input" name="email-link" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;" autocomplete="email">
                 <button id="send-link-btn" class="btn-primary btn-full">Send Login Link</button>
             </div>
 
@@ -361,7 +368,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>
-    <script type="module" src="admin.js?v=11"></script>
+    <script type="module" src="admin.js?v=12"></script>
     <script type="module" src="chat.js"></script>
 <script type="module" src="game.js"></script>    <script src="help.js?v=2"></script>
     <script type="module" src="bug-report.js"></script>
