@@ -42,6 +42,15 @@ const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
 const cleanupToggle = document.getElementById('cleanup-toggle');
 
+// Global Listeners
+let userListener = null;
+let systemStatesListener = null;
+let annListener = null;
+let hwListener = null;
+let pollListener = null;
+let feedbackListener = null;
+let bugListener = null;
+
 // ... rest of imports and DOM elements ...
 
 async function performSystemCleanup() {
@@ -161,9 +170,6 @@ const emailLinkInput = document.getElementById('email-link-input');
 const sendLinkBtn = document.getElementById('send-link-btn');
 
 let currentUserRole = 'teacher';
-let annListener = null;
-let hwListener = null;
-let pollListener = null;
 
 // Load Polls (real-time)
 function loadPolls() {
@@ -283,7 +289,6 @@ function loadPolls() {
 let feedbackListener = null;
 
 // Load Feedback (real-time)
-function loadFeedback() {
     if (feedbackListener) { feedbackListener(); feedbackListener = null; }
 
     const list = document.getElementById('feedback-list-admin');
@@ -1734,7 +1739,6 @@ let bugListener = null;
 function loadBugReports() {
     if (bugListener) { bugListener(); bugListener = null; }
 
-    bugListener = onSnapshot(query(collection(db, "bugs"), orderBy("createdAt", "desc")), (snap) => {
         const newCount = snap.docs.filter(d => d.data().status === 'new').length;
         if (bugCountBadge) bugCountBadge.textContent = newCount;
 
@@ -1809,7 +1813,6 @@ async function syncAdminSystemStates() {
     if (systemStatesListener) return; // avoid duplicate listeners
     
     try {
-        systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
 
