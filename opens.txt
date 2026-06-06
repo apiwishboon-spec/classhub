@@ -1,0 +1,496 @@
+1:import { db, auth, firebaseConfig } from './firebase-config.js';
+3:import { 
+14:import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+15:import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+47:async function performSystemCleanup() {
+55:    try {
+57:        for (const d of feedbackSnap.docs) {
+59:            if (data.resolvedAt && data.resolvedAt.toDate() < oneMonthAgo) {
+66:        for (const d of pollsSnap.docs) {
+67:            if (d.data().createdAt && d.data().createdAt.toDate() < oneWeekAgo) {
+72:    } catch (e) { console.error("Cleanup error:", e); }
+74:    if (deletedCount > 0) logAction("System Cleanup", `Deleted ${deletedCount} old items.`);
+76:function showToast(message, icon, color) {
+81:    toast.innerHTML = `<span class="toast-icon"><i class="ph ${icon || 'ph-info'}"></i></span><span class="toast-text">${message}</span>`;
+85:    setTimeout(() => {
+92:function customConfirm(title, message) {
+93:    return new Promise((resolve) => {
+110:        const cleanup = () => {
+117:        okBtn.onclick = () => { cleanup(); resolve(true); };
+118:        cancelBtn.onclick = () => { cleanup(); resolve(false); };
+122:function openModal(modalId) {
+129:function closeModal() {
+136:    if (staffOverlay) {
+146:document.addEventListener('click', (e) => {
+149:    if (closeBtn || e.target.classList.contains('modal-overlay')) {
+169:function loadPolls() {
+170:    if (pollListener) { pollListener(); pollListener = null; }
+174:    pollListener = onSnapshot(query(collection(db, "polls"), orderBy("createdAt", "desc")), (snap) => {
+175:        if (snap.empty) {
+181:        snap.forEach(d => {
+183:            const totalVotes = Object.values(data.votes || {}).reduce((a, b) => a + b, 0);
+187:                <div class="admin-sched-card" style="border-left: 4px solid ${isOpen ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+190:                            <span style="font-weight:700;">${data.question}</span>
+191:                            <span style="font-size:0.7rem; color:var(--text-secondary);">${isOpen ? '🟢 OPEN' : '🔴 CLOSED'} — Total Votes: ${totalVotes}</span>
+194:                            <button class="toggle-poll-btn admin-btn-icon" data-id="${d.id}" data-open="${isOpen}" title="${isOpen ? 'Close Poll' : 'Open Poll'}">
+195:                                <i class="ph ${isOpen ? 'ph-lock-open' : 'ph-lock'}"></i>
+197:                            <button class="qr-full-btn admin-btn-icon" data-id="${d.id}" data-question="${data.question.replace(/"/g, '&quot;')}" style="color:var(--accent-color);"><i class="ph ph-corners-out"></i></button>
+198:                            <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+202:                        <div id="qr-${d.id}" style="background:white; padding:5px; border-radius:4px; opacity: ${isOpen ? 1 : 0.3};"></div>
+205:                            ${Object.entries(data.votes || {}).map(([opt, count]) => `
+207:                                    <span>${opt}</span>
+208:                                    <span style="font-weight:700;">${count}</span>
+219:        snap.forEach(d => {
+221:            const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
+222:            new QRCode(document.getElementById(`qr-${d.id}`), {
+232:        document.querySelectorAll('.toggle-poll-btn').forEach(btn => {
+233:            btn.addEventListener('click', async () => {
+236:                try {
+237:                    await updateDoc(doc(db, "polls", id), {
+240:                    showToast(`Poll ${!currentState ? 'Opened' : 'Closed'} successfully!`);
+241:                    logAction("Toggle Poll", `ID: ${id}, State: ${!currentState ? 'Open' : 'Closed'}`);
+242:                } catch (e) {
+248:        document.querySelectorAll('.qr-full-btn').forEach(btn => {
+249:            btn.addEventListener('click', (e) => {
+252:                const pollUrl = `${window.location.origin}/vote.html?pollId=${id}`;
+258:                new QRCode(container, {
+271:        document.querySelectorAll('.remove-poll-btn').forEach(btn => {
+272:            btn.addEventListener('click', async (e) => {
+273:                if (await customConfirm("Confirm Action", "Delete this poll and all its data?")) {
+276:                    logAction("Delete Poll", `ID: ${id}`);
+286:function loadFeedback() {
+287:    if (feedbackListener) { feedbackListener(); feedbackListener = null; }
+291:    feedbackListener = onSnapshot(query(collection(db, "feedback"), orderBy("createdAt", "desc")), (snap) => {
+292:        if (snap.empty) {
+298:        snap.forEach(d => {
+306:            if (data.status === 'new') {
+307:                updateDoc(doc(db, "feedback", d.id), { status: 'seen' });
+314:            if (data.reply) {
+318:                        <div style="font-size: 0.85rem;">${data.reply}</div>
+324:            if (data.replies && Array.isArray(data.replies)) {
+325:                data.replies.forEach((reply, index) => {
+327:                    const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
+329:                        <div style="background: ${isUser ? 'var(--highlight-bg)' : 'var(--bg-color)'}; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+330:                            <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
+331:                                ${isUser ? 'STUDENT' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
+333:                            <div style="font-size: 0.85rem;">${reply.text}</div>
+340:                <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : 'var(--accent-color)'};">
+342:                        <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
+343:                        ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
+345:                    <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
+347:                    ${conversationHtml ? `
+350:                            ${conversationHtml}
+355:                        <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
+356:                        <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
+360:                        <button class="resolve-feedback-btn btn-secondary" data-id="${d.id}" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-height:auto;">
+363:                        <button class="remove-feedback-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+370:        document.querySelectorAll('.reply-input').forEach(input => {
+371:            input.addEventListener('keydown', (e) => {
+372:                if (e.key === 'Enter' && !e.shiftKey) {
+375:                    document.querySelector(`.send-reply-btn[data-id="${id}"]`)?.click();
+378:            input.addEventListener('input', () => {
+384:        document.querySelectorAll('.send-reply-btn').forEach(btn => {
+385:            btn.addEventListener('click', async () => {
+387:                const input = document.querySelector(`.reply-input[data-id="${id}"]`);
+391:                try {
+393:                    if (docSnap.exists()) {
+398:                        await updateDoc(doc(db, "feedback", id), {
+399:                            replies: [...currentReplies, {
+408:                } catch (e) {
+414:        document.querySelectorAll('.resolve-feedback-btn').forEach(btn => {
+415:            btn.addEventListener('click', async () => {
+417:                await updateDoc(doc(db, "feedback", id), {
+422:                logAction("Resolve Feedback", `ID: ${id}`);
+426:        document.querySelectorAll('.remove-feedback-btn').forEach(btn => {
+427:            btn.addEventListener('click', async () => {
+428:                if (await customConfirm("Confirm Action", "Permanently delete this message?")) {
+431:                    logAction("Delete Feedback", `ID: ${id}`);
+441:function initTheme() {
+443:    if (savedTheme === 'dark') {
+445:    } else if (savedTheme === 'light') {
+447:    } else {
+452:function applySunsetTheme() {
+465:async function checkEmailLinkSignIn() {
+466:    if (isSignInWithEmailLink(auth, window.location.href)) {
+468:        if (!email) {
+472:        try {
+476:        } catch (error) {
+486:async function setStaffStatus(status) {
+487:    try {
+488:        await setDoc(doc(db, "settings", "staff_status"), { 
+491:        }, { merge: true });
+492:    } catch (e) { console.error("Status update failed:", e); }
+495:onAuthStateChanged(auth, async (user) => {
+496:    if (user) {
+501:        try {
+509:            if (userDoc.exists()) {
+510:                await updateDoc(userDocRef, { 
+515:            } else {
+519:                try {
+522:                } catch (e) { console.warn("Could not check users collection, defaulting to teacher role."); }
+524:                await setDoc(userDocRef, { 
+535:            userListener = onSnapshot(userDocRef, (docSnap) => {
+536:                if (docSnap.exists()) {
+538:                    if (data.sessionRevoked) {
+539:                        if (userListener) { userListener(); userListener = null; }
+543:                    if (data.disabled) {
+550:                    if (userRoleBadge) userRoleBadge.textContent = `Role: ${displayRole}`;
+556:        } catch (error) {
+562:    } else {
+564:        if (userListener) { userListener(); userListener = null; }
+569:        if (systemStatesListener) { systemStatesListener(); systemStatesListener = null; }
+570:        if (annListener) { annListener(); annListener = null; }
+571:        if (hwListener) { hwListener(); hwListener = null; }
+572:        if (pollListener) { pollListener(); pollListener = null; }
+573:        if (feedbackListener) { feedbackListener(); feedbackListener = null; }
+577:function updateAdminSectionsVisibility() {
+581:    if (!manageUsersSection || !manageScheduleSection || !addAnnouncementSection || !feedbackInboxSection) {
+586:    if (currentUserRole === 'admin') {
+610:        if (statusToggle) {
+614:    } else if (currentUserRole === 'teacher') {
+630:        if (statusToggle) {
+634:    } else if (currentUserRole === 'ta') {
+654:function syncStatusToggle() {
+657:    onSnapshot(doc(db, "settings", "staff_status"), (snap) => {
+664:if (loginBtn) {
+665:    loginBtn.addEventListener('click', async () => {
+671:        if (!email || !pass) {
+678:        try {
+680:        } catch (error) {
+683:        } finally {
+690:if (sendLinkBtn) {
+691:    sendLinkBtn.addEventListener('click', async () => {
+696:        if (!email) {
+702:        const actionCodeSettings = {
+708:        try {
+713:    } catch (error) {
+716:    } finally {
+722:logoutBtn.addEventListener('click', async () => {
+723:    if (auth.currentUser) {
+724:        try {
+727:            await updateDoc(userRef, { sessionRevoked: true });
+730:        } catch (e) {
+739:document.getElementById('forgot-pass-link').addEventListener('click', async (e) => {
+745:    if (!email) {
+751:    try {
+755:    } catch (error) {
+761:document.getElementById('hw-quick-add').addEventListener('input', (e) => {
+769:    if (match) {
+772:        if (match[3]) {
+777:            if (/^\d{4}-\d{2}-\d{2}$/.test(dueStr)) {
+779:            } else if (dueStr === 'tomorrow') {
+783:            } else if (dueStr === 'today') {
+791:document.getElementById('add-ann-btn').addEventListener('click', async () => {
+804:    try {
+805:        await addDoc(collection(db, "announcements"), {
+809:            date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+813:        logAction("Add Announcement", `Title: ${title}`);
+818:    } catch (error) {
+820:    } finally {
+827:document.getElementById('add-hw-btn').addEventListener('click', async () => {
+838:    try {
+839:        await addDoc(collection(db, "homework"), {
+846:        logAction("Add Homework", `Subject: ${subject}, Task: ${task}`);
+852:    } catch (error) {
+854:    } finally {
+861:document.getElementById('add-user-btn').addEventListener('click', async () => {
+874:    try {
+883:        await setDoc(doc(db, "users", newUser.uid), {
+891:        showToast(`User ${email} added successfully as ${role}!`);
+895:    } catch (error) {
+897:    } finally {
+904:document.getElementById('add-sched-btn').addEventListener('click', async () => {
+920:    try {
+921:        await setDoc(doc(db, "schedule", time), {
+932:    } catch (error) {
+934:    } finally {
+941:function formatDate(val) {
+944:    if (val && typeof val.toDate === 'function') {
+945:        return val.toDate().toLocaleString('en-US', { 
+955:async function loadUsers() {
+961:    try {
+966:        if (isMobile) {
+968:            snap.forEach(doc => {
+974:                    <div class="admin-sched-card" id="user-card-${doc.id}">
+976:                            <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.email}</span>
+978:                                <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}" title="See Info"><i class="ph ph-info"></i></button>
+979:                                <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}" title="Remove"><i class="ph ph-trash"></i></button>
+983:                            <span class="time-badge" style="font-size:0.7rem;">${listRole}</span>
+984:                            ${statusBadge}
+988:                        <div id="info-panel-${doc.id}" class="user-info-panel">
+991:                                <span class="user-info-val">${formatDate(data.lastLogin)}</span>
+996:                                    <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${data.adminNote || ''}" placeholder="e.g. Likes to yap">
+997:                                    <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
+1001:                                <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+1004:                                <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+1005:                                    <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable' : 'Disable'}
+1013:        } else {
+1027:            snap.forEach(doc => {
+1033:                <tr id="user-row-${doc.id}">
+1034:                    <td>${data.email}</td>
+1035:                    <td><span class="time-badge">${listRole}</span></td>
+1036:                    <td>${statusBadge}</td>
+1038:                        <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}"><i class="ph ph-info"></i> Info</button>
+1039:                        <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}"><i class="ph ph-trash"></i> Remove</button>
+1042:                <tr id="info-row-${doc.id}" style="display:none;">
+1044:                        <div id="info-panel-${doc.id}" class="user-info-panel" style="margin: 0 1rem 1rem 1rem;">
+1049:                                        <span class="user-info-val">${formatDate(data.lastLogin)}</span>
+1053:                                        <span class="user-info-val" style="font-size:0.7rem; opacity:0.7;">${doc.id}</span>
+1057:                                    <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+1060:                                    <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+1061:                                        <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable Account' : 'Disable Account'}
+1063:                                    <button class="user-action-btn btn-danger-alt remove-user-btn" data-uid="${doc.id}">
+1078:        document.querySelectorAll('.see-info-btn').forEach(btn => {
+1079:            btn.addEventListener('click', () => {
+1085:        document.querySelectorAll('.remove-user-btn').forEach(btn => {
+1086:            btn.addEventListener('click', () => {
+1092:        document.querySelectorAll('.reset-pass-btn').forEach(btn => {
+1093:            btn.addEventListener('click', () => {
+1099:        document.querySelectorAll('.disable-user-btn').forEach(btn => {
+1100:            btn.addEventListener('click', () => {
+1108:        document.querySelectorAll('.save-note-btn').forEach(btn => {
+1109:            btn.addEventListener('click', async () => {
+1111:                const noteVal = document.getElementById(`admin-note-${uid}`)?.value.trim() || '';
+1112:                try {
+1113:                    await setDoc(doc(db, "users", uid), { adminNote: noteVal }, { merge: true });
+1115:                } catch (e) {
+1121:    } catch (error) {
+1122:        usersList.innerHTML = `<p style="color:var(--danger)">Error loading users: ${error.message}</p>`;
+1127:function toggleUserInfo(uid) {
+1128:    const panel = document.getElementById(`info-panel-${uid}`);
+1129:    const infoRow = document.getElementById(`info-row-${uid}`); // For desktop table
+1131:    if (panel) {
+1139:async function resetUserPassword(email) {
+1140:    if (await customConfirm("Reset Password", `Send a password reset email to ${email}?`)) {
+1141:        try {
+1143:            showToast(`Password reset email sent to ${email}`);
+1144:        } catch (error) {
+1151:async function toggleUserStatus(uid, email, isCurrentlyDisabled) {
+1153:    if (await customConfirm(`${action} Account`, `Are you sure you want to ${action.toLowerCase()} access for ${email}?`)) {
+1154:        try {
+1155:            await setDoc(doc(db, "users", uid), { disabled: !isCurrentlyDisabled }, { merge: true });
+1156:            showToast(`Account ${email} ${isCurrentlyDisabled ? 'enabled' : 'disabled'}.`);
+1158:        } catch (error) {
+1165:async function removeUser(uid) {
+1168:    if(await customConfirm("Confirm Deletion", "Remove this user's data from the database? (Note: This will not delete the Authentication account, only their permissions and role.)")) {
+1169:        try {
+1173:        } catch (error) {
+1180:async function loadSchedule() {
+1186:    try {
+1188:        let scheduleData = snap.docs.map(doc => {
+1195:        scheduleData.sort((a, b) => {
+1206:        if (isMobile) {
+1209:            scheduleData.forEach(data => {
+1211:                    { key: 'monday', label: 'Mon', val: data.monday || '' },
+1212:                    { key: 'tuesday', label: 'Tue', val: data.tuesday || '' },
+1213:                    { key: 'wednesday', label: 'Wed', val: data.wednesday || '' },
+1214:                    { key: 'thursday', label: 'Thu', val: data.thursday || '' },
+1215:                    { key: 'friday', label: 'Fri', val: data.friday || '' },
+1217:                const dayBars = days.map(d => `<span class="sched-day-bar"><span class="sched-day-label">${d.label}</span><span class="sched-day-val">${d.val || '—'}</span></span>`).join('');
+1219:                    <div class="admin-sched-card" data-id="${data.id}">
+1221:                            <span class="admin-sched-time">${data.time}</span>
+1223:                                <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i></button>
+1224:                                <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i></button>
+1227:                        <div class="admin-sched-day-row">${dayBars}</div>
+1232:        } else {
+1250:            scheduleData.forEach(data => {
+1253:                    <td class="time-col">${data.time}</td>
+1254:                    <td>${data.monday || ''}</td>
+1255:                    <td>${data.tuesday || ''}</td>
+1256:                    <td>${data.wednesday || ''}</td>
+1257:                    <td>${data.thursday || ''}</td>
+1258:                    <td>${data.friday || ''}</td>
+1260:                        <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i> Edit</button>
+1261:                        <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i> Remove</button>
+1269:        document.querySelectorAll('.remove-sched-btn').forEach(btn => {
+1270:            btn.addEventListener('click', (e) => {
+1276:        document.querySelectorAll('.edit-sched-btn').forEach(btn => {
+1277:            btn.addEventListener('click', async (e) => {
+1280:                if (docSnap.exists()) {
+1294:    } catch (error) {
+1295:        schedList.innerHTML = `<p style="color:var(--danger)">Error loading schedule: ${error.message}</p>`;
+1300:function loadAnnouncements() {
+1302:    if (annListener) { annListener(); annListener = null; }
+1307:    annListener = onSnapshot(collection(db, "announcements"), (snap) => {
+1311:        if (isMobile) {
+1313:            snap.forEach(d => {
+1318:                            <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
+1319:                            <button class="remove-ann-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+1322:                            ${data.author || ''} · ${data.date || ''}
+1328:        } else {
+1341:            snap.forEach(d => {
+1345:                    <td>${data.title}</td>
+1346:                    <td>${data.author}</td>
+1347:                    <td>${data.date}</td>
+1349:                        <button class="remove-ann-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
+1357:        document.querySelectorAll('.remove-ann-btn').forEach(btn => {
+1358:            btn.addEventListener('click', async (e) => {
+1359:                if (await customConfirm("Confirm Action", "Delete this announcement?")) {
+1362:                    logAction("Delete Announcement", `ID: ${id}`);
+1367:    }, (error) => {
+1368:        list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+1373:function loadHomework() {
+1374:    if (hwListener) { hwListener(); hwListener = null; }
+1379:    hwListener = onSnapshot(collection(db, "homework"), (snap) => {
+1383:        if (isMobile) {
+1385:            snap.forEach(d => {
+1390:                            <span style="font-weight:600;font-size:0.85rem;">${data.subject}</span>
+1391:                            <button class="remove-hw-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+1393:                        <div style="font-size:0.85rem;margin:0.25rem 0;">${data.homework}</div>
+1394:                        <div style="font-size:0.75rem;color:var(--text-secondary);">Due: ${data.due || ''}</div>
+1399:        } else {
+1412:            snap.forEach(d => {
+1416:                    <td>${data.subject}</td>
+1417:                    <td>${data.homework}</td>
+1418:                    <td>${data.due}</td>
+1420:                        <button class="remove-hw-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
+1428:        document.querySelectorAll('.remove-hw-btn').forEach(btn => {
+1429:            btn.addEventListener('click', async (e) => {
+1430:                if (await customConfirm("Confirm Action", "Delete this homework?")) {
+1433:                    logAction("Delete Homework", `ID: ${id}`);
+1438:    }, (error) => {
+1439:        list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+1444:async function removeSchedule(id) {
+1447:    if(await customConfirm("Confirm Action", "Remove this time slot from the schedule?")) {
+1448:        try {
+1451:            logAction("Delete Schedule", `Deleted slot: ${id}`);
+1453:        } catch (error) {
+1460:async function logAction(action, details) {
+1461:    try {
+1462:        await addDoc(collection(db, "audit_log"), {
+1469:    } catch (e) {
+1474:async function loadSettings() {
+1477:    if (docSnap.exists()) {
+1482:        if (data.enabled) {
+1485:        } else {
+1492:        if (data.lockoutEnabled) {
+1495:        } else {
+1501:        if (data.lockoutPasscode) {
+1506:        if (data.bannerEnabled) {
+1509:        } else {
+1516:        if (data.cleanupEnabled !== false) {
+1519:        } else {
+1526:        if (archiveBtn) {
+1527:            if (data.archiveEnabled) {
+1530:            } else {
+1537:        if (archiveDaysInput && data.archiveDays) {
+1542:        if (data.bannerText) {
+1547:        if (data.bannerType) {
+1554:document.getElementById('cleanup-toggle').addEventListener('click', async () => {
+1557:    try {
+1558:        await setDoc(doc(db, "settings", "maintenance"), {
+1560:        }, { merge: true });
+1561:        showToast(`Auto-Cleanup turned ${newState ? 'ON' : 'OFF'}`);
+1563:    } catch (e) {
+1569:document.getElementById('maintenance-toggle').addEventListener('click', async () => {
+1572:    try {
+1573:        await setDoc(doc(db, "settings", "maintenance"), {
+1577:        }, { merge: true });
+1578:        showToast(`Maintenance Mode turned ${newState ? 'ON' : 'OFF'}`);
+1579:        logAction("Toggle Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
+1581:    } catch (e) {
+1587:document.getElementById('create-poll-btn').addEventListener('click', async () => {
+1591:    if (!question || !optionsStr) {
+1597:    if (options.length < 2) {
+1602:    const votes = {};
+1605:    try {
+1606:        await addDoc(collection(db, "polls"), {
+1616:        logAction("Create Poll", `Question: ${question}`);
+1617:    } catch (e) {
+1623:document.getElementById('lockout-toggle').addEventListener('click', async () => {
+1626:    try {
+1627:        await setDoc(doc(db, "settings", "maintenance"), {
+1631:        }, { merge: true });
+1632:        showToast(`Developer Lockout Mode turned ${newState ? 'ON' : 'OFF'}`);
+1633:        logAction("Toggle Lockout", `State: ${newState ? 'ON' : 'OFF'}`);
+1635:    } catch (e) {
+1641:document.getElementById('save-lockout-btn').addEventListener('click', async () => {
+1643:    if (!passcodeVal) {
+1646:    try {
+1647:        await setDoc(doc(db, "settings", "maintenance"), {
+1651:        }, { merge: true });
+1655:    } catch (e) {
+1661:document.getElementById('banner-toggle').addEventListener('click', async () => {
+1664:    try {
+1665:        await setDoc(doc(db, "settings", "maintenance"), {
+1669:        }, { merge: true });
+1670:        showToast(`Global Alert Banner turned ${newState ? 'ON' : 'OFF'}`);
+1671:        logAction("Toggle Alert Banner", `State: ${newState ? 'ON' : 'OFF'}`);
+1673:    } catch (e) {
+1679:document.getElementById('save-banner-btn').addEventListener('click', async () => {
+1682:    if (!bannerTextVal) {
+1685:    try {
+1686:        await setDoc(doc(db, "settings", "maintenance"), {
+1691:        }, { merge: true });
+1693:        logAction("Publish Alert Banner", `Text: ${bannerTextVal} (${bannerTypeVal})`);
+1695:    } catch (e) {
+1700:async function loadAuditLog() {
+1702:    try {
+1705:        snap.forEach(doc => {
+1707:            const date = data.timestamp ? data.timestamp.toDate().toLocaleString('en-US', { 
+1714:                        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${data.action}</span>
+1715:                        <span style="color: var(--text-secondary); font-size: 0.65rem;">${date}</span>
+1718:                        ${data.details}
+1721:                        <i class="ph ph-user" style="font-size: 0.7rem;"></i> ${data.user} (${data.role})
+1727:    } catch (e) {
+1728:        list.innerHTML = `<p style="color:var(--danger); padding: 1rem;">Error: ${e.message}</p>`;
+1734:function loadBugReports() {
+1735:    if (bugListener) { bugListener(); bugListener = null; }
+1737:    bugListener = onSnapshot(query(collection(db, "bugs"), orderBy("createdAt", "desc")), (snap) => {
+1741:        if (snap.empty) {
+1747:        snap.forEach(d => {
+1749:            const date = data.createdAt ? data.createdAt.toDate().toLocaleString('en-US', {
+1755:                <div class="admin-sched-card" style="border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--success)'}; margin-bottom: 0.75rem;">
+1758:                            <span style="font-weight:700; font-size:0.9rem;">${escapeHtml(data.subject)}</span>
+1759:                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date} — ${data.page || 'unknown page'}</span>
+1762:                            ${isNew ? `<button class="resolve-bug-btn admin-btn-icon" data-id="${d.id}" style="color:var(--success);" title="Mark as Resolved"><i class="ph ph-check"></i></button>` : ''}
+1763:                            <button class="delete-bug-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" title="Delete"><i class="ph ph-trash"></i></button>
+1767:                        ${escapeHtml(data.description)}
+1769:                    ${!isNew ? '<div style="margin-top:0.5rem; font-size:0.7rem; color:var(--success); font-weight:600;"><i class="ph ph-check-circle"></i> Resolved</div>' : ''}
+1775:        document.querySelectorAll('.resolve-bug-btn').forEach(btn => {
+1776:            btn.addEventListener('click', async () => {
+1778:                await updateDoc(doc(db, "bugs", id), { status: 'resolved' });
+1779:                logAction("Resolve Bug Report", `ID: ${id}`);
+1783:        document.querySelectorAll('.delete-bug-btn').forEach(btn => {
+1784:            btn.addEventListener('click', async () => {
+1785:                if (await customConfirm("Delete Bug Report", "Permanently delete this bug report?")) {
+1788:                    logAction("Delete Bug Report", `ID: ${id}`);
+1795:function escapeHtml(text) {
+1802:document.addEventListener('DOMContentLoaded', () => {
+1808:async function syncAdminSystemStates() {
+1811:    try {
+1812:        systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
+1813:            if (docSnap.exists()) {
+1818:                if (data.bannerEnabled && data.bannerText) {
+1819:                    if (existingBanner) {
+1820:                        existingBanner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+1825:                        if (iconEl) {
+1830:                    } else {
+1833:                        banner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
+1840:                            <i class="${iconClass}"></i>
+1841:                            <div class="banner-content">${data.bannerText}</div>
+1845:                } else {
+1852:                if (data.lockoutEnabled && !isAdmin && !isBypassed) {
+1854:                } else {
+1859:    } catch (e) {
+1864:function showAdminLockoutOverlay(correctPasscode) {
+1899:    const handleUnlock = () => {
+1901:        if (value === correctPasscode) {
+1913:            setTimeout(() => {
+1916:                setTimeout(() => {
+1921:        } else {
+1932:    input.addEventListener('keydown', (e) => {
+1939:function hideAdminLockoutOverlay() {
+1948:document.getElementById('archive-toggle')?.addEventListener('click', async () => {
+1951:    try {
+1952:        await setDoc(doc(db, "settings", "maintenance"), {
+1954:        }, { merge: true });
+1955:        showToast(`Auto-Archive turned ${newState ? 'ON' : 'OFF'}`);
+1956:        logAction("Toggle Archive", `State: ${newState ? 'ON' : 'OFF'}`);
+1958:    } catch (e) {
+1964:document.getElementById('save-archive-btn')?.addEventListener('click', async () => {
+1967:    try {
+1968:        await setDoc(doc(db, "settings", "maintenance"), {
+1970:        }, { merge: true });
+1972:        logAction("Update Archive Days", `Days: ${days}`);
+1973:    } catch (e) {

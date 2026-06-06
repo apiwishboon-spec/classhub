@@ -1974,5 +1974,4 @@ document.getElementById('save-archive-btn')?.addEventListener('click', async () 
         showToast("Error saving: " + e.message);
     }
 });
-
-});
+}
