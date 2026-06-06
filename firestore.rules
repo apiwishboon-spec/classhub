@@ -6,13 +6,18 @@ service cloud.firestore {
     function getUserRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
+    
+    // Check if the user document exists
+    function userExists() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
 
     // 1. Homework collection
     // Read: Anyone (students and staff)
     // Write: Admins, Teachers, and TAs
     match /homework/{id} {
       allow read: if true;
-      allow write: if request.auth != null && (
+      allow write: if request.auth != null && userExists() && (
         getUserRole() == 'admin' || 
         getUserRole() == 'teacher' || 
         getUserRole() == 'ta'
@@ -24,7 +29,7 @@ service cloud.firestore {
     // Write: Admins and Teachers only
     match /announcements/{id} {
       allow read: if true;
-      allow write: if request.auth != null && (
+      allow write: if request.auth != null && userExists() && (
         getUserRole() == 'admin' || 
         getUserRole() == 'teacher'
       );
@@ -35,7 +40,7 @@ service cloud.firestore {
     // Write: Admins only
     match /schedule/{id} {
       allow read: if true;
-      allow write: if request.auth != null && getUserRole() == 'admin';
+      allow write: if request.auth != null && userExists() && getUserRole() == 'admin';
     }
 
     // 4. Users collection
@@ -43,7 +48,10 @@ service cloud.firestore {
     // Write: Admins only (only admins can assign/edit roles)
     match /users/{userId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && (getUserRole() == 'admin' || request.auth.uid == userId);
+      allow write: if request.auth != null && (
+        (!userExists() || getUserRole() == 'admin') || 
+        request.auth.uid == userId
+      );
     }
     
     // 5. FCM Tokens collection

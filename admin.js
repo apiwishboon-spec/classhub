@@ -494,64 +494,70 @@ async function setStaffStatus(status) {
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Logged in
+        // Logged in: Switch UI immediately
         if (loginContainer) loginContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
         
-        // Set status to online
-        setStaffStatus('online');
-        
         try {
+            // Set status to online (don't let this block the rest)
+            setStaffStatus('online');
+            
             const userDocRef = doc(db, "users", user.uid);
             const userDoc = await getDoc(userDocRef);
             const lastLoginTs = serverTimestamp();
             
             if (userDoc.exists()) {
-                // Clear any existing revocation flag upon a fresh login
                 await updateDoc(userDocRef, { 
                     sessionRevoked: false,
                     lastLogin: lastLoginTs,
-                    email: user.email // Ensure email is synced
+                    email: user.email 
                 });
             } else {
                 // First-time user setup
-                const usersSnap = await getDocs(collection(db, "users"));
-                currentUserRole = usersSnap.empty ? 'admin' : 'teacher';
+                // We'll default to teacher if we can't read the whole collection
+                let initialRole = 'teacher';
+                try {
+                    const usersSnap = await getDocs(query(collection(db, "users"), limit(1)));
+                    if (usersSnap.empty) initialRole = 'admin';
+                } catch (e) { console.warn("Could not check users collection, defaulting to teacher role."); }
                 
                 await setDoc(userDocRef, { 
-                    role: currentUserRole, 
+                    role: initialRole, 
                     email: user.email,
                     lastLogin: lastLoginTs,
                     sessionRevoked: false
                 });
+                currentUserRole = initialRole;
             }
 
             // Start the real-time listener for this user
             if (userListener) userListener();
-            userListener = onSnapshot(userDocRef, async (docSnap) => {
+            userListener = onSnapshot(userDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if (data.sessionRevoked) {
                         if (userListener) { userListener(); userListener = null; }
-                        await signOut(auth);
-                        window.location.reload();
+                        signOut(auth).then(() => window.location.reload());
                         return;
                     }
                     if (data.disabled) {
-                        await signOut(auth);
+                        signOut(auth);
                         showToast("This account has been disabled.", "ph-prohibit", "var(--danger)");
                         return;
                     }
                     currentUserRole = (data.role || 'teacher').toLowerCase().trim();
                     const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
-                    userRoleBadge.textContent = `Role: ${displayRole}`;
+                    if (userRoleBadge) userRoleBadge.textContent = `Role: ${displayRole}`;
                     syncAdminSystemStates();
                     updateAdminSectionsVisibility();
                 }
             });
 
         } catch (error) {
-            console.error("Auth state processing failed:", error);
+            console.error("Auth document sync failed:", error);
+            showToast("Sync Error: Dashboard limited functionality.");
+            // Still try to show what we can
+            updateAdminSectionsVisibility();
         }
     } else {
         // Logged out
