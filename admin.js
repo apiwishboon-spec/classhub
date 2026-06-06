@@ -286,7 +286,6 @@ function loadPolls() {
     });
 }
 
-let feedbackListener = null;
 
 // Load Feedback (real-time)
     if (feedbackListener) { feedbackListener(); feedbackListener = null; }
