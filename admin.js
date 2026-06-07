@@ -424,10 +424,6 @@ async function loadFeedback() {
     });
 }
                 input.style.height = (input.scrollHeight) + 'px';
-            });
-        });
-
-        document.querySelectorAll('.send-reply-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
                 const input = document.querySelector(`.reply-input[data-id="${id}"]`);
