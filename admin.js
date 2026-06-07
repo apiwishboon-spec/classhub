@@ -417,13 +417,6 @@ async function loadFeedback() {
                     await deleteDoc(doc(db, "feedback", id));
                     showToast("Message deleted.");
                     loadFeedback();
-                    }
-                    });
-                    });
-                    });
-                    }
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
         // Logged in
         if (loginContainer) loginContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
