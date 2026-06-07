@@ -417,17 +417,6 @@ async function loadFeedback() {
                     await deleteDoc(doc(db, "feedback", id));
                     showToast("Message deleted.");
                     logAction("Delete Feedback", `ID: ${id}`);
-                    loadFeedback();
-                }
-            });
-        });
-    });
-}
-                input.style.height = (input.scrollHeight) + 'px';
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-id');
-                const input = document.querySelector(`.reply-input[data-id="${id}"]`);
-                const replyText = input.value.trim();
                 if (!replyText) return;
 
                 try {
