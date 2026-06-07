@@ -276,15 +276,16 @@ function loadPolls() {
         });
     });
 }
-
-
 // Load Feedback (real-time)
+async function loadFeedback() {
     if (feedbackListener) { feedbackListener(); feedbackListener = null; }
 
     const list = document.getElementById('feedback-list-admin');
 
     feedbackListener = onSnapshot(query(collection(db, "feedback"), orderBy("createdAt", "desc")), (snap) => {
-        if (snap.empty) {
+        // ... (all the logic from lines 287 to 425) ...
+    });
+}
             list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
             return;
         }
