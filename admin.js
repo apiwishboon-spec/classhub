@@ -283,9 +283,7 @@ async function loadFeedback() {
     const list = document.getElementById('feedback-list-admin');
 
     feedbackListener = onSnapshot(query(collection(db, "feedback"), orderBy("createdAt", "desc")), (snap) => {
-        // ... (all the logic from lines 287 to 425) ...
-    });
-}
+        if (snap.empty) {
             list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
             return;
         }
@@ -298,6 +296,133 @@ async function loadFeedback() {
 
             if (isResolved) return; // Hide resolved from inbox
 
+            // Mark as 'seen' if currently 'new'
+            if (data.status === 'new') {
+                updateDoc(doc(db, "feedback", d.id), { status: 'seen' });
+            }
+
+            // Build conversation thread
+            let conversationHtml = '';
+            
+            // Add old single reply
+            if (data.reply) {
+                conversationHtml += `
+                    <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid var(--accent-color);">
+                        <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">STAFF (Admin)</div>
+                        <div style="font-size: 0.85rem;">${data.reply}</div>
+                    </div>
+                `;
+            }
+            
+            // Add threaded replies
+            if (data.replies && Array.isArray(data.replies)) {
+                data.replies.forEach((reply) => {
+                    const isUser = reply.sender === 'user';
+                    const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
+                    conversationHtml += `
+                        <div style="background: ${isUser ? 'var(--highlight-bg)' : 'var(--bg-color)'}; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+                            <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
+                                ${isUser ? 'STUDENT' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
+                            </div>
+                            <div style="font-size: 0.85rem;">${reply.text}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            html += `
+                <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : 'var(--accent-color)'};">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
+                        ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
+                    </div>
+                    <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
+                    ${conversationHtml ? `<div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>${conversationHtml}</div>` : ''}
+                    
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
+                        <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
+                    </div>
+                    <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+                        <button class="resolve-feedback-btn btn-secondary" data-id="${d.id}" style="padding:0.4rem 0.8rem; font-size:0.8rem; min-height:auto;">
+                            <i class="ph ph-check"></i> Mark as Solved
+                        </button>
+                        <button class="remove-feedback-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
+
+        // Attach listeners (Reply, Resolve, Remove)
+        document.querySelectorAll('.reply-input').forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const id = input.getAttribute('data-id');
+                    document.querySelector(`.send-reply-btn[data-id="${id}"]`)?.click();
+                }
+            });
+            input.addEventListener('input', () => {
+                input.style.height = 'auto';
+                input.style.height = (input.scrollHeight) + 'px';
+            });
+        });
+
+        document.querySelectorAll('.send-reply-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const id = btn.getAttribute('data-id');
+                const input = document.querySelector(`.reply-input[data-id="${id}"]`);
+                const replyText = input.value.trim();
+                if (!replyText) return;
+
+                btn.disabled = true;
+                try {
+                    const docSnap = await getDoc(doc(db, "feedback", id));
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        const currentReplies = data.replies || [];
+                        await updateDoc(doc(db, "feedback", id), {
+                            replies: [...currentReplies, { sender: 'admin', text: replyText, timestamp: new Date() }],
+                            status: 'replied'
+                        });
+                        showToast("Reply sent");
+                        logAction("Admin Reply", `To: ${id}`);
+                        loadFeedback();
+                    }
+                } catch (e) {
+                    showToast("Error: " + e.message);
+                    btn.disabled = false;
+                }
+            });
+        });
+
+        document.querySelectorAll('.resolve-feedback-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (await customConfirm("Confirm Action", "Mark as solved?")) {
+                    const id = btn.getAttribute('data-id');
+                    await updateDoc(doc(db, "feedback", id), { status: 'resolved', resolvedAt: serverTimestamp() });
+                    showToast("Marked as solved.");
+                    logAction("Resolve Feedback", `ID: ${id}`);
+                    loadFeedback();
+                }
+            });
+        });
+
+        document.querySelectorAll('.remove-feedback-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                if (await customConfirm("Confirm Action", "Permanently delete this message?")) {
+                    const id = btn.getAttribute('data-id');
+                    await deleteDoc(doc(db, "feedback", id));
+                    showToast("Message deleted.");
+                    logAction("Delete Feedback", `ID: ${id}`);
+                    loadFeedback();
+                }
+            });
+        });
+    });
+}
             // Mark as 'seen' if currently 'new'
             if (data.status === 'new') {
                 updateDoc(doc(db, "feedback", d.id), { status: 'seen' });
