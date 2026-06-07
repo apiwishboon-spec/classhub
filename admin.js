@@ -416,13 +416,12 @@ async function loadFeedback() {
                     const id = btn.getAttribute('data-id');
                     await deleteDoc(doc(db, "feedback", id));
                     showToast("Message deleted.");
-                    logAction("Delete Feedback", `ID: ${id}`);
-            status: status,
-            lastUpdated: serverTimestamp() 
-        }, { merge: true });
-    } catch (e) { console.error("Status update failed:", e); }
-}
-
+                    loadFeedback();
+                    }
+                    });
+                    });
+                    });
+                    }
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Logged in
