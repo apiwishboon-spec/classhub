@@ -554,7 +554,6 @@ async function loadFeedback() {
             });
         });
     });
-}
 
 // ... existing code ...
 
