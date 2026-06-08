@@ -42,7 +42,13 @@ const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
 const cleanupToggle = document.getElementById('cleanup-toggle');
 
-// ... rest of imports and DOM elements ...
+let pollListener = null;
+let feedbackListener = null;
+let annListener = null;
+let hwListener = null;
+let userListener = null;
+let bugListener = null;
+let systemStatesListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -389,7 +395,6 @@ async function loadFeedback() {
                         });
                         showToast("Reply sent");
                         logAction("Admin Reply", `To: ${id}`);
-                        loadFeedback();
                     }
                 } catch (e) {
                     showToast("Error: " + e.message);
@@ -405,7 +410,6 @@ async function loadFeedback() {
                     await updateDoc(doc(db, "feedback", id), { status: 'resolved', resolvedAt: serverTimestamp() });
                     showToast("Marked as solved.");
                     logAction("Resolve Feedback", `ID: ${id}`);
-                    loadFeedback();
                 }
             });
         });
@@ -416,7 +420,15 @@ async function loadFeedback() {
                     const id = btn.getAttribute('data-id');
                     await deleteDoc(doc(db, "feedback", id));
                     showToast("Message deleted.");
-                    loadFeedback();
+                    logAction("Delete Feedback", `ID: ${id}`);
+                }
+            });
+        });
+    });
+}
+
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
         // Logged in
         if (loginContainer) loginContainer.style.display = 'none';
         if (adminContainer) adminContainer.style.display = 'block';
@@ -1720,11 +1732,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Sync system states in real-time on Admin page
-let systemStatesListener = null;
 async function syncAdminSystemStates() {
     if (systemStatesListener) return; // avoid duplicate listeners
     
     try {
+        systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
 
