@@ -20,14 +20,23 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
-  // Ignore external API/analytics requests
+  // Ignore external API/analytics/firebase requests
   if (event.request.url.startsWith('https://www.googletagmanager.com') || 
-      event.request.url.startsWith('https://www.google-analytics.com')) {
+      event.request.url.startsWith('https://www.google-analytics.com') ||
+      event.request.url.includes('firestore.googleapis.com') ||
+      event.request.url.includes('firebaseinstallations.googleapis.com') ||
+      event.request.url.includes('googleapis.com')) {
     return;
   }
 
   event.respondWith(
     caches.match(event.request)
-      .then(response => response || fetch(event.request))
+      .then(response => {
+        return response || fetch(event.request).catch(err => {
+          console.warn('[SW] Fetch failed; returning offline error.', err);
+          // Optional: Return a custom offline page or null
+          return null;
+        });
+      })
   );
 });

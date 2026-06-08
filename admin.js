@@ -1659,10 +1659,10 @@ async function loadAuditLog() {
 }
 
 // Load Bug Reports (real-time)
-let bugListener = null;
 function loadBugReports() {
     if (bugListener) { bugListener(); bugListener = null; }
 
+    bugListener = onSnapshot(query(collection(db, "bugs"), orderBy("createdAt", "desc")), (snap) => {
         const newCount = snap.docs.filter(d => d.data().status === 'new').length;
         if (bugCountBadge) bugCountBadge.textContent = newCount;
 
