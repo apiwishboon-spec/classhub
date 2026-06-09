@@ -462,17 +462,33 @@ async function loadFeedback() {
     window.setStaffStatus = setStaffStatus;
     window.checkEmailLinkSignIn = checkEmailLinkSignIn;
 
+console.log("admin.js: Module loaded.");
+
 onAuthStateChanged(auth, async (user) => {
+    console.log("Auth state changed, user:", user ? user.uid : "logged out");
     if (user) {
         // Logged in
+        console.log("Showing admin-container, hiding login-container.");
         if (loginContainer) loginContainer.style.display = 'none';
-        if (adminContainer) adminContainer.style.display = 'block';
+        if (adminContainer) {
+            adminContainer.style.display = 'block';
+            console.log("admin-container display set to block.");
+        } else {
+            console.error("admin-container NOT FOUND in DOM!");
+        }
 
         // Set status to online
-        setStaffStatus('online');
+        try {
+            setStaffStatus('online');
+            console.log("Staff status set to online.");
+        } catch (e) {
+            console.error("setStaffStatus failed:", e);
+        }
 
         try {
             const userDocRef = doc(db, "users", user.uid);
+            // ... (rest of auth logic)
+
             const userDoc = await getDoc(userDocRef);
             const lastLoginTs = serverTimestamp();
 
