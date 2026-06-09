@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Message Staff - MyClassHub</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-300HW5WQC6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-300HW5WQC6');
+  </script>
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+  
+  <div class="layout-wrapper">
+    <!-- Desktop Navigation Sidebar Drawer -->
+    <nav class="nav-sidebar">
+      <div class="sidebar-header">
+        <img src="logo.png" alt="MyClassHub Logo" class="brand-logo">
+        <h2 class="title-medium">MyClassHub</h2>
+      </div>
+      <div class="sidebar-menu">
+        <a href="index.html" class="menu-item">
+          <span class="material-icons">home</span>
+          <span class="label-large">Home</span>
+        </a>
+        <a href="chat.html" class="menu-item active">
+          <span class="material-icons">chat_bubble</span>
+          <span class="label-large">Message Staff</span>
+        </a>
+        <a href="admin.html" class="menu-item">
+          <span class="material-icons">admin_panel_settings</span>
+          <span class="label-large">Staff Portal</span>
+        </a>
+        <a href="contact.html" class="menu-item">
+          <span class="material-icons">contact_support</span>
+          <span class="label-large">Contact Admin</span>
+        </a>
+        <a href="privacy.html" class="menu-item">
+          <span class="material-icons">policy</span>
+          <span class="label-large">Privacy Policy</span>
+        </a>
+        <a href="terms.html" class="menu-item">
+          <span class="material-icons">gavel</span>
+          <span class="label-large">Terms of Service</span>
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="body-small" style="display:flex; align-items:center; gap:0.5rem; color:var(--md-sys-color-on-surface-variant);">
+          <span class="material-icons" style="font-size: 16px;">visibility</span>
+          <span id="visit-count">...</span> visits
+        </div>
+        <div class="body-small" style="color:var(--md-sys-color-on-surface-variant);">
+          Version: <span class="app-version">...</span>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Main Content Container -->
+    <div class="main-container">
+      <!-- Mobile Top Bar -->
+      <div class="mobile-top-bar">
+        <div class="mobile-top-left">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <img src="logo.png" alt="MyClassHub" class="mobile-brand-logo">
+            <h1 class="title-medium">Message Staff</h1>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.25rem;">
+            <button id="mobile-theme-toggle" class="admin-btn-icon" aria-label="Toggle Theme">
+              <span class="material-icons">dark_mode</span>
+            </button>
+          </div>
+        </div>
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">home</span> Home
+          </a>
+          <a href="chat.html" class="mobile-nav-link active">
+            <span class="material-icons" style="font-size: 18px;">chat_bubble</span> Chat
+          </a>
+          <a href="admin.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Staff
+          </a>
+          <a href="contact.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">contact_support</span> Help
+          </a>
+        </div>
+      </div>
+      
+      <!-- Desktop Top App Bar -->
+      <header class="top-app-bar">
+        <div class="top-bar-left" style="display: flex; align-items: center; gap: 0.5rem;">
+          <a href="index.html" class="admin-btn-icon" style="padding: 0.5rem; color: var(--md-sys-color-on-surface);"><span class="material-icons">arrow_back</span></a>
+          <h1 class="headline-small">Message Staff</h1>
+        </div>
+        <div class="top-bar-right">
+          <button id="theme-toggle" class="admin-btn-icon" aria-label="Toggle Theme" style="padding: 0.5rem; border-radius: 50%;">
+            <span class="material-icons">dark_mode</span>
+          </button>
+        </div>
+      </header>
+      
+      <!-- Clock and Availability Row -->
+      <div class="status-section">
+        <div class="clock-widget">
+          <span class="material-icons" style="color:var(--md-sys-color-primary);">chat</span>
+          <span class="title-medium" style="font-weight:600; color:var(--md-sys-color-on-surface-variant);">Anonymous Student Support</span>
+        </div>
+        <div class="staff-status-pill">
+          <div id="staff-status-dot" class="status-dot offline"></div>
+          <span id="staff-status-text" class="label-large">Staff is Offline</span>
+        </div>
+      </div>
+      
+      <!-- Chat Workspace Card -->
+      <main style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1;">
+        <section class="md-card elevated" style="flex: 1; display: flex; flex-direction: column; min-height: 480px; padding: 1.5rem 1.5rem 1rem 1.5rem;">
+          <div class="card-header-m3" style="border-bottom: 1px solid var(--md-sys-color-outline-variant); padding-bottom: 0.75rem;">
+            <div>
+              <h3 class="title-large" style="display:flex; align-items:center; gap:0.5rem;">
+                <span class="material-icons" style="color:var(--md-sys-color-primary);">forum</span> Messaging
+              </h3>
+              <p class="body-medium" style="color: var(--md-sys-color-on-surface-variant); margin-top: 0.25rem;">Your messages are completely anonymous to staff members.</p>
+            </div>
+          </div>
+          
+          <!-- Message History Window -->
+          <div id="chat-page-history" class="chat-history" style="flex:1; padding-bottom: 1rem;">
+            <div class="chat-loader">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+          
+          <!-- Message Form Input Area -->
+          <div style="border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 1rem;">
+            <div class="md-text-field" style="margin-bottom: 1rem;">
+              <textarea id="chat-page-input" placeholder=" " rows="3" required style="resize:none;"></textarea>
+              <label>Write a message to staff...</label>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+              <label class="md-checkbox-wrapper">
+                <input type="checkbox" id="chat-page-urgent">
+                <div class="md-checkbox"></div>
+                <span class="label-large" style="color:var(--md-sys-color-error); font-weight:700; display:flex; align-items:center; gap:0.25rem;">
+                  <span class="material-icons" style="font-size:16px;">error_outline</span> Urgent Message
+                </span>
+              </label>
+              
+              <button id="chat-page-send" class="md-btn filled" style="padding: 0.75rem 2.25rem;">
+                <span class="material-icons" style="font-size:18px;">send</span> Send Message
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- CDNs and Scripts -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="version.js" type="module"></script>
+  <script src="visits.js" type="module"></script>
+  <script src="chat.js" type="module"></script>
+  <script src="game.js" type="module"></script>
+  <script src="help.js" type="module"></script>
+  <script src="bug-report.js" type="module"></script>
+</body>
+</html>

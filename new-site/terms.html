@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - MyClassHub</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="apple-touch-icon" href="favicon.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-300HW5WQC6"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-300HW5WQC6');
+  </script>
+</head>
+<body>
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+  
+  <div class="layout-wrapper">
+    <!-- Desktop Navigation Sidebar Drawer -->
+    <nav class="nav-sidebar">
+      <div class="sidebar-header">
+        <img src="logo.png" alt="MyClassHub Logo" class="brand-logo">
+        <h2 class="title-medium">MyClassHub</h2>
+      </div>
+      <div class="sidebar-menu">
+        <a href="index.html" class="menu-item">
+          <span class="material-icons">home</span>
+          <span class="label-large">Home</span>
+        </a>
+        <a href="chat.html" class="menu-item">
+          <span class="material-icons">chat_bubble</span>
+          <span class="label-large">Message Staff</span>
+        </a>
+        <a href="admin.html" class="menu-item">
+          <span class="material-icons">admin_panel_settings</span>
+          <span class="label-large">Staff Portal</span>
+        </a>
+        <a href="contact.html" class="menu-item">
+          <span class="material-icons">contact_support</span>
+          <span class="label-large">Contact Admin</span>
+        </a>
+        <a href="privacy.html" class="menu-item">
+          <span class="material-icons">policy</span>
+          <span class="label-large">Privacy Policy</span>
+        </a>
+        <a href="terms.html" class="menu-item active">
+          <span class="material-icons">gavel</span>
+          <span class="label-large">Terms of Service</span>
+        </a>
+      </div>
+      <div class="sidebar-footer">
+        <div class="body-small" style="display:flex; align-items:center; gap:0.5rem; color:var(--md-sys-color-on-surface-variant);">
+          <span class="material-icons" style="font-size: 16px;">visibility</span>
+          <span id="visit-count">...</span> visits
+        </div>
+        <div class="body-small" style="color:var(--md-sys-color-on-surface-variant);">
+          Version: <span class="app-version">...</span>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Main Content Container -->
+    <div class="main-container">
+      <!-- Mobile Top Bar -->
+      <div class="mobile-top-bar">
+        <div class="mobile-top-left">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <a href="index.html" style="color: var(--md-sys-color-on-surface); text-decoration: none; display: flex; align-items: center; gap: 0.25rem;">
+              <span class="material-icons">arrow_back</span>
+            </a>
+            <h1 class="title-medium">Terms of Service</h1>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.25rem;">
+            <button id="mobile-theme-toggle" class="admin-btn-icon" aria-label="Toggle Theme">
+              <span class="material-icons">dark_mode</span>
+            </button>
+          </div>
+        </div>
+        <div class="mobile-nav-links">
+          <a href="index.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">home</span> Home
+          </a>
+          <a href="chat.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">chat_bubble</span> Chat
+          </a>
+          <a href="admin.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">admin_panel_settings</span> Staff
+          </a>
+          <a href="contact.html" class="mobile-nav-link">
+            <span class="material-icons" style="font-size: 18px;">contact_support</span> Help
+          </a>
+        </div>
+      </div>
+      
+      <!-- Desktop Top App Bar -->
+      <header class="top-app-bar">
+        <div class="top-bar-left" style="display: flex; align-items: center; gap: 0.5rem;">
+          <a href="index.html" class="admin-btn-icon" style="padding: 0.5rem; color: var(--md-sys-color-on-surface);"><span class="material-icons">arrow_back</span></a>
+          <h1 class="headline-small">Terms of Service</h1>
+        </div>
+        <div class="top-bar-right">
+          <button id="theme-toggle" class="admin-btn-icon" aria-label="Toggle Theme" style="padding: 0.5rem; border-radius: 50%;">
+            <span class="material-icons">dark_mode</span>
+          </button>
+        </div>
+      </header>
+      
+      <!-- Main Content Panel -->
+      <main style="padding: 2rem; display: flex; justify-content: center; align-items: flex-start; flex: 1; overflow-y: auto;">
+        <section class="md-card elevated" style="max-width: 800px; width: 100%; padding: 2.5rem; line-height: 1.8;">
+          <h2 class="headline-medium" style="font-weight: 700; margin-bottom: 0.5rem; color: var(--md-sys-color-primary);">Terms of Service</h2>
+          <p class="body-medium" style="color: var(--md-sys-color-on-surface-variant); margin-bottom: 2rem;">Last updated: May 24, 2026</p>
+          
+          <h3 class="title-large" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">1. Acceptance of Terms</h3>
+          <p class="body-large" style="margin-bottom: 1.5rem;">By accessing or using MyClassHub, you agree to comply with and be bound by these Terms of Service.</p>
+
+          <h3 class="title-large" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">2. Use of the Dashboard</h3>
+          <p class="body-large">Users are expected to use the platform responsibly. This includes:</p>
+          <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li class="body-large">Posting accurate classroom information (Announcements, Homework).</li>
+            <li class="body-large">Refraining from submitting harmful, offensive, or inappropriate content via student chat threads.</li>
+            <li class="body-large">Keeping login credentials secure and not sharing them with unauthorized individuals.</li>
+          </ul>
+
+          <h3 class="title-large" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">3. User Roles</h3>
+          <p class="body-large">Permission levels are defined as follows:</p>
+          <ul style="padding-left: 1.5rem; margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <li class="body-large"><strong>Administrators:</strong> Full authority over user provisioning, schedule management, settings lockout, and diagnostic tools.</li>
+            <li class="body-large"><strong>Teachers:</strong> Can manage and post announcements, homework, and classroom polls.</li>
+            <li class="body-large"><strong>Teaching Assistants (TAs):</strong> Can view and post homework items.</li>
+          </ul>
+
+          <h3 class="title-large" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">4. Limitation of Liability</h3>
+          <p class="body-large">MyClassHub is provided on an "as is" and "as available" basis. We are not liable for any data loss, interruptions in connectivity, or scheduling conflicts resulting from third-party hosting services (Firebase Firestore, Auth).</p>
+
+          <h3 class="title-large" style="margin-top: 1.5rem; margin-bottom: 0.5rem;">5. Changes to Terms</h3>
+          <p class="body-large" style="margin-bottom: 2rem;">We reserve the right to modify these terms at any time. Your continued use of the platform after changes are posted constitutes acceptance of the modified terms.</p>
+          
+          <div style="text-align: center; border-top: 1px solid var(--md-sys-color-outline-variant); padding-top: 1.5rem;">
+            <a href="./" class="label-large" style="color: var(--md-sys-color-primary); text-decoration: none; display: inline-flex; align-items: center; gap: 0.25rem;">
+              <span class="material-icons" style="font-size: 16px;">arrow_back</span> Back to Dashboard
+            </a>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- CDNs and Scripts -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="version.js" type="module"></script>
+  <script src="visits.js" type="module"></script>
+  <script src="chat.js" type="module"></script>
+  <script src="game.js" type="module"></script>
+  <script src="bug-report.js" type="module"></script>
+  
+  <!-- Clean Theme Controls -->
+  <script type="module">
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      
+      const setupToggle = (btnId) => {
+        document.getElementById(btnId)?.addEventListener('click', () => {
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+          } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+          }
+        });
+      };
+      
+      setupToggle('theme-toggle');
+      setupToggle('mobile-theme-toggle');
+    });
+  </script>
+</body>
+</html>
