@@ -427,6 +427,27 @@ async function loadFeedback() {
     });
 }
 
+    // Theme Management
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
     function setStaffStatus(status) {
         setDoc(doc(db, "settings", "staff_status"), { status }, { merge: true });
     }
@@ -434,6 +455,12 @@ async function loadFeedback() {
     function checkEmailLinkSignIn() {
         // Implement email link login check logic
     }
+
+    // Move to module scope so they are defined before usage
+    window.initTheme = initTheme;
+    window.toggleTheme = toggleTheme;
+    window.setStaffStatus = setStaffStatus;
+    window.checkEmailLinkSignIn = checkEmailLinkSignIn;
 
 onAuthStateChanged(auth, async (user) => {
     if (user) {
