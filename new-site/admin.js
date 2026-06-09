@@ -1755,18 +1755,9 @@ if (sendLinkBtn) {
         }
     }
 
-    function setStaffStatus(status) {
-        setDoc(doc(db, "settings", "staff_status"), { status }, { merge: true });
-    }
-
-    function checkEmailLinkSignIn() {
-        // Implement email link login check logic
-    }
-
-
-    // Sync system states in real-time on Admin page
-    async function syncAdminSystemStates() {
-        if (systemStatesListener) return; // avoid duplicate listeners
+    // Global helper functions
+    window.syncAdminSystemStates = async function() {
+        if (systemStatesListener) return;
 
         try {
             systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
@@ -1820,6 +1811,35 @@ if (sendLinkBtn) {
             console.error("Failed to sync admin system states", e);
         }
     }
+
+    window.initTheme = function() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    }
+
+    window.toggleTheme = function() {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    window.setStaffStatus = function(status) {
+        setDoc(doc(db, "settings", "staff_status"), { status }, { merge: true });
+    }
+
+    window.checkEmailLinkSignIn = function() {
+        // Implement email link login check logic
+    }
+
 
     function showAdminLockoutOverlay(correctPasscode) {
         if (document.getElementById('lockout-overlay')) return;
