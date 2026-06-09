@@ -1817,9 +1817,17 @@ if (sendLinkBtn) {
     window.updateAdminSectionsVisibility = updateAdminSectionsVisibility;
     window.syncAdminSystemStates = syncAdminSystemStates;
 
+    // Sidebar Toggle
+    const sidebar = document.getElementById('nav-sidebar');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
+    toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+    });
+
     // Initialize Visibility (once DOM is ready)
     updateAdminSectionsVisibility();
     syncAdminSystemStates();
+
 
 
 

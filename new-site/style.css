@@ -222,7 +222,26 @@ body {
   top: 0;
   height: 100vh;
   z-index: 100;
-  transition: background-color var(--transition-normal);
+  transition: width 0.3s ease, background-color var(--transition-normal);
+}
+
+.nav-sidebar.collapsed {
+  width: 80px;
+}
+
+.nav-sidebar.collapsed .sidebar-header h2,
+.nav-sidebar.collapsed .menu-item span.label-large,
+.nav-sidebar.collapsed .sidebar-footer {
+  display: none;
+}
+
+.nav-sidebar.collapsed .menu-item {
+  justify-content: center;
+}
+
+#sidebar-toggle-btn {
+  margin-top: 0.5rem;
+  cursor: pointer;
 }
 
 .sidebar-header {
