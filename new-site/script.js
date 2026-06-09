@@ -1284,12 +1284,12 @@ function showInstallBanner(prompt) {
     banner.className = 'pwa-install-banner';
     banner.innerHTML = `
         <div class="pwa-content">
-            <i class="ph ph-download-simple"></i>
-            <span>Add MyClassHub to your home screen for a better experience!</span>
+            <i class="ph ph-download-simple" style="font-size: 1.25rem;"></i>
+            <span>Add MyClassHub to home screen!</span>
         </div>
         <div class="pwa-actions">
-            <button id="pwa-install-btn" class="btn-primary" style="padding: 0.4rem 0.8rem; min-height: auto; font-size: 0.8rem;">Install</button>
-            <button id="pwa-close-btn" class="icon-button" style="width: 30px; height: 30px;"><i class="ph ph-x"></i></button>
+            <button id="pwa-install-btn" class="pwa-install-btn">Install</button>
+            <button id="pwa-close-btn" class="pwa-close-btn"><i class="ph ph-x"></i></button>
         </div>
     `;
     document.body.appendChild(banner);
