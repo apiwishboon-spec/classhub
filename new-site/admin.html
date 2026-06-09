@@ -74,7 +74,7 @@
   </div>
 
   <!-- 2. ADMIN CONTAINER (Logged In View) -->
-  <div class="layout-wrapper" id="admin-container" style="display: none;">
+  <div class="layout-wrapper" id="admin-container" >
     <!-- Desktop Navigation Drawer -->
     <nav class="nav-sidebar">
       <div class="sidebar-header">
@@ -291,7 +291,7 @@
         </section>
 
         <!-- Manage Schedule -->
-        <section class="md-card elevated span-2" id="manage-schedule-section" style="display: none;">
+        <section class="md-card elevated span-2" id="manage-schedule-section">
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons">calendar_view_week</span>
@@ -304,7 +304,7 @@
         </section>
 
         <!-- Manage Users (Admin Only) -->
-        <section class="md-card elevated span-2" id="manage-users-section" style="display: none;">
+        <section class="md-card elevated span-2" id="manage-users-section">
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons">people</span>
@@ -338,7 +338,7 @@
         </section>
 
         <!-- System Settings (Admin Only) -->
-        <section class="md-card elevated" id="system-settings-section" style="display: none;">
+        <section class="md-card elevated" id="system-settings-section" >
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons">settings</span>
@@ -451,7 +451,7 @@
         </section>
 
         <!-- Bug Reports (Admin Only) -->
-        <section class="md-card elevated card-scrollable" id="bug-reports-section" style="display: none;">
+        <section class="md-card elevated card-scrollable" id="bug-reports-section" >
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons" style="color: var(--md-sys-color-error);">bug_report</span>
@@ -465,7 +465,7 @@
         </section>
 
         <!-- System Audit Log (Admin Only) -->
-        <section class="md-card elevated card-scrollable" id="audit-log-section" style="display: none;">
+        <section class="md-card elevated card-scrollable" id="audit-log-section" >
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons">history</span>
@@ -503,9 +503,9 @@
   </div>
 
   <!-- Modals Overlay -->
-  <div id="modal-overlay" class="modal-overlay" style="display: none;">
+  <div id="modal-overlay" class="modal-overlay" >
     <!-- Confirm Modal -->
-    <div id="confirm-modal-card" class="modal-card" style="display: none;">
+    <div id="confirm-modal-card" class="modal-card" >
       <h3 id="confirm-title">Confirm Action</h3>
       <p id="confirm-msg">Are you sure you want to proceed?</p>
       <div class="modal-actions">
@@ -515,7 +515,7 @@
     </div>
 
     <!-- Schedule Modal (Keep for editing) -->
-    <div id="sched-modal-card" class="modal-card" style="display: none;">
+    <div id="sched-modal-card" class="modal-card" >
       <h3>Manage Time Slot</h3>
       <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
         <input type="hidden" id="sched-id">
