@@ -202,7 +202,9 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* --- Layout Structure --- */
+.role-restricted {
+  display: none !important;
+}
 .layout-wrapper {
   display: flex;
   min-height: 100vh;
