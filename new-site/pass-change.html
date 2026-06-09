@@ -76,6 +76,30 @@
   </style>
 </head>
 <body>
+  <!-- Theme Toggle Button -->
+  <button id="theme-toggle" class="admin-btn-icon" aria-label="Toggle Theme" style="position: absolute; top: 1rem; right: 1rem; z-index: 100; padding: 0.5rem; border-radius: 50%;">
+    <span class="material-icons">dark_mode</span>
+  </button>
+
+  <script>
+    // Theme Toggle Logic
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        if (isDark) {
+          document.documentElement.removeAttribute('data-theme');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    });
+  </script>
+
   <div class="pass-change-wrapper" id="main-card">
     <div id="loading-overlay">
       <div class="chat-loader">
