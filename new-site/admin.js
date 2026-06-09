@@ -1799,6 +1799,56 @@ if (sendLinkBtn) {
     }
 
     // Global helper functions
+    // Module-scoped helper functions
+    window.updateAdminSectionsVisibility = function() {
+        const statusToggle = document.getElementById('staff-status-toggle');
+
+        if (!manageUsersSection || !manageScheduleSection || !addAnnouncementSection || !feedbackInboxSection) {
+            console.warn("Admin sections not fully loaded in DOM.");
+            return;
+        }
+
+        if (currentUserRole === 'admin') {
+            manageUsersSection.style.display = 'block';
+            manageScheduleSection.style.display = 'block';
+            addAnnouncementSection.style.display = 'block';
+            addHomeworkSection.style.display = 'block';
+            manageAnnouncementsSection.style.display = 'block';
+            manageHomeworkSection.style.display = 'block';
+            systemSettingsSection.style.display = 'block';
+            auditLogSection.style.display = 'block';
+            bugReportsSection.style.display = 'block';
+            feedbackInboxSection.style.display = 'block';
+
+            loadUsers();
+            loadSchedule();
+            loadAnnouncements();
+            loadHomework();
+            loadPolls();
+            loadFeedback();
+            loadSettings();
+            loadAuditLog();
+            loadBugReports();
+            performSystemCleanup();
+
+            if (statusToggle) {
+                statusToggle.disabled = false;
+                syncStatusToggle();
+            }
+        } else if (currentUserRole === 'teacher') {
+            manageUsersSection.style.display = 'none';
+            manageScheduleSection.style.display = 'none';
+            addAnnouncementSection.style.display = 'block';
+            addHomeworkSection.style.display = 'block';
+            manageAnnouncementsSection.style.display = 'block';
+            manageHomeworkSection.style.display = 'block';
+            systemSettingsSection.style.display = 'none';
+            auditLogSection.style.display = 'none';
+            bugReportsSection.style.display = 'none';
+            feedbackInboxSection.style.display = 'none';
+        }
+    };
+
     window.syncAdminSystemStates = async function() {
         if (systemStatesListener) return;
 
@@ -1807,7 +1857,6 @@ if (sendLinkBtn) {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
 
-                    // 1. Global Alert Banner Mode
                     const existingBanner = document.getElementById('system-global-banner');
                     if (data.bannerEnabled && data.bannerText) {
                         if (existingBanner) {
@@ -1840,7 +1889,6 @@ if (sendLinkBtn) {
                         if (existingBanner) existingBanner.remove();
                     }
 
-                    // 2. Developer Lockout Gate (Bypassed for Admins)
                     const isAdmin = currentUserRole === 'admin';
                     const isBypassed = sessionStorage.getItem('dev_bypass') === 'true';
                     if (data.lockoutEnabled && !isAdmin && !isBypassed) {
@@ -1853,7 +1901,8 @@ if (sendLinkBtn) {
         } catch (e) {
             console.error("Failed to sync admin system states", e);
         }
-    }
+    };
+
 
     window.initTheme = function() {
         const savedTheme = localStorage.getItem('theme');
