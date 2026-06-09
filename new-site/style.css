@@ -293,10 +293,20 @@ body {
 
 /* Main Content Area */
 .main-container {
-  flex-grow: 1;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevent flex blowout */
+  min-width: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  padding-bottom: 2rem;
 }
 
 /* Top App Bar */
