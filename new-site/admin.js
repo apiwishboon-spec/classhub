@@ -1726,10 +1726,35 @@ if (sendLinkBtn) {
         return div.innerHTML;
     }
 
-    // Initialization
-    document.addEventListener('DOMContentLoaded', () => {
-        initTheme();
-    });
+    // Theme Management
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.documentElement.hasAttribute('data-theme');
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+
+    function setStaffStatus(status) {
+        setDoc(doc(db, "settings", "staff_status"), { status }, { merge: true });
+    }
+
+    function checkEmailLinkSignIn() {
+        // Implement email link login check logic
+    }
+
 
     // Sync system states in real-time on Admin page
     async function syncAdminSystemStates() {

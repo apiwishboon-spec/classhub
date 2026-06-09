@@ -225,19 +225,24 @@ function initTheme() {
     updateThemeIcons(isDark);
 }
 
-function shouldBeDark() {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
-    const totalMinutes = hours * 60 + minutes;
-    
-    // Rough sunset ~18:30 (1110 min), sunrise ~6:00 (360 min) for Thailand
-    const sunsetMin = 18 * 60 + 30; // 18:30
-    const sunriseMin = 6 * 60;      // 6:00
-    
-    return totalMinutes >= sunsetMin || totalMinutes < sunriseMin;
+function applySunsetTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark' || savedTheme === 'light') return;
+
+    const shouldBeDark = shouldBeDarkTheme();
+    const isDark = document.documentElement.hasAttribute('data-theme');
+
+    if (shouldBeDark !== isDark) {
+        document.documentElement.setAttribute('data-theme', shouldBeDark ? 'dark' : '');
+        updateThemeIcons(shouldBeDark);
+    }
 }
 
+function shouldBeDarkTheme() {
+    const now = new Date();
+    const hours = now.getHours();
+    return hours >= 18 || hours < 6;
+}
 function updateThemeIcons(isDark) {
     const iconText = isDark ? 'light_mode' : 'dark_mode';
     const toggles = [themeToggle, mobileThemeToggle];
