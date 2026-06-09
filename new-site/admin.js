@@ -427,6 +427,14 @@ async function loadFeedback() {
     });
 }
 
+    function setStaffStatus(status) {
+        setDoc(doc(db, "settings", "staff_status"), { status }, { merge: true });
+    }
+
+    function checkEmailLinkSignIn() {
+        // Implement email link login check logic
+    }
+
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         // Logged in
