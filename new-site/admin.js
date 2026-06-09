@@ -1799,109 +1799,28 @@ if (sendLinkBtn) {
     }
 
     // Global helper functions
-    // Module-scoped helper functions
-    window.updateAdminSectionsVisibility = function() {
-        const statusToggle = document.getElementById('staff-status-toggle');
+    // Expose loaders to window for global access from async callbacks
+    window.loadUsers = loadUsers;
+    window.loadSchedule = loadSchedule;
+    window.loadAnnouncements = loadAnnouncements;
+    window.loadHomework = loadHomework;
+    window.loadPolls = loadPolls;
+    window.loadFeedback = loadFeedback;
+    window.loadSettings = loadSettings;
+    window.loadAuditLog = loadAuditLog;
+    window.loadBugReports = loadBugReports;
+    window.performSystemCleanup = performSystemCleanup;
+    window.syncStatusToggle = syncStatusToggle;
+    window.showToast = showToast;
+    window.logAction = logAction;
+    window.customConfirm = customConfirm;
+    window.updateAdminSectionsVisibility = updateAdminSectionsVisibility;
+    window.syncAdminSystemStates = syncAdminSystemStates;
 
-        if (!manageUsersSection || !manageScheduleSection || !addAnnouncementSection || !feedbackInboxSection) {
-            console.warn("Admin sections not fully loaded in DOM.");
-            return;
-        }
+    // Initialize Visibility (once DOM is ready)
+    updateAdminSectionsVisibility();
+    syncAdminSystemStates();
 
-        if (currentUserRole === 'admin') {
-            manageUsersSection.style.display = 'block';
-            manageScheduleSection.style.display = 'block';
-            addAnnouncementSection.style.display = 'block';
-            addHomeworkSection.style.display = 'block';
-            manageAnnouncementsSection.style.display = 'block';
-            manageHomeworkSection.style.display = 'block';
-            systemSettingsSection.style.display = 'block';
-            auditLogSection.style.display = 'block';
-            bugReportsSection.style.display = 'block';
-            feedbackInboxSection.style.display = 'block';
-
-            loadUsers();
-            loadSchedule();
-            loadAnnouncements();
-            loadHomework();
-            loadPolls();
-            loadFeedback();
-            loadSettings();
-            loadAuditLog();
-            loadBugReports();
-            performSystemCleanup();
-
-            if (statusToggle) {
-                statusToggle.disabled = false;
-                syncStatusToggle();
-            }
-        } else if (currentUserRole === 'teacher') {
-            manageUsersSection.style.display = 'none';
-            manageScheduleSection.style.display = 'none';
-            addAnnouncementSection.style.display = 'block';
-            addHomeworkSection.style.display = 'block';
-            manageAnnouncementsSection.style.display = 'block';
-            manageHomeworkSection.style.display = 'block';
-            systemSettingsSection.style.display = 'none';
-            auditLogSection.style.display = 'none';
-            bugReportsSection.style.display = 'none';
-            feedbackInboxSection.style.display = 'none';
-        }
-    };
-
-    window.syncAdminSystemStates = async function() {
-        if (systemStatesListener) return;
-
-        try {
-            systemStatesListener = onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-
-                    const existingBanner = document.getElementById('system-global-banner');
-                    if (data.bannerEnabled && data.bannerText) {
-                        if (existingBanner) {
-                            existingBanner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
-                            const contentEl = existingBanner.querySelector('.banner-content');
-                            if (contentEl) contentEl.textContent = data.bannerText;
-
-                            const iconEl = existingBanner.querySelector('i');
-                            if (iconEl) {
-                                iconEl.className = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
-                                    data.bannerType === 'warning' ? 'ph ph-warning' :
-                                        'ph ph-info';
-                            }
-                        } else {
-                            const banner = document.createElement('div');
-                            banner.id = 'system-global-banner';
-                            banner.className = `global-alert-banner alert-banner-${data.bannerType || 'info'}`;
-
-                            const iconClass = data.bannerType === 'danger' ? 'ph ph-warning-octagon' :
-                                data.bannerType === 'warning' ? 'ph ph-warning' :
-                                    'ph ph-info';
-
-                            banner.innerHTML = `
-                            <i class="${iconClass}"></i>
-                            <div class="banner-content">${data.bannerText}</div>
-                        `;
-                            document.body.insertBefore(banner, document.body.firstChild);
-                        }
-                    } else {
-                        if (existingBanner) existingBanner.remove();
-                    }
-
-                    const isAdmin = currentUserRole === 'admin';
-                    const isBypassed = sessionStorage.getItem('dev_bypass') === 'true';
-                    if (data.lockoutEnabled && !isAdmin && !isBypassed) {
-                        showAdminLockoutOverlay(data.lockoutPasscode || '');
-                    } else {
-                        hideAdminLockoutOverlay();
-                    }
-                }
-            });
-        } catch (e) {
-            console.error("Failed to sync admin system states", e);
-        }
-    };
 
 
     window.initTheme = function() {
