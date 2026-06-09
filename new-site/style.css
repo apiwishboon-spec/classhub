@@ -1522,9 +1522,12 @@ body {
   }
 
   .main-container {
-    padding: 1rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    width: 100%;
   }
-
   .top-app-bar {
     display: none; /* Hide desktop top bar on mobile */
   }
