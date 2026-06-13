@@ -2112,3 +2112,32 @@ logoutBtn.addEventListener('click', async () => {
         }
     });
 
+// Expose openModal to global scope
+window.openModal = openModal;
+
+function setRandomTagline() {
+    const taglines = [
+        "Inspiring the next generation.",
+        "Making every lesson count.",
+        "Empowering minds, one day at a time.",
+        "Your dedication makes the difference.",
+        "Building a brighter future together.",
+        "Teaching is a work of heart.",
+        "Excellence in every interaction."
+    ];
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+    const tagline = taglines[dayOfYear % taglines.length];
+    
+    const taglineEl = document.getElementById('tagline-text');
+    if (taglineEl) taglineEl.textContent = tagline;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const greetingSection = document.getElementById('greeting-section');
+    if (greetingSection) {
+        greetingSection.addEventListener('click', () => openModal('profile-edit-modal-card'));
+    }
+    setRandomTagline();
+});
+
