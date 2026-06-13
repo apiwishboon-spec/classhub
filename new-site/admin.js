@@ -1075,6 +1075,12 @@ if (sendLinkBtn) {
                                     <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
                                 </div>
                             </div>
+                            <div class="user-info-row" style="margin-top:0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
+                                <span class="user-info-label">Edit Profile:</span>
+                                <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${data.displayName || ''}" placeholder="Real Name">
+                                <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" accept="image/*">
+                                <button class="save-user-edit-btn btn-primary btn-full" data-uid="${doc.id}" style="margin-top:0.5rem; font-size:0.75rem; padding:0.5rem;">Save Changes</button>
+                            </div>
                             <div class="user-actions-grid">
                                 <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
                                     <i class="ph ph-key"></i> Reset Pass
@@ -1140,6 +1146,17 @@ if (sendLinkBtn) {
                                         <span class="user-info-val" style="font-size:0.7rem; opacity:0.7;">${doc.id}</span>
                                     </div>
                                 </div>
+                                <div>
+                                    <div class="user-info-label" style="margin-bottom:0.5rem;">Edit Profile</div>
+                                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                                        <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.8rem;" value="${data.displayName || ''}" placeholder="Real Name">
+                                        <div style="display:flex; flex-direction:column; gap:0.2rem;">
+                                            <label style="font-size:0.65rem; color:var(--text-secondary);">Change Profile Pic</label>
+                                            <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.8rem;" accept="image/*">
+                                        </div>
+                                        <button class="save-user-edit-btn btn-primary" data-uid="${doc.id}" style="font-size:0.8rem; padding:0.5rem;">Save Changes</button>
+                                    </div>
+                                </div>
                                 <div class="user-actions-grid" style="margin-top:0;">
                                     <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
                                         <i class="ph ph-key"></i> Send Password Reset Email
@@ -1201,6 +1218,38 @@ if (sendLinkBtn) {
                         showToast("Note saved!", "ph-floppy-disk", "var(--success)");
                     } catch (e) {
                         showToast("Error saving note: " + e.message, "ph-x-circle", "var(--danger)");
+                    }
+                });
+            });
+
+            document.querySelectorAll('.save-user-edit-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const uid = btn.getAttribute('data-uid');
+                    const nameVal = document.getElementById(`edit-name-${uid}`)?.value.trim();
+                    const picFile = document.getElementById(`edit-pic-${uid}`)?.files[0];
+
+                    if (!nameVal) return showToast("Name is required", "ph-warning", "var(--warning)");
+
+                    btn.disabled = true;
+                    const originalText = btn.textContent;
+                    btn.textContent = 'Updating...';
+
+                    try {
+                        const updates = { displayName: nameVal };
+                        if (picFile) {
+                            btn.textContent = 'Uploading Pic...';
+                            const photoURL = await uploadToImgBB(picFile);
+                            if (photoURL) updates.photoURL = photoURL;
+                        }
+
+                        await setDoc(doc(db, "users", uid), updates, { merge: true });
+                        showToast("User profile updated!");
+                        loadUsers();
+                    } catch (e) {
+                        showToast("Error updating user: " + e.message, "ph-x", "var(--danger)");
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = originalText;
                     }
                 });
             });
