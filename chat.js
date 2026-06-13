@@ -134,13 +134,18 @@ async function refreshChatHistory() {
             msg.replies.forEach(reply => {
                 const isUser = reply.sender === 'user';
                 const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
-                
+                const senderName = isUser ? 'You' : (reply.senderName || 'Staff');
+                const senderPhoto = (!isUser && reply.senderPhoto) ? reply.senderPhoto : null;
+
                 html += `
                     <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
-                        <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
-                            ${reply.text}
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-direction: ${isUser ? 'row-reverse' : 'row'};">
+                            ${senderPhoto ? `<img src="${senderPhoto}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">` : ''}
+                            <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
+                                ${reply.text}
+                            </div>
                         </div>
-                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${isUser ? 'You' : 'Staff'}</span>
+                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${senderName}</span>
                     </div>
                 `;
             });

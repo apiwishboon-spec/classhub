@@ -78,6 +78,24 @@
         </header>
 
         <main class="dashboard-grid">
+            <!-- My Profile -->
+            <section class="dashboard-card" id="my-profile-section">
+                <div class="card-header">
+                    <h2><i class="ph ph-user-circle"></i> My Profile</h2>
+                </div>
+                <div class="card-content admin-form-stack" style="text-align: center;">
+                    <div id="profile-pic-container" style="margin-bottom: 1rem;">
+                        <img id="my-profile-pic" src="logo.png" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-color);">
+                    </div>
+                    <input type="text" id="my-real-name" placeholder="Your Real Name" class="form-input">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Update Profile Picture</label>
+                        <input type="file" id="my-profile-pic-input" class="form-input" accept="image/*">
+                    </div>
+                    <button id="update-profile-btn" class="btn-primary btn-full">Update Profile</button>
+                </div>
+            </section>
+
             <!-- Post Announcement -->
             <section class="dashboard-card" id="add-announcement-section">
                 <div class="card-header">
@@ -181,7 +199,12 @@
                 <div class="card-content">
                     <div class="admin-user-form">
                         <input type="email" id="new-user-email" placeholder="New User Email" class="form-input">
+                        <input type="text" id="new-user-name" placeholder="Real Name" class="form-input">
                         <input type="password" id="new-user-pass" placeholder="Password" class="form-input">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <label style="font-size: 0.8rem; color: var(--text-secondary);">Profile Picture</label>
+                            <input type="file" id="new-user-pic" class="form-input" accept="image/*">
+                        </div>
                         <select id="new-user-role" class="form-input">
                             <option value="teacher">Teacher</option>
                             <option value="ta">TA</option>

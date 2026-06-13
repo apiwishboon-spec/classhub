@@ -1,4 +1,4 @@
-import { db, auth, firebaseConfig } from './firebase-config.js';
+import { db, auth, firebaseConfig, imgbbApiKey } from './firebase-config.js';
 
 import {
     signInWithEmailAndPassword,
@@ -13,6 +13,30 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+// Helper functions
+async function uploadToImgBB(file) {
+    if (!file) return null;
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    try {
+        const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await response.json();
+        if (data.success) {
+            return data.data.url;
+        } else {
+            throw new Error(data.error.message);
+        }
+    } catch (error) {
+        console.error("ImgBB upload failed:", error);
+        showToast("Image upload failed: " + error.message, "ph-x", "var(--danger)");
+        return null;
+    }
+}
 
 // DOM Elements
 const loginContainer = document.getElementById('login-container');
@@ -169,6 +193,8 @@ const emailLinkInput = document.getElementById('email-link-input');
 const sendLinkBtn = document.getElementById('send-link-btn');
 
 let currentUserRole = 'teacher';
+let currentUserName = '';
+let currentUserPhoto = '';
 
 // Load Polls (real-time)
 function loadPolls() {
@@ -392,7 +418,13 @@ async function loadFeedback() {
                         const data = docSnap.data();
                         const currentReplies = data.replies || [];
                         await updateDoc(doc(db, "feedback", id), {
-                            replies: [...currentReplies, { sender: 'admin', text: replyText, timestamp: new Date() }],
+                            replies: [...currentReplies, { 
+                                sender: 'admin', 
+                                senderName: currentUserName || 'Staff',
+                                senderPhoto: currentUserPhoto,
+                                text: replyText, 
+                                timestamp: new Date() 
+                            }],
                             status: 'replied'
                         });
                         showToast("Reply sent");
@@ -531,8 +563,17 @@ onAuthStateChanged(auth, async (user) => {
                         return;
                     }
                     currentUserRole = (data.role || 'teacher').toLowerCase().trim();
+                    currentUserName = data.displayName || '';
+                    currentUserPhoto = data.photoURL || '';
                     const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
                     userRoleBadge.textContent = `Role: ${displayRole}`;
+
+                    // Update My Profile UI
+                    const myNameInput = document.getElementById('my-real-name');
+                    const myPicImg = document.getElementById('my-profile-pic');
+                    if (myNameInput) myNameInput.value = data.displayName || '';
+                    if (myPicImg && data.photoURL) myPicImg.src = data.photoURL;
+
                     syncAdminSystemStates();
                     updateAdminSectionsVisibility();
                 }
@@ -640,6 +681,41 @@ function syncStatusToggle() {
         if (snap.exists()) statusToggle.value = snap.data().status;
     });
     statusToggle.onchange = () => setStaffStatus(statusToggle.value);
+}
+
+// Update Profile
+const updateProfileBtn = document.getElementById('update-profile-btn');
+if (updateProfileBtn) {
+    updateProfileBtn.addEventListener('click', async () => {
+        const name = document.getElementById('my-real-name').value.trim();
+        const picFile = document.getElementById('my-profile-pic-input').files[0];
+
+        if (!name) return showToast("Real Name is required", "ph-warning", "var(--warning)");
+
+        updateProfileBtn.disabled = true;
+        updateProfileBtn.textContent = 'Updating...';
+
+        try {
+            let photoURL = null;
+            if (picFile) {
+                updateProfileBtn.textContent = 'Uploading Pic...';
+                photoURL = await uploadToImgBB(picFile);
+            }
+
+            const userRef = doc(db, "users", auth.currentUser.uid);
+            const updates = { displayName: name };
+            if (photoURL) updates.photoURL = photoURL;
+
+            await updateDoc(userRef, updates);
+            showToast("Profile updated successfully!", "ph-check", "var(--success)");
+            document.getElementById('my-profile-pic-input').value = '';
+        } catch (e) {
+            showToast("Error updating profile: " + e.message, "ph-x", "var(--danger)");
+        } finally {
+            updateProfileBtn.disabled = false;
+            updateProfileBtn.textContent = 'Update Profile';
+        }
+    });
 }
 
 // Password Login
@@ -845,16 +921,24 @@ if (sendLinkBtn) {
         if (currentUserRole !== 'admin') return showToast("Unauthorized");
 
         const email = document.getElementById('new-user-email').value.trim();
+        const name = document.getElementById('new-user-name').value.trim();
         const pass = document.getElementById('new-user-pass').value.trim();
         const role = document.getElementById('new-user-role').value;
+        const picFile = document.getElementById('new-user-pic').files[0];
 
-        if (!email || !pass) return showToast("Email and Password required");
+        if (!email || !pass || !name) return showToast("Email, Name and Password required");
 
         const btn = document.getElementById('add-user-btn');
         btn.textContent = 'Adding...';
         btn.disabled = true;
 
         try {
+            let photoURL = null;
+            if (picFile) {
+                btn.textContent = 'Uploading Pic...';
+                photoURL = await uploadToImgBB(picFile);
+            }
+
             // Use a secondary app instance to create a user without logging out the current admin
             const secondaryApp = initializeApp(firebaseConfig, "SecondaryApp");
             const secondaryAuth = getAuth(secondaryApp);
@@ -865,6 +949,8 @@ if (sendLinkBtn) {
             // Add to users collection in Firestore (using main app db)
             await setDoc(doc(db, "users", newUser.uid), {
                 email: email,
+                displayName: name,
+                photoURL: photoURL,
                 role: role
             });
 
@@ -873,7 +959,9 @@ if (sendLinkBtn) {
 
             showToast(`User ${email} added successfully as ${role}!`);
             document.getElementById('new-user-email').value = '';
+            document.getElementById('new-user-name').value = '';
             document.getElementById('new-user-pass').value = '';
+            document.getElementById('new-user-pic').value = '';
             loadUsers();
         } catch (error) {
             showToast("Error adding user: " + error.message);
@@ -952,11 +1040,18 @@ if (sendLinkBtn) {
                     const data = doc.data();
                     const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
                     const statusBadge = data.disabled ? '<span class="time-badge" style="background:var(--danger);color:white;">Disabled</span>' : '';
+                    const avatar = data.photoURL || 'logo.png';
 
                     html += `
                     <div class="admin-sched-card" id="user-card-${doc.id}">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.email}</span>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                <div style="display: flex; flex-direction: column;">
+                                    <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.displayName || 'No Name'}</span>
+                                    <span style="font-size:0.7rem; color:var(--text-secondary);">${data.email}</span>
+                                </div>
+                            </div>
                             <div style="display:flex; gap:0.25rem;">
                                 <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}" title="See Info"><i class="ph ph-info"></i></button>
                                 <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}" title="Remove"><i class="ph ph-trash"></i></button>
@@ -998,7 +1093,7 @@ if (sendLinkBtn) {
             <table class="schedule-table">
                 <thead>
                     <tr>
-                        <th>Email</th>
+                        <th>User</th>
                         <th>Role</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -1011,10 +1106,19 @@ if (sendLinkBtn) {
                     const data = doc.data();
                     const listRole = data.role === 'ta' ? 'TA' : (data.role ? data.role.charAt(0).toUpperCase() + data.role.slice(1) : 'Unknown');
                     const statusBadge = data.disabled ? '<span class="time-badge" style="background:var(--danger);color:white;">Disabled</span>' : '<span class="time-badge" style="background:var(--success);color:white;">Active</span>';
+                    const avatar = data.photoURL || 'logo.png';
 
                     html += `
                 <tr id="user-row-${doc.id}">
-                    <td>${data.email}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 600;">${data.displayName || 'No Name'}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">${data.email}</span>
+                            </div>
+                        </div>
+                    </td>
                     <td><span class="time-badge">${listRole}</span></td>
                     <td>${statusBadge}</td>
                     <td>

@@ -167,8 +167,31 @@
 
       <!-- Admin Grid Layout -->
       <main class="admin-grid">
-        <!-- Post Announcement -->
-        <section class="md-card elevated" id="add-announcement-section">
+        <!-- My Profile -->
+        <section class="md-card elevated" id="my-profile-section">
+          <div class="card-header-m3">
+            <div class="card-title-group">
+              <span class="material-icons">account_circle</span>
+              <h2 class="title-large">My Profile</h2>
+            </div>
+          </div>
+          <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 1rem; align-items: center;">
+            <div style="width: 100px; height: 100px; border-radius: 50%; border: 3px solid var(--md-sys-color-primary); overflow: hidden; background: var(--md-sys-color-surface-container);">
+              <img id="my-profile-pic" src="logo.png" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="md-text-field" style="width: 100%;">
+              <input type="text" id="my-real-name" placeholder=" ">
+              <label>Your Real Name</label>
+            </div>
+            <div class="md-text-field" style="width: 100%;">
+              <input type="file" id="my-profile-pic-input" accept="image/*" style="padding: 12px 0;">
+              <label style="transform: translateY(-1.5rem) scale(0.85); background-color: var(--md-sys-color-background); padding: 0 0.25rem; color: var(--md-sys-color-primary);">Change Profile Picture</label>
+            </div>
+            <button id="update-profile-btn" class="md-btn filled" style="width: 100%;">Update Profile</button>
+          </div>
+        </section>
+
+        <!-- Post Announcement -->        <section class="md-card elevated" id="add-announcement-section">
           <div class="card-header-m3">
             <div class="card-title-group">
               <span class="material-icons">campaign</span>
@@ -321,8 +344,16 @@
                 <label>User Email</label>
               </div>
               <div class="md-text-field" style="margin-bottom:0;">
+                <input type="text" id="new-user-name" placeholder=" " required>
+                <label>Real Name</label>
+              </div>
+              <div class="md-text-field" style="margin-bottom:0;">
                 <input type="password" id="new-user-pass" placeholder=" " required>
                 <label>Password</label>
+              </div>
+              <div class="md-text-field" style="margin-bottom:0;">
+                <input type="file" id="new-user-pic" accept="image/*" style="padding: 12px 0;">
+                <label style="transform: translateY(-1.5rem) scale(0.85); background-color: var(--md-sys-color-background); padding: 0 0.25rem; color: var(--md-sys-color-primary);">Profile Picture</label>
               </div>
               <div class="md-text-field" style="margin-bottom:0;">
                 <select id="new-user-role" required>

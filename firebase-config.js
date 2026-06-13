@@ -15,3 +15,4 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-aut
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
+export const imgbbApiKey = "d851661ef4c88b4f97ee8b6857c184a7";
