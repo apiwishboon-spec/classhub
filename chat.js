@@ -1,5 +1,6 @@
 import { db } from './firebase-config.js';
 import { collection, doc, updateDoc, addDoc, serverTimestamp, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { sanitize } from './profanity-filter.js';
 
 function showToast(message, icon, color) {
     const container = document.getElementById('toast-container');
@@ -34,7 +35,7 @@ async function initChatPage() {
     await refreshChatHistory();
 
     sendBtn.addEventListener('click', async () => {
-        const text = inputField.value.trim();
+        const text = sanitize(inputField.value.trim());
         if (!text) return;
 
         sendBtn.disabled = true;
@@ -171,7 +172,7 @@ async function refreshChatHistory() {
         btn.addEventListener('click', async () => {
             const id = btn.getAttribute('data-id');
             const input = document.querySelector(`.feedback-reply-input[data-id="${id}"]`);
-            const replyText = input.value.trim();
+            const replyText = sanitize(input.value.trim());
             if (!replyText) return;
 
             btn.disabled = true;

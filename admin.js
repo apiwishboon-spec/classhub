@@ -1,4 +1,5 @@
 import { db, auth, firebaseConfig, imgbbApiKey } from './firebase-config.js';
+import { sanitize } from './profanity-filter.js';
 
 import {
     signInWithEmailAndPassword,
@@ -455,7 +456,7 @@ async function loadFeedback() {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
                 const input = document.querySelector(`.reply-input[data-id="${id}"]`);
-                const replyText = input.value.trim();
+                const replyText = sanitize(input.value.trim());
                 if (!replyText) return;
 
                 btn.disabled = true;
@@ -847,9 +848,9 @@ logoutBtn.addEventListener('click', async () => {
     document.getElementById('add-ann-btn').addEventListener('click', async () => {
         if (currentUserRole === 'ta') return showToast("Unauthorized. TAs can only post homework.");
 
-        const title = document.getElementById('ann-title').value.trim();
-        const message = document.getElementById('ann-message').value.trim();
-        const author = document.getElementById('ann-author').value.trim();
+        const title = sanitize(document.getElementById('ann-title').value.trim());
+        const message = sanitize(document.getElementById('ann-message').value.trim());
+        const author = sanitize(document.getElementById('ann-author').value.trim());
 
         if (!title || !message) return showToast("Title and Message required");
 
@@ -881,8 +882,8 @@ logoutBtn.addEventListener('click', async () => {
 
     // Add Homework
     document.getElementById('add-hw-btn').addEventListener('click', async () => {
-        const subject = document.getElementById('hw-subject').value.trim();
-        const task = document.getElementById('hw-task').value.trim();
+        const subject = sanitize(document.getElementById('hw-subject').value.trim());
+        const task = sanitize(document.getElementById('hw-task').value.trim());
         const due = document.getElementById('hw-due').value.trim();
 
         if (!subject || !task) return showToast("Subject and Task required");
@@ -1718,8 +1719,8 @@ logoutBtn.addEventListener('click', async () => {
 
     // Create Poll
     document.getElementById('create-poll-btn').addEventListener('click', async () => {
-        const question = pollQuestionInput.value.trim();
-        const optionsStr = pollOptionsInput.value.trim();
+        const question = sanitize(pollQuestionInput.value.trim());
+        const optionsStr = sanitize(pollOptionsInput.value.trim());
 
         if (!question || !optionsStr) {
             showToast("Please enter a question and at least 2 options.", "ph-warning", "var(--warning)");
