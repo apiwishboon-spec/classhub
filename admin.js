@@ -14,8 +14,56 @@ import {
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
+// Helper functions
+function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (savedTheme === 'light') {
+        document.documentElement.removeAttribute('data-theme');
+    } else {
+        applySunsetTheme();
+    }
+}
+
+function applySunsetTheme() {
+    const hour = new Date().getHours();
+    if (hour < 6 || hour > 18) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+        document.documentElement.removeAttribute('data-theme');
+    }
+}
+
+async function setStaffStatus(status) {
+    try {
+        await setDoc(doc(db, "settings", "staff_status"), { 
+            status,
+            updatedBy: auth.currentUser ? auth.currentUser.email : 'system',
+            updatedAt: serverTimestamp()
+        }, { merge: true });
+    } catch (e) { console.error("Status update failed:", e); }
+}
+
+async function checkEmailLinkSignIn() {
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Please provide your email for confirmation');
+        }
+        try {
+            await signInWithEmailLink(auth, email, window.location.href);
+            window.localStorage.removeItem('emailForSignIn');
+            showToast("Logged in with email link!");
+        } catch (error) {
+            showToast("Error logging in: " + error.message, "ph-x", "var(--danger)");
+        }
+    }
+}
+
 // DOM Elements
 const loginContainer = document.getElementById('login-container');
+console.log("admin.js: Module loading...");
 const adminContainer = document.getElementById('admin-container');
 const loginBtn = document.getElementById('login-btn');
 const emailInput = document.getElementById('email');
@@ -56,6 +104,8 @@ async function performSystemCleanup() {
 
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     let deletedCount = 0;
 
     try {
@@ -428,6 +478,7 @@ async function loadFeedback() {
 }
 
 onAuthStateChanged(auth, async (user) => {
+    console.log("Auth state changed, user:", user ? user.email : "logged out");
     if (user) {
         // Logged in
         if (loginContainer) loginContainer.style.display = 'none';
@@ -646,9 +697,10 @@ if (sendLinkBtn) {
             sendLinkBtn.textContent = 'Send Login Link';
         }
     });
+}
 
-    // Logout
-    logoutBtn.addEventListener('click', async () => {
+// Logout
+logoutBtn.addEventListener('click', async () => {
         if (auth.currentUser) {
             try {
                 const userRef = doc(db, "users", auth.currentUser.uid);
@@ -1901,4 +1953,4 @@ if (sendLinkBtn) {
             showToast("Error saving: " + e.message);
         }
     });
-}
+

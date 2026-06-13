@@ -56,6 +56,8 @@ async function performSystemCleanup() {
 
     const oneMonthAgo = new Date();
     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
     let deletedCount = 0;
 
     try {
@@ -697,6 +699,7 @@ if (sendLinkBtn) {
             sendLinkBtn.textContent = 'Send Login Link';
         }
     });
+}
 
     // Logout
     logoutBtn.addEventListener('click', async () => {
@@ -1973,4 +1976,4 @@ if (sendLinkBtn) {
             showToast("Error saving: " + e.message);
         }
     });
-}
+
