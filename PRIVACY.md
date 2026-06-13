@@ -1,37 +1,27 @@
-# Privacy Policy for MyClassHub
+# Privacy Policy
 
-**Last Updated:** June 1, 2026
+**Last Updated:** June 13, 2026
 
-MyClassHub is designed for use in a school environment. We take the privacy of students and educators seriously. This policy explains how information is handled within this application.
+## Overview
+MyClassHub is committed to protecting the privacy of students, teachers, and school staff. This document summarizes our data collection and usage practices.
 
-## 1. Information Collection
-MyClassHub is a dashboard for displaying classroom information. 
-- **User Provided Data:** Information such as announcements, homework assignments, and schedules are entered by authorized administrators.
-- **Quick Notes:** Notes created in the "Quick Notes" section are stored locally or in the project's database (Firestore) depending on the configuration.
+## Data Collection
+We collect the minimum information necessary to operate our school management platform:
+- **Authentication:** Email and password (via Firebase Authentication) for staff and administration.
+- **Content:** Classroom announcements, homework, and schedule information.
+- **Support:** Direct communication between users and school staff.
 
-## 2. Use of Information
-The information displayed on MyClassHub is used solely for educational purposes, including:
-- Communicating classroom schedules and changes.
-- Listing homework assignments and deadlines.
-- Sharing important school announcements.
+## Data Usage
+Information is used exclusively for educational administration, facilitating communication, and platform security. We do not sell or share personal information with third parties.
 
-## 3. Data Storage and Security
-- **Cloudflare Pages:** The site is hosted on Cloudflare, which provides industry-standard security for the delivery of the web content.
-- **Firebase/Firestore:** If database features are enabled, data is stored securely using Google Firebase. Access is restricted via Firestore Security Rules to ensure only authorized users can modify content.
-- **Local Storage:** Some preferences (like Dark Mode) may be stored in your browser's local storage.
+## Data Deletion
+Users may request the deletion of their accounts and associated personal data by contacting the school administrator. Some records may be retained as required for school administration, security, or legal compliance.
 
-## 4. Student Privacy (COPPA/GDPR Compliance)
-- MyClassHub does not "track" students.
-- We do not sell or share any data with third-party advertisers.
-- The application is designed to be a "read-only" experience for most students, minimizing the collection of personal data.
+## Firebase Services
+We utilize the following Google Firebase services:
+- **Firebase Authentication:** For secure user management.
+- **Cloud Firestore:** For secure, real-time database storage.
+- **Firebase Hosting:** For web platform deployment.
 
-## 5. Third-Party Services
-We use the following third-party services:
-- **Google Analytics:** Used to understand general traffic patterns. No personally identifiable information (PII) is intentionally sent to Google Analytics.
-- **Google Fonts & Phosphor Icons:** These are used to provide the visual interface of the app.
-
-## 6. Changes to This Policy
-We may update this privacy policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date.
-
-## 7. Contact
-If you have questions regarding privacy, please contact your school administrator or the project maintainer.
+## Contact
+For privacy-related inquiries, please contact the site administrator through the internal support chat.

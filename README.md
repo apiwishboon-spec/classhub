@@ -9,23 +9,31 @@ MyClassHub is a comprehensive classroom dashboard designed to streamline classro
 - **Homework Tracker:** Keep track of assignments and deadlines.
 - **Quick Notes:** Personal or shared note-taking section.
 - **Admin Panel:** Secure management for authorized users.
+- **Profanity Filtering:** Automated sanitization of user-generated content.
 - **Dark Mode:** Support for both light and dark themes.
 - **Responsive Design:** Optimized for various devices and screen sizes.
 - **Search:** Global search functionality for quick access to information.
 
+## 🔒 Security & Privacy
+
+- **Centralized Profanity Filtering:** Automated content moderation for chat, polls, and announcements.
+- **Audit Logging:** Administrative actions are tracked for accountability.
+- **Role-Based Access:** Granular permissions for Admin, Teachers, and TAs.
+- **Compliance:** Full documentation on our [Privacy Policy](./PRIVACY.md) and [Security Standards](./SECURITY.md).
+
 ## 🛠 Tech Stack
 
 - **Frontend:** HTML5, Vanilla CSS, JavaScript (ES Modules)
-- **Backend/Hosting:** [Firebase](https://firebase.google.com/) (Hosting, Firestore, Firebase Admin SDK)
+- **Backend/Hosting:** [Firebase](https://firebase.google.com/) (Hosting, Firestore, Authentication)
 - **Icons:** [Phosphor Icons](https://phosphoricons.com/)
 - **Fonts:** IBM Plex Sans (via Google Fonts)
-- **Analytics:** Google Analytics (gtag.js)
 
 ## 📦 Project Structure
 
 - `index.html`: Main dashboard entry point.
 - `admin.html`: Administrative management interface.
 - `script.js`: Core frontend logic.
+- `profanity-filter.js`: Centralized sanitization module.
 - `firebase-config.js`: Firebase initialization and configuration.
 - `firestore.rules`: Security rules for database access.
 - `style.css`: Visual styling and theming.
