@@ -2125,9 +2125,7 @@ function setRandomTagline() {
         "Teaching is a work of heart.",
         "Excellence in every interaction."
     ];
-    const today = new Date();
-    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
-    const tagline = taglines[dayOfYear % taglines.length];
+    const tagline = taglines[Math.floor(Math.random() * taglines.length)];
     
     const taglineEl = document.getElementById('tagline-text');
     if (taglineEl) taglineEl.textContent = tagline;
