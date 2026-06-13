@@ -78,21 +78,14 @@
         </header>
 
         <main class="dashboard-grid">
-            <!-- My Profile -->
-            <section class="dashboard-card" id="my-profile-section">
-                <div class="card-header">
-                    <h2><i class="ph ph-user-circle"></i> My Profile</h2>
-                </div>
-                <div class="card-content admin-form-stack" style="text-align: center;">
-                    <div id="profile-pic-container" style="margin-bottom: 1rem;">
-                        <img id="my-profile-pic" src="logo.png" alt="Profile" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-color);">
+            <!-- Personalized Greeting -->
+            <section class="dashboard-card" id="greeting-section" style="cursor: pointer;" onclick="openModal('profile-edit-modal-card')">
+                <div class="card-content" style="display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem;">
+                    <img id="my-profile-pic" src="logo.png" alt="Profile" style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-color);">
+                    <div>
+                        <h2 id="greeting-text" style="margin: 0;">Hello, Staff!</h2>
+                        <p style="margin: 0; color: var(--text-secondary);">Click to edit your profile</p>
                     </div>
-                    <input type="text" id="my-real-name" placeholder="Your Real Name" class="form-input">
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
-                        <label style="font-size: 0.8rem; color: var(--text-secondary);">Update Profile Picture</label>
-                        <input type="file" id="my-profile-pic-input" class="form-input" accept="image/*">
-                    </div>
-                    <button id="update-profile-btn" class="btn-primary btn-full">Update Profile</button>
                 </div>
             </section>
 
@@ -349,6 +342,22 @@
             <div class="modal-actions">
                 <button id="confirm-cancel" class="btn-secondary">Cancel</button>
                 <button id="confirm-ok" class="btn-danger">Confirm</button>
+            </div>
+        </div>
+
+        <!-- Profile Edit Modal -->
+        <div id="profile-edit-modal-card" class="modal-card" style="display: none;">
+            <h3>Edit Profile</h3>
+            <div class="admin-form-stack">
+                <input type="text" id="my-real-name" placeholder="Your Real Name" class="form-input">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
+                    <label style="font-size: 0.8rem; color: var(--text-secondary);">Update Profile Picture</label>
+                    <input type="file" id="my-profile-pic-input" class="form-input" accept="image/*">
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-secondary close-modal">Cancel</button>
+                    <button id="update-profile-btn" class="btn-primary">Save Changes</button>
+                </div>
             </div>
         </div>
 

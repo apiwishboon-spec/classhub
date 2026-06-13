@@ -563,6 +563,10 @@ onAuthStateChanged(auth, async (user) => {
                     currentUserRole = (data.role || 'teacher').toLowerCase().trim();
                     currentUserName = data.displayName || '';
                     currentUserPhoto = data.photoURL || '';
+                    
+                    const greetingEl = document.getElementById('greeting-text');
+                    if (greetingEl) greetingEl.textContent = `Hello, ${currentUserName || 'Staff'}!`;
+                    
                     const displayRole = currentUserRole === 'ta' ? 'TA' : currentUserRole.charAt(0).toUpperCase() + currentUserRole.slice(1);
                     userRoleBadge.textContent = `Role: ${displayRole}`;
 
@@ -706,6 +710,7 @@ if (updateProfileBtn) {
 
             await updateDoc(userRef, updates);
             showToast("Profile updated successfully!", "ph-check", "var(--success)");
+            closeModal();
             document.getElementById('my-profile-pic-input').value = '';
         } catch (e) {
             showToast("Error updating profile: " + e.message, "ph-x", "var(--danger)");
