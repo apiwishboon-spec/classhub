@@ -1249,13 +1249,17 @@ function init() {
     fetchNotes();
     fetchPolls();
     
-    // Show Royal Image Modal (Only once)
+    // Show Royal Image Modal (Once every 2 days)
     const royalModal = document.getElementById('image-modal-overlay');
-    if (royalModal && !localStorage.getItem('royal_modal_dismissed')) {
+    const lastDismissed = localStorage.getItem('royal_modal_last_dismissed');
+    const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    if (royalModal && (!lastDismissed || (now - parseInt(lastDismissed)) > twoDaysInMs)) {
         royalModal.style.display = 'flex';
         royalModal.addEventListener('click', () => {
             royalModal.style.display = 'none';
-            localStorage.setItem('royal_modal_dismissed', 'true');
+            localStorage.setItem('royal_modal_last_dismissed', Date.now().toString());
         });
     }
 
