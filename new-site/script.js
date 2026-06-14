@@ -1249,6 +1249,15 @@ function init() {
     fetchNotes();
     fetchPolls();
     
+    // Show Royal Image Modal
+    const royalModal = document.getElementById('image-modal-overlay');
+    if (royalModal) {
+        royalModal.style.display = 'flex';
+        royalModal.addEventListener('click', () => {
+            royalModal.style.display = 'none';
+        });
+    }
+
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
