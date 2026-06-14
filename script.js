@@ -1257,9 +1257,27 @@ function init() {
         });
     }
 
-    // Suggestion Box Logic
+    // Suggestion Modal Logic
+    const suggestionModal = document.getElementById('suggestion-modal');
+    const openSuggestionBtn = document.getElementById('open-suggestion-modal');
     const suggestionInput = document.getElementById('suggestion-input');
     const sendSuggestionBtn = document.getElementById('send-suggestion-btn');
+    
+    if (openSuggestionBtn && suggestionModal) {
+        openSuggestionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            suggestionModal.classList.add('active');
+            suggestionInput.focus();
+        });
+
+        suggestionModal.querySelector('.close-modal')?.addEventListener('click', () => {
+            suggestionModal.classList.remove('active');
+        });
+
+        suggestionModal.addEventListener('click', (e) => {
+            if (e.target === suggestionModal) suggestionModal.classList.remove('active');
+        });
+    }
     
     if (sendSuggestionBtn && suggestionInput) {
         sendSuggestionBtn.addEventListener('click', async () => {
@@ -1267,7 +1285,7 @@ function init() {
             if (!text) return;
 
             sendSuggestionBtn.disabled = true;
-            sendSuggestionBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i>';
+            sendSuggestionBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sending...';
 
             try {
                 await addDoc(collection(db, "feedback"), {
@@ -1279,12 +1297,13 @@ function init() {
                 });
                 
                 suggestionInput.value = '';
+                suggestionModal.classList.remove('active');
                 showToast("Suggestion sent anonymously!", "ph-chat-teardrop-dots", "var(--success)");
             } catch (e) {
                 showToast("Error sending: " + e.message, "ph-x", "var(--danger)");
             } finally {
                 sendSuggestionBtn.disabled = false;
-                sendSuggestionBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i>';
+                sendSuggestionBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Suggestion';
             }
         });
     }

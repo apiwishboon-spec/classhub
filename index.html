@@ -97,23 +97,6 @@
                     <div id="polls-container"></div>
                 </div>
             </section>
-
-            <!-- Suggestion Box Section -->
-            <section id="suggestion-section" class="dashboard-card span-2">
-                <div class="card-header">
-                    <h2><i class="ph ph-chat-teardrop-dots"></i> Suggestion Box</h2>
-                    <span class="time-badge" style="font-size: 0.7rem; background: var(--accent-color); color: white;">ANONYMOUS</span>
-                </div>
-                <div class="card-content">
-                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">Have an idea to improve the class? Send a private, anonymous suggestion directly to the staff.</p>
-                    <div class="admin-form-stack" style="display: flex; gap: 0.75rem; align-items: flex-start;">
-                        <textarea id="suggestion-input" placeholder="Type your suggestion here..." class="form-input" rows="2" style="flex: 1; border-radius: 8px; resize: none;"></textarea>
-                        <button id="send-suggestion-btn" class="btn-primary" style="padding: 0.75rem 1.5rem; height: 52px;">
-                            <i class="ph ph-paper-plane-tilt"></i>
-                        </button>
-                    </div>
-                </div>
-            </section>
             </main>
             <!-- Quick Notes Section -->
             <section id="notes-section" class="dashboard-card span-2">
@@ -133,9 +116,10 @@
         </main>
         
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
-            <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem;">
+            <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
                 <a href="privacy.html" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
                 <a href="terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
+                <a href="#" id="open-suggestion-modal" style="color: var(--text-secondary); text-decoration: none;">Suggestion Box</a>
                 <a href="contact.html" style="color: var(--text-secondary); text-decoration: none;">Contact Admin</a>
             </div>
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
@@ -144,6 +128,25 @@
                 <i class="ph ph-eye"></i> <span id="visit-count">...</span> visits
             </div>
         </footer>
+    </div>
+
+    <!-- Suggestion Modal -->
+    <div id="suggestion-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="ph ph-chat-teardrop-dots"></i> Suggestion Box</h3>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">Have an idea to improve the class? Send a private, anonymous suggestion directly to the staff.</p>
+                <div class="admin-form-stack">
+                    <textarea id="suggestion-input" placeholder="Type your suggestion here..." class="form-input" rows="4" style="border-radius: 8px; resize: none; width: 100%; box-sizing: border-box;"></textarea>
+                    <button id="send-suggestion-btn" class="btn-primary" style="width: 100%; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="ph ph-paper-plane-tilt"></i> Send Suggestion
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
