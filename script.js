@@ -1241,12 +1241,13 @@ function init() {
     fetchNotes();
     fetchPolls();
     
-    // Show Royal Image Modal
+    // Show Royal Image Modal (Only once)
     const royalModal = document.getElementById('image-modal-overlay');
-    if (royalModal) {
+    if (royalModal && !localStorage.getItem('royal_modal_dismissed')) {
         royalModal.style.display = 'flex';
         royalModal.addEventListener('click', () => {
             royalModal.style.display = 'none';
+            localStorage.setItem('royal_modal_dismissed', 'true');
         });
     }
 
