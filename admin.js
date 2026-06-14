@@ -413,10 +413,13 @@ async function loadFeedback() {
             }
 
             html += `
-                <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : 'var(--accent-color)'};">
+                <div class="admin-sched-card" style="border-left: 4px solid ${data.urgent ? 'var(--danger)' : (data.type === 'suggestion' ? 'var(--warning)' : 'var(--accent-color)')};">
                     <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
                         <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
-                        ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
+                        <div style="display: flex; gap: 0.5rem;">
+                            ${data.type === 'suggestion' ? '<span style="color:var(--warning); font-size:0.7rem; font-weight:700;">💡 SUGGESTION</span>' : ''}
+                            ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
+                        </div>
                     </div>
                     <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
                     ${conversationHtml ? `<div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>${conversationHtml}</div>` : ''}

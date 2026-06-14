@@ -1,5 +1,7 @@
 import { db } from './firebase-config.js';
 import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { sanitize } from './profanity-filter.js';
+
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -1252,6 +1254,38 @@ function init() {
         royalModal.addEventListener('click', () => {
             royalModal.style.display = 'none';
             localStorage.setItem('royal_modal_last_dismissed', Date.now().toString());
+        });
+    }
+
+    // Suggestion Box Logic
+    const suggestionInput = document.getElementById('suggestion-input');
+    const sendSuggestionBtn = document.getElementById('send-suggestion-btn');
+    
+    if (sendSuggestionBtn && suggestionInput) {
+        sendSuggestionBtn.addEventListener('click', async () => {
+            const text = sanitize(suggestionInput.value.trim());
+            if (!text) return;
+
+            sendSuggestionBtn.disabled = true;
+            sendSuggestionBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i>';
+
+            try {
+                await addDoc(collection(db, "feedback"), {
+                    message: text,
+                    type: 'suggestion',
+                    status: 'new',
+                    urgent: false,
+                    createdAt: serverTimestamp()
+                });
+                
+                suggestionInput.value = '';
+                showToast("Suggestion sent anonymously!", "ph-chat-teardrop-dots", "var(--success)");
+            } catch (e) {
+                showToast("Error sending: " + e.message, "ph-x", "var(--danger)");
+            } finally {
+                sendSuggestionBtn.disabled = false;
+                sendSuggestionBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i>';
+            }
         });
     }
 
