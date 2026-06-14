@@ -412,9 +412,11 @@ body {
 }
 
 .nav-brand img {
-    height: 100px;
+    height: 150px; /* Even bigger */
     width: auto;
     border-radius: 12px;
+    background-color: #000000; /* Black background as requested */
+    padding: 10px; /* Space around logo on the black bg */
     display: block;
 }
 
