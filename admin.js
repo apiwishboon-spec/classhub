@@ -108,6 +108,7 @@ const bugReportsSection = document.getElementById('bug-reports-section');
 const bugReportsList = document.getElementById('bug-reports-list');
 const bugCountBadge = document.getElementById('bug-count-badge');
 const feedbackInboxSection = document.getElementById('feedback-inbox-section');
+const managePollsSection = document.getElementById('manage-polls-section');
 const createPollBtn = document.getElementById('create-poll-btn');
 const pollQuestionInput = document.getElementById('poll-question');
 const pollOptionsInput = document.getElementById('poll-options');
@@ -618,6 +619,7 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
+        managePollsSection.style.display = 'block';
         systemSettingsSection.style.display = 'block';
         auditLogSection.style.display = 'block';
         bugReportsSection.style.display = 'block';
@@ -646,6 +648,7 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
+        managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
 
         loadAnnouncements();
@@ -667,6 +670,7 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'none';
         manageHomeworkSection.style.display = 'block';
+        managePollsSection.style.display = 'none';
         systemSettingsSection.style.display = 'none';
         auditLogSection.style.display = 'none';
         bugReportsSection.style.display = 'none';
