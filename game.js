@@ -106,7 +106,7 @@
             obstacles.forEach((obs) => {
                 obs.x -= speed;
                 // Precise Collision (T-Rex is at X:50)
-                const trexBox = { x: 50, y: 80 + trexY, w: 30, h: 40 };
+                const trexBox = { x: 50, y: 69 + trexY, w: 35, h: 50 };
                 const obsBox = { x: obs.x + 5, y: (obs.type === 'LARGE' ? 80 : 95) + 5, w: obs.width - 10, h: obs.height - 5 };
                 
                 if (trexBox.x < obsBox.x + obsBox.w &&
@@ -138,8 +138,8 @@
                 trexFrame = score === 0 ? 0 : 220; // Crash or Idle
             }
             
-            // Draw T-Rex (Adjusted source width to 88 to capture full sprite)
-            ctx.drawImage(images.TREX, trexFrame, 0, 88, 94, 50, Math.round(80 + trexY), 44, 47);
+            // Draw T-Rex (Fixed source width to 44, destination slightly larger at 55x58)
+            ctx.drawImage(images.TREX, trexFrame, 0, 44, 47, 50, Math.round(69 + trexY), 55, 58);
 
             // Obstacles
             obstacles.forEach(obs => {
