@@ -138,8 +138,8 @@
                 trexFrame = score === 0 ? 0 : 220; // Crash or Idle
             }
             
-            // Draw T-Rex at X:50 to align with collision box
-            ctx.drawImage(images.TREX, trexFrame, 0, 44, 47, 50, Math.round(80 + trexY), 44, 47);
+            // Draw T-Rex (Adjusted source width to 88 to capture full sprite)
+            ctx.drawImage(images.TREX, trexFrame, 0, 88, 94, 50, Math.round(80 + trexY), 44, 47);
 
             // Obstacles
             obstacles.forEach(obs => {
