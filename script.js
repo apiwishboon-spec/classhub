@@ -1432,11 +1432,15 @@ function init() {
                 const caption = sanitize(bannerCaptionInput.value.trim());
                 const postedBy = sanitize(bannerPostedByInput ? bannerPostedByInput.value.trim() : '');
 
-                // Delete all existing banners before adding new one
-                const existingSnap = await getDocs(collection(db, "banners"));
-                const deletePromises = [];
-                existingSnap.forEach(doc => deletePromises.push(deleteDoc(doc.ref)));
-                await Promise.all(deletePromises);
+                // Best-effort cleanup of old banners (may fail for non-admin users)
+                try {
+                    const existingSnap = await getDocs(collection(db, "banners"));
+                    const deletePromises = [];
+                    existingSnap.forEach(d => deletePromises.push(deleteDoc(d.ref)));
+                    await Promise.all(deletePromises);
+                } catch (_) {
+                    // Cleanup is best-effort — proceed even if permission denied
+                }
 
                 await addDoc(collection(db, "banners"), {
                     url: photoURL,
