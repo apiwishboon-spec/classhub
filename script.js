@@ -1635,9 +1635,18 @@ async function syncSystemStates() {
                 const bannerPriceText = document.getElementById('banner-price-text');
                 const bannerQrSection = document.getElementById('banner-qr-section');
                 const bannerConfirmPayRow = document.getElementById('banner-confirm-pay-row');
-                if (bannerPriceText) bannerPriceText.style.display = paymentRequired ? '' : 'none';
-                if (bannerQrSection) bannerQrSection.style.display = paymentRequired ? '' : 'none';
-                if (bannerConfirmPayRow) bannerConfirmPayRow.style.display = paymentRequired ? '' : 'none';
+                if (bannerPriceText) {
+                    if (!bannerPriceText.dataset.origDisplay) bannerPriceText.dataset.origDisplay = window.getComputedStyle(bannerPriceText).display;
+                    bannerPriceText.style.display = paymentRequired ? bannerPriceText.dataset.origDisplay : 'none';
+                }
+                if (bannerQrSection) {
+                    if (!bannerQrSection.dataset.origDisplay) bannerQrSection.dataset.origDisplay = window.getComputedStyle(bannerQrSection).display;
+                    bannerQrSection.style.display = paymentRequired ? bannerQrSection.dataset.origDisplay : 'none';
+                }
+                if (bannerConfirmPayRow) {
+                    if (!bannerConfirmPayRow.dataset.origDisplay) bannerConfirmPayRow.dataset.origDisplay = window.getComputedStyle(bannerConfirmPayRow).display;
+                    bannerConfirmPayRow.style.display = paymentRequired ? bannerConfirmPayRow.dataset.origDisplay : 'none';
+                }
             }
         });
     } catch (e) {
