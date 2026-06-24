@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -1336,19 +1336,18 @@ function init() {
 
                 const url = data.url;
                 const caption = sanitize(data.caption || '');
+                const postedBy = sanitize(data.postedBy || '');
 
                 bannerContainer.innerHTML = `
                     <div style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
                         <img src="${url}" alt="Class Banner" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
-                        ${caption ? `
                         <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
-                            <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${caption}</p>
-                            <span style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem; display: block;">Uploaded: ${dateStr}</span>
-                        </div>` : `
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%); padding: 0.75rem; color: #fff; text-align: right; box-sizing: border-box;">
-                            <span style="font-size: 0.75rem; opacity: 0.8;">Uploaded: ${dateStr}</span>
+                            ${caption ? `<p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${caption}</p>` : ''}
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: ${caption ? '0.25rem' : '0'};">
+                                ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-user"></i> ${postedBy}</span>` : ''}
+                                <span style="font-size: 0.75rem; opacity: 0.8;">${dateStr}</span>
+                            </div>
                         </div>
-                        `}
                     </div>
                 `;
             });
@@ -1363,6 +1362,7 @@ function init() {
         const submitBannerBtn = document.getElementById('submit-banner-btn');
         const bannerPicInput = document.getElementById('banner-pic-input');
         const bannerCaptionInput = document.getElementById('banner-caption-input');
+        const bannerPostedByInput = document.getElementById('banner-posted-by-input');
 
         if (!changeBannerBtn || !bannerModal) return;
 
@@ -1383,6 +1383,7 @@ function init() {
             bannerModal.classList.add('active');
             bannerPicInput.value = '';
             bannerCaptionInput.value = '';
+            if (bannerPostedByInput) bannerPostedByInput.value = '';
             confirmPayCheckbox.checked = false;
             submitBannerBtn.disabled = true;
         });
@@ -1429,9 +1430,18 @@ function init() {
                 const photoURL = data.data.url;
 
                 const caption = sanitize(bannerCaptionInput.value.trim());
+                const postedBy = sanitize(bannerPostedByInput ? bannerPostedByInput.value.trim() : '');
+
+                // Delete all existing banners before adding new one
+                const existingSnap = await getDocs(collection(db, "banners"));
+                const deletePromises = [];
+                existingSnap.forEach(doc => deletePromises.push(deleteDoc(doc.ref)));
+                await Promise.all(deletePromises);
+
                 await addDoc(collection(db, "banners"), {
                     url: photoURL,
                     caption: caption,
+                    postedBy: postedBy || '',
                     createdAt: serverTimestamp()
                 });
 

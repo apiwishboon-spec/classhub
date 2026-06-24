@@ -1476,14 +1476,14 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;">Caption: ${data.caption || 'None'}</span>
+                            <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'Posted by ' + data.postedBy : 'Caption: ' + (data.caption || 'None')}</span>
                             <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="margin-top: 0.5rem; text-align: center;">
                             <img src="${data.url}" alt="Banner" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
                         </div>
                         <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">
-                            Date: ${dateStr}
+                            ${data.postedBy ? 'Caption: ' + (data.caption || 'None') + ' &middot; ' : ''}Date: ${dateStr}
                         </div>
                     </div>
                 `;
@@ -1496,6 +1496,7 @@ logoutBtn.addEventListener('click', async () => {
                     <tr>
                         <th>Image</th>
                         <th>Caption</th>
+                        <th>Posted By</th>
                         <th>Upload Date</th>
                         <th>Action</th>
                     </tr>
@@ -1513,6 +1514,7 @@ logoutBtn.addEventListener('click', async () => {
                         </a>
                     </td>
                     <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.caption || 'None'}</td>
+                    <td>${data.postedBy || '—'}</td>
                     <td>${dateStr}</td>
                     <td>
                         <button class="remove-banner-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
