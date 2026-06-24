@@ -177,12 +177,12 @@
                 <button class="close-modal" id="close-banner-modal"><i class="ph ph-x"></i></button>
             </div>
             <div class="modal-body" style="padding-top: 1rem;">
-                <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; text-align: center;">
+                <p id="banner-price-text" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; text-align: center;">
                     Price: <strong>0.01 THB</strong> per upload. Scan the QR code, pay, then select your photo!
                 </p>
                 
                 <!-- PromptPay QR Code Display -->
-                <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); width: fit-content; margin-left: auto; margin-right: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+                <div id="banner-qr-section" style="display: flex; flex-direction: column; align-items: center; margin-bottom: 1.5rem; background: white; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); width: fit-content; margin-left: auto; margin-right: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
                     <img src="prompayqr.png" alt="PromptPay QR Code" style="width: 200px; height: 200px; object-fit: contain; display: block;">
                     <div style="color: #002d62; font-weight: 700; font-size: 0.95rem; margin-top: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                         <span style="background: #002d62; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Prompt Pay</span> 0.01 THB
@@ -198,7 +198,7 @@
                         <label for="banner-caption-input" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Caption / Shoutout (Optional)</label>
                         <input type="text" id="banner-caption-input" placeholder="Type a message to show on the banner..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="100">
                     </div>
-                    <div style="display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 0.5rem;">
+                    <div id="banner-confirm-pay-row" style="display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 0.5rem;">
                         <input type="checkbox" id="banner-confirm-pay" style="margin-top: 0.2rem; cursor: pointer;">
                         <label for="banner-confirm-pay" style="font-size: 0.85rem; color: var(--text-secondary); cursor: pointer; user-select: none;">
                             I have paid 0.01 THB to the PromptPay QR code

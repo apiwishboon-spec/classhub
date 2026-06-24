@@ -1317,14 +1317,12 @@ function init() {
         if (!bannerSection || !bannerContainer) return;
 
         onSnapshot(query(collection(db, "banners"), orderBy("createdAt", "desc"), limit(1)), (snap) => {
-            bannerSection.style.display = 'block';
-
             if (snap.empty) {
                 bannerContainer.innerHTML = `
                     <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
                         <i class="ph ph-image-square" style="font-size: 3.5rem; opacity: 0.15;"></i>
                         <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">No banner uploaded yet.</p>
-                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">Be the first to share a photo/announcement with the class for 0.01 THB!</p>
+                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">${systemSettings?.classBannerPaymentRequired !== false ? 'Be the first to share a photo/announcement with the class for 0.01 THB!' : 'Be the first to share a photo/announcement with the class!'}</p>
                     </div>
                 `;
                 return;
@@ -1398,7 +1396,8 @@ function init() {
         });
 
         const updateSubmitBtnState = () => {
-            submitBannerBtn.disabled = !confirmPayCheckbox.checked || !bannerPicInput.files[0];
+            const paymentRequired = systemSettings?.classBannerPaymentRequired !== false;
+            submitBannerBtn.disabled = paymentRequired ? (!confirmPayCheckbox.checked || !bannerPicInput.files[0]) : !bannerPicInput.files[0];
         };
 
         confirmPayCheckbox.addEventListener('change', updateSubmitBtnState);
@@ -1622,8 +1621,23 @@ async function syncSystemStates() {
                 // 4. Class Banner display verification
                 const bannerSection = document.getElementById('banner-section');
                 if (bannerSection) {
-                    bannerSection.style.display = 'block';
+                    bannerSection.style.display = data.showClassBanner !== false ? 'block' : 'none';
                 }
+
+                // 5. Class Banner Payment UI
+                const paymentRequired = data.classBannerPaymentRequired !== false;
+                const changeBannerBtn = document.getElementById('change-banner-btn');
+                if (changeBannerBtn) {
+                    changeBannerBtn.innerHTML = paymentRequired
+                        ? '<i class="ph ph-upload-simple"></i> Change Banner (0.01 THB)'
+                        : '<i class="ph ph-upload-simple"></i> Change Banner';
+                }
+                const bannerPriceText = document.getElementById('banner-price-text');
+                const bannerQrSection = document.getElementById('banner-qr-section');
+                const bannerConfirmPayRow = document.getElementById('banner-confirm-pay-row');
+                if (bannerPriceText) bannerPriceText.style.display = paymentRequired ? '' : 'none';
+                if (bannerQrSection) bannerQrSection.style.display = paymentRequired ? '' : 'none';
+                if (bannerConfirmPayRow) bannerConfirmPayRow.style.display = paymentRequired ? '' : 'none';
             }
         });
     } catch (e) {

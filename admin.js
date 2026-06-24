@@ -1794,6 +1794,30 @@ logoutBtn.addEventListener('click', async () => {
             if (data.bannerType) {
                 bannerTypeSelect.value = data.bannerType;
             }
+
+            // 6. Class Banner Visibility
+            const classBannerVisibleBtn = document.getElementById('class-banner-visible-toggle');
+            if (classBannerVisibleBtn) {
+                if (data.showClassBanner !== false) {
+                    classBannerVisibleBtn.textContent = 'ON';
+                    classBannerVisibleBtn.className = 'btn-primary';
+                } else {
+                    classBannerVisibleBtn.textContent = 'OFF';
+                    classBannerVisibleBtn.className = 'btn-secondary';
+                }
+            }
+
+            // 7. Class Banner Payment Requirement
+            const classBannerPaymentBtn = document.getElementById('class-banner-payment-toggle');
+            if (classBannerPaymentBtn) {
+                if (data.classBannerPaymentRequired !== false) {
+                    classBannerPaymentBtn.textContent = 'ON';
+                    classBannerPaymentBtn.className = 'btn-primary';
+                } else {
+                    classBannerPaymentBtn.textContent = 'OFF';
+                    classBannerPaymentBtn.className = 'btn-secondary';
+                }
+            }
         }
     }
 
@@ -1824,6 +1848,38 @@ logoutBtn.addEventListener('click', async () => {
             }, { merge: true });
             showToast(`Maintenance Mode turned ${newState ? 'ON' : 'OFF'}`);
             logAction("Toggle Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Class Banner Visible Toggle
+    document.getElementById('class-banner-visible-toggle').addEventListener('click', async () => {
+        const btn = document.getElementById('class-banner-visible-toggle');
+        const newState = btn.textContent !== 'ON';
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                showClassBanner: newState
+            }, { merge: true });
+            showToast(`Class Banner visibility turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Class Banner Visibility", `State: ${newState ? 'ON' : 'OFF'}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Class Banner Payment Toggle
+    document.getElementById('class-banner-payment-toggle').addEventListener('click', async () => {
+        const btn = document.getElementById('class-banner-payment-toggle');
+        const newState = btn.textContent !== 'ON';
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                classBannerPaymentRequired: newState
+            }, { merge: true });
+            showToast(`Class Banner payment requirement turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Class Banner Payment Requirement", `State: ${newState ? 'ON' : 'OFF'}`);
             loadSettings();
         } catch (e) {
             showToast("Error updating settings: " + e.message);
