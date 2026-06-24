@@ -1317,16 +1317,14 @@ function init() {
         if (!bannerSection || !bannerContainer) return;
 
         onSnapshot(query(collection(db, "banners"), orderBy("createdAt", "desc"), limit(1)), (snap) => {
-            const isVisible = !systemSettings || systemSettings.showClassBanner !== false;
-            bannerSection.style.display = isVisible ? 'block' : 'none';
+            bannerSection.style.display = 'block';
 
             if (snap.empty) {
-                const priceText = (!systemSettings || systemSettings.classBannerPaymentRequired !== false) ? 'for 0.01 THB' : 'for FREE';
                 bannerContainer.innerHTML = `
                     <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
                         <i class="ph ph-image-square" style="font-size: 3.5rem; opacity: 0.15;"></i>
                         <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">No banner uploaded yet.</p>
-                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">Be the first to share a photo/announcement with the class ${priceText}!</p>
+                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">Be the first to share a photo/announcement with the class for 0.01 THB!</p>
                     </div>
                 `;
                 return;
@@ -1383,24 +1381,6 @@ function init() {
                     return;
                 }
             }
-
-            // Adapt modal to payment requirement setting
-            const paymentRequired = !systemSettings || systemSettings.classBannerPaymentRequired !== false;
-            
-            const modalBody = bannerModal.querySelector('.modal-body');
-            const qrContainer = modalBody.querySelector('img[src="prompayqr.png"]').parentElement;
-            const confirmPayContainer = confirmPayCheckbox.parentElement;
-            const priceStrong = modalBody.querySelector('strong');
-            
-            if (paymentRequired) {
-                qrContainer.style.display = 'flex';
-                confirmPayContainer.style.display = 'flex';
-                if (priceStrong) priceStrong.textContent = '0.01 THB';
-            } else {
-                qrContainer.style.display = 'none';
-                confirmPayContainer.style.display = 'none';
-                if (priceStrong) priceStrong.textContent = 'FREE';
-            }
             
             bannerModal.classList.add('active');
             bannerPicInput.value = '';
@@ -1418,12 +1398,7 @@ function init() {
         });
 
         const updateSubmitBtnState = () => {
-            const paymentRequired = !systemSettings || systemSettings.classBannerPaymentRequired !== false;
-            if (paymentRequired) {
-                submitBannerBtn.disabled = !confirmPayCheckbox.checked || !bannerPicInput.files[0];
-            } else {
-                submitBannerBtn.disabled = !bannerPicInput.files[0];
-            }
+            submitBannerBtn.disabled = !confirmPayCheckbox.checked || !bannerPicInput.files[0];
         };
 
         confirmPayCheckbox.addEventListener('change', updateSubmitBtnState);
@@ -1644,20 +1619,10 @@ async function syncSystemStates() {
                     hideLockoutOverlay();
                 }
 
-                // 4. Class Banner Visibility & Payment Requirement
+                // 4. Class Banner display verification
                 const bannerSection = document.getElementById('banner-section');
                 if (bannerSection) {
-                    const isVisible = data.showClassBanner !== false;
-                    bannerSection.style.display = isVisible ? 'block' : 'none';
-                }
-
-                const changeBannerBtn = document.getElementById('change-banner-btn');
-                if (changeBannerBtn) {
-                    if (data.classBannerPaymentRequired === false) {
-                        changeBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Change Banner';
-                    } else {
-                        changeBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Change Banner (0.01 THB)';
-                    }
+                    bannerSection.style.display = 'block';
                 }
             }
         });
