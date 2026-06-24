@@ -102,6 +102,7 @@ const addAnnouncementSection = document.getElementById('add-announcement-section
 const addHomeworkSection = document.getElementById('add-homework-section');
 const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
 const manageHomeworkSection = document.getElementById('manage-homework-section');
+const manageClassBannerSection = document.getElementById('manage-class-banner-section');
 const systemSettingsSection = document.getElementById('system-settings-section');
 const auditLogSection = document.getElementById('audit-log-section');
 const bugReportsSection = document.getElementById('bug-reports-section');
@@ -122,6 +123,7 @@ let hwListener = null;
 let userListener = null;
 let bugListener = null;
 let systemStatesListener = null;
+let bannerListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -600,6 +602,7 @@ onAuthStateChanged(auth, async (user) => {
         if (hwListener) { hwListener(); hwListener = null; }
         if (pollListener) { pollListener(); pollListener = null; }
         if (feedbackListener) { feedbackListener(); feedbackListener = null; }
+        if (bannerListener) { bannerListener(); bannerListener = null; }
     }
 });
 
@@ -624,6 +627,7 @@ function updateAdminSectionsVisibility() {
         auditLogSection.style.display = 'block';
         bugReportsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
+        if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
 
         loadUsers();
         loadSchedule();
@@ -634,6 +638,7 @@ function updateAdminSectionsVisibility() {
         loadSettings();
         loadAuditLog();
         loadBugReports();
+        loadBannerManagement();
         performSystemCleanup();
 
         // Admins can change status
@@ -650,11 +655,13 @@ function updateAdminSectionsVisibility() {
         manageHomeworkSection.style.display = 'block';
         managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
+        if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
 
         loadAnnouncements();
         loadHomework();
         loadPolls();
         loadFeedback();
+        loadBannerManagement();
         performSystemCleanup();
 
         // Teachers can change status
@@ -675,6 +682,7 @@ function updateAdminSectionsVisibility() {
         auditLogSection.style.display = 'none';
         bugReportsSection.style.display = 'none';
         feedbackInboxSection.style.display = 'none';
+        if (manageClassBannerSection) manageClassBannerSection.style.display = 'none';
 
         loadHomework();
 
@@ -1442,6 +1450,99 @@ logoutBtn.addEventListener('click', async () => {
         }
     }
 
+    // Load Banner Management (real-time)
+    function loadBannerManagement() {
+        if (currentUserRole === 'ta') return;
+        if (bannerListener) { bannerListener(); bannerListener = null; }
+
+        const list = document.getElementById('banner-list-admin');
+        if (!list) return;
+        list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
+
+        bannerListener = onSnapshot(query(collection(db, "banners"), orderBy("createdAt", "desc")), (snap) => {
+            const isMobile = window.innerWidth <= 768;
+            let html = '';
+
+            if (snap.empty) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1.5rem 0;">No banners uploaded yet.</p>';
+                return;
+            }
+
+            if (isMobile) {
+                html = `<div class="admin-sched-cards">`;
+                snap.forEach(d => {
+                    const data = d.data();
+                    const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+                    html += `
+                    <div class="admin-sched-card">
+                        <div class="admin-sched-card-header">
+                            <span style="font-weight:600;font-size:0.85rem;">Caption: ${data.caption || 'None'}</span>
+                            <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                        </div>
+                        <div style="margin-top: 0.5rem; text-align: center;">
+                            <img src="${data.url}" alt="Banner" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
+                        </div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">
+                            Date: ${dateStr}
+                        </div>
+                    </div>
+                `;
+                });
+                html += `</div>`;
+            } else {
+                html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Caption</th>
+                        <th>Upload Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+                snap.forEach(d => {
+                    const data = d.data();
+                    const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+                    html += `
+                <tr>
+                    <td>
+                        <a href="${data.url}" target="_blank">
+                            <img src="${data.url}" alt="Banner Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                        </a>
+                    </td>
+                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.caption || 'None'}</td>
+                    <td>${dateStr}</td>
+                    <td>
+                        <button class="remove-banner-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
+                    </td>
+                </tr>`;
+                });
+                html += '</tbody></table>';
+            }
+
+            list.innerHTML = html;
+
+            document.querySelectorAll('.remove-banner-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (await customConfirm("Confirm Action", "Delete this class banner?")) {
+                        const id = e.target.closest('.remove-banner-btn').getAttribute('data-id');
+                        try {
+                            await deleteDoc(doc(db, "banners", id));
+                            logAction("Delete Banner", `ID: ${id}`);
+                            showToast("Banner deleted successfully!", "ph-check", "var(--success)");
+                        } catch (err) {
+                            showToast("Error deleting banner: " + err.message, "ph-x", "var(--danger)");
+                        }
+                    }
+                });
+            });
+        }, (error) => {
+            list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+        });
+    }
+
     // Load Announcements (real-time)
     function loadAnnouncements() {
         if (currentUserRole === 'ta') return;
@@ -1693,6 +1794,30 @@ logoutBtn.addEventListener('click', async () => {
             if (data.bannerType) {
                 bannerTypeSelect.value = data.bannerType;
             }
+
+            // 6. Class Banner Visibility
+            const classBannerVisibleBtn = document.getElementById('class-banner-visible-toggle');
+            if (classBannerVisibleBtn) {
+                if (data.showClassBanner !== false) {
+                    classBannerVisibleBtn.textContent = 'ON';
+                    classBannerVisibleBtn.className = 'btn-primary';
+                } else {
+                    classBannerVisibleBtn.textContent = 'OFF';
+                    classBannerVisibleBtn.className = 'btn-secondary';
+                }
+            }
+
+            // 7. Class Banner Payment Requirement
+            const classBannerPaymentBtn = document.getElementById('class-banner-payment-toggle');
+            if (classBannerPaymentBtn) {
+                if (data.classBannerPaymentRequired !== false) {
+                    classBannerPaymentBtn.textContent = 'ON';
+                    classBannerPaymentBtn.className = 'btn-primary';
+                } else {
+                    classBannerPaymentBtn.textContent = 'OFF';
+                    classBannerPaymentBtn.className = 'btn-secondary';
+                }
+            }
         }
     }
 
@@ -1723,6 +1848,38 @@ logoutBtn.addEventListener('click', async () => {
             }, { merge: true });
             showToast(`Maintenance Mode turned ${newState ? 'ON' : 'OFF'}`);
             logAction("Toggle Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Class Banner Visible Toggle
+    document.getElementById('class-banner-visible-toggle').addEventListener('click', async () => {
+        const btn = document.getElementById('class-banner-visible-toggle');
+        const newState = btn.textContent !== 'ON';
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                showClassBanner: newState
+            }, { merge: true });
+            showToast(`Class Banner visibility turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Class Banner Visibility", `State: ${newState ? 'ON' : 'OFF'}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Class Banner Payment Toggle
+    document.getElementById('class-banner-payment-toggle').addEventListener('click', async () => {
+        const btn = document.getElementById('class-banner-payment-toggle');
+        const newState = btn.textContent !== 'ON';
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                classBannerPaymentRequired: newState
+            }, { merge: true });
+            showToast(`Class Banner payment requirement turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Class Banner Payment Requirement", `State: ${newState ? 'ON' : 'OFF'}`);
             loadSettings();
         } catch (e) {
             showToast("Error updating settings: " + e.message);

@@ -1,5 +1,5 @@
-import { db } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { db, imgbbApiKey } from './firebase-config.js';
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -1242,6 +1242,8 @@ function init() {
     fetchDashboardData();
     fetchNotes();
     fetchPolls();
+    initBanner();
+    initBannerUpload();
     
     // Show Royal Image Modal (Once every 2 days)
     const royalModal = document.getElementById('image-modal-overlay');
@@ -1304,6 +1306,170 @@ function init() {
             } finally {
                 sendSuggestionBtn.disabled = false;
                 sendSuggestionBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Suggestion';
+            }
+        });
+    }
+
+    // Class Banner Logic
+    function initBanner() {
+        const bannerSection = document.getElementById('banner-section');
+        const bannerContainer = document.getElementById('banner-display-container');
+        if (!bannerSection || !bannerContainer) return;
+
+        onSnapshot(query(collection(db, "banners"), orderBy("createdAt", "desc"), limit(1)), (snap) => {
+            const isVisible = !systemSettings || systemSettings.showClassBanner !== false;
+            bannerSection.style.display = isVisible ? 'block' : 'none';
+
+            if (snap.empty) {
+                const priceText = (!systemSettings || systemSettings.classBannerPaymentRequired !== false) ? 'for 0.01 THB' : 'for FREE';
+                bannerContainer.innerHTML = `
+                    <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
+                        <i class="ph ph-image-square" style="font-size: 3.5rem; opacity: 0.15;"></i>
+                        <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">No banner uploaded yet.</p>
+                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">Be the first to share a photo/announcement with the class ${priceText}!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            snap.forEach(d => {
+                const data = d.data();
+                const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString(undefined, {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                }) : 'Just now';
+
+                const url = data.url;
+                const caption = sanitize(data.caption || '');
+
+                bannerContainer.innerHTML = `
+                    <div style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <img src="${url}" alt="Class Banner" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
+                        ${caption ? `
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
+                            <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${caption}</p>
+                            <span style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.25rem; display: block;">Uploaded: ${dateStr}</span>
+                        </div>` : `
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%); padding: 0.75rem; color: #fff; text-align: right; box-sizing: border-box;">
+                            <span style="font-size: 0.75rem; opacity: 0.8;">Uploaded: ${dateStr}</span>
+                        </div>
+                        `}
+                    </div>
+                `;
+            });
+        });
+    }
+
+    function initBannerUpload() {
+        const changeBannerBtn = document.getElementById('change-banner-btn');
+        const bannerModal = document.getElementById('banner-modal');
+        const closeBannerBtn = document.getElementById('close-banner-modal');
+        const confirmPayCheckbox = document.getElementById('banner-confirm-pay');
+        const submitBannerBtn = document.getElementById('submit-banner-btn');
+        const bannerPicInput = document.getElementById('banner-pic-input');
+        const bannerCaptionInput = document.getElementById('banner-caption-input');
+
+        if (!changeBannerBtn || !bannerModal) return;
+
+        changeBannerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            // Limit check: 1 time per day
+            const lastUpload = localStorage.getItem('last_banner_upload_time');
+            if (lastUpload) {
+                const diff = Date.now() - parseInt(lastUpload);
+                const hoursLeft = Math.ceil((24 * 60 * 60 * 1000 - diff) / (1000 * 60 * 60));
+                if (diff < 24 * 60 * 60 * 1000) {
+                    showToast(`Limit reached: Next upload available in ${hoursLeft} hours.`, "ph-warning", "var(--warning)");
+                    return;
+                }
+            }
+
+            // Adapt modal to payment requirement setting
+            const paymentRequired = !systemSettings || systemSettings.classBannerPaymentRequired !== false;
+            
+            const modalBody = bannerModal.querySelector('.modal-body');
+            const qrContainer = modalBody.querySelector('img[src="prompayqr.png"]').parentElement;
+            const confirmPayContainer = confirmPayCheckbox.parentElement;
+            const priceStrong = modalBody.querySelector('strong');
+            
+            if (paymentRequired) {
+                qrContainer.style.display = 'flex';
+                confirmPayContainer.style.display = 'flex';
+                if (priceStrong) priceStrong.textContent = '0.01 THB';
+            } else {
+                qrContainer.style.display = 'none';
+                confirmPayContainer.style.display = 'none';
+                if (priceStrong) priceStrong.textContent = 'FREE';
+            }
+            
+            bannerModal.classList.add('active');
+            bannerPicInput.value = '';
+            bannerCaptionInput.value = '';
+            confirmPayCheckbox.checked = false;
+            submitBannerBtn.disabled = true;
+        });
+
+        const closeModal = () => {
+            bannerModal.classList.remove('active');
+        };
+        if (closeBannerBtn) closeBannerBtn.addEventListener('click', closeModal);
+        bannerModal.addEventListener('click', (e) => {
+            if (e.target === bannerModal) closeModal();
+        });
+
+        const updateSubmitBtnState = () => {
+            const paymentRequired = !systemSettings || systemSettings.classBannerPaymentRequired !== false;
+            if (paymentRequired) {
+                submitBannerBtn.disabled = !confirmPayCheckbox.checked || !bannerPicInput.files[0];
+            } else {
+                submitBannerBtn.disabled = !bannerPicInput.files[0];
+            }
+        };
+
+        confirmPayCheckbox.addEventListener('change', updateSubmitBtnState);
+        bannerPicInput.addEventListener('change', updateSubmitBtnState);
+
+        submitBannerBtn.addEventListener('click', async () => {
+            const file = bannerPicInput.files[0];
+            if (!file) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
+                return;
+            }
+
+            submitBannerBtn.disabled = true;
+            submitBannerBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Uploading Pic...';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error.message || "Failed to upload image to ImgBB.");
+                }
+                const photoURL = data.data.url;
+
+                const caption = sanitize(bannerCaptionInput.value.trim());
+                await addDoc(collection(db, "banners"), {
+                    url: photoURL,
+                    caption: caption,
+                    createdAt: serverTimestamp()
+                });
+
+                localStorage.setItem('last_banner_upload_time', Date.now().toString());
+
+                showToast("Banner updated successfully!", "ph-check", "var(--success)");
+                closeModal();
+            } catch (err) {
+                console.error("Banner upload failed:", err);
+                showToast("Update failed: " + err.message, "ph-x", "var(--danger)");
+                submitBannerBtn.disabled = false;
+                submitBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Upload & Update';
             }
         });
     }
@@ -1476,6 +1642,22 @@ async function syncSystemStates() {
                     showLockoutOverlay(data.lockoutPasscode || '');
                 } else {
                     hideLockoutOverlay();
+                }
+
+                // 4. Class Banner Visibility & Payment Requirement
+                const bannerSection = document.getElementById('banner-section');
+                if (bannerSection) {
+                    const isVisible = data.showClassBanner !== false;
+                    bannerSection.style.display = isVisible ? 'block' : 'none';
+                }
+
+                const changeBannerBtn = document.getElementById('change-banner-btn');
+                if (changeBannerBtn) {
+                    if (data.classBannerPaymentRequired === false) {
+                        changeBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Change Banner';
+                    } else {
+                        changeBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Change Banner (0.01 THB)';
+                    }
                 }
             }
         });

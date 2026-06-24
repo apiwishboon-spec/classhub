@@ -154,6 +154,18 @@
                 </div>
             </section>
 
+            <!-- Manage Class Banner -->
+            <section class="dashboard-card span-2" id="manage-class-banner-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-image"></i> Manage Class Banner</h2>
+                </div>
+                <div class="card-content">
+                    <div id="banner-list-admin" class="overflow-x-auto">
+                        <div class="loading-placeholder"><div class="loader"></div></div>
+                    </div>
+                </div>
+            </section>
+            
             <!-- Manage Announcements -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
@@ -287,6 +299,24 @@
                             <span style="font-size: 0.8rem;">days</span>
                             <button id="save-archive-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-floppy-disk"></i> Save</button>
                         </div>
+                    </div>
+
+                    <!-- Class Banner Visibility Settings -->
+                    <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600;">Show Class Banner</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Toggle visibility of the Class Banner on the main dashboard</div>
+                        </div>
+                        <button id="class-banner-visible-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
+                    </div>
+
+                    <!-- Class Banner Payment Requirement Settings -->
+                    <div style="padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-weight: 600;">Require Banner Payment</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Require PromptPay payment confirmation (0.01 THB) for uploads</div>
+                        </div>
+                        <button id="class-banner-payment-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
                     </div>
                 </div>
             </section>

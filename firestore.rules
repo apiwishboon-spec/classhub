@@ -115,5 +115,14 @@ service cloud.firestore {
         getUserRole() == 'ta'
       );
     }
+
+    // 13. Banners collection (Public read & create for students, admin/teacher manage)
+    match /banners/{id} {
+      allow read, create: if true;
+      allow update, delete: if request.auth != null && (
+        getUserRole() == 'admin' || 
+        getUserRole() == 'teacher'
+      );
+    }
   }
 }
