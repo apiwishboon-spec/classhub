@@ -661,14 +661,13 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
-        addFeatureSection.style.display = 'block';
-        manageFeaturesSection.style.display = 'block';
+        addFeatureSection.style.display = 'none';
+        manageFeaturesSection.style.display = 'none';
         managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
 
         loadAnnouncements();
-        loadFeatures();
         loadHomework();
         loadPolls();
         loadFeedback();
