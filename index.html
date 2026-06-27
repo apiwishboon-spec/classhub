@@ -92,18 +92,7 @@
                 </div>
             </section>
 
-            <!-- Feature Updates Section -->
-            <section id="features-section" class="dashboard-card card-scrollable">
-                <div class="card-header">
-                    <h2><i class="ph ph-rocket-launch"></i> What's New</h2>
-                </div>
-                <div class="card-content">
-                    <div id="features-container" class="loading-placeholder">
-                        <div class="loader"></div>
-                        <p>Loading updates...</p>
-                    </div>
-                </div>
-            </section>
+
 
             <!-- Polls Section -->
             <section id="polls-section" class="dashboard-card span-2" style="display: none;">
@@ -178,6 +167,21 @@
                         <i class="ph ph-paper-plane-tilt"></i> Send Suggestion
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- What's New Modal -->
+    <div id="whatsnew-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="ph ph-rocket-launch"></i> <span id="whatsnew-title">What's New</span></h3>
+                <button class="close-modal"><i class="ph ph-x"></i></button>
+            </div>
+            <div class="modal-body">
+                <div id="whatsnew-version" class="time-badge" style="margin-bottom: 0.75rem; display: none;"></div>
+                <p id="whatsnew-description" style="font-size: 0.95rem; line-height: 1.6; white-space: pre-wrap;"></p>
+                <p id="whatsnew-date" style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 1rem;"></p>
             </div>
         </div>
     </div>

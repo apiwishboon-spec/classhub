@@ -786,48 +786,6 @@ thead .time-col.sticky-header {
     white-space: pre-wrap;
 }
 
-.feature-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.feature-card {
-    padding: 1.25rem 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.feature-card:last-child {
-    border-bottom: none;
-}
-
-.feature-header {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-}
-
-.feature-title {
-    font-weight: 700;
-    font-size: 1.05rem;
-}
-
-.feature-description {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    white-space: pre-wrap;
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-}
-
-.feature-footer {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
 .hw-finished {
     opacity: 0.5;
     filter: grayscale(100%);
