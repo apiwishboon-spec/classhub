@@ -1,8 +1,11 @@
-const CACHE_NAME = 'classhub-v1';
+const CACHE_NAME = 'classhub-v2';
 const ASSETS = [
   '/',
-  '/style.css',
-  '/script.js',
+  '/style.css?v=11',
+  '/script.js?v=11',
+  '/admin.js?v=13',
+  '/admin.html',
+  '/index.html',
   '/favicon.png',
   '/logo.png'
 ];
@@ -16,7 +19,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)));
+    }).then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', event => {

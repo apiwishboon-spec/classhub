@@ -1,6 +1,14 @@
-// MyClassHub Version (Commit ID)
-// Test deployment triggered by Gemini CLI
-const BASE_VERSION = "f649e09";
+// MyClassHub Version
+const BASE_VERSION = "force-update-001";
+
+// Force clear all old caches on load
+if ('caches' in window) {
+    caches.keys().then(keys => {
+        keys.forEach(k => {
+            if (k.startsWith('classhub-')) caches.delete(k);
+        });
+    });
+}
 
 async function fetchGitHubVersion() {
     const CACHE_KEY = "gh_version_cache";
