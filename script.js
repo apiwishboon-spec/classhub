@@ -1307,6 +1307,17 @@ function init() {
         });
     }
 
+    // What's New Modal close handler
+    const whatsnewModal = document.getElementById('whatsnew-modal');
+    if (whatsnewModal) {
+        whatsnewModal.querySelector('.close-modal')?.addEventListener('click', () => {
+            whatsnewModal.style.display = 'none';
+        });
+        whatsnewModal.addEventListener('click', (e) => {
+            if (e.target === whatsnewModal) whatsnewModal.style.display = 'none';
+        });
+    }
+
     // Suggestion Modal Logic
     const suggestionModal = document.getElementById('suggestion-modal');
     const openSuggestionBtn = document.getElementById('open-suggestion-modal');
