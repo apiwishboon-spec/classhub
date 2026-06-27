@@ -8,6 +8,7 @@ const currentTimeDisplay = document.getElementById('current-time-display');
 const scheduleContainer = document.getElementById('schedule-container');
 const announcementsContainer = document.getElementById('announcements-container');
 const homeworkContainer = document.getElementById('homework-container');
+const featuresContainer = document.getElementById('features-container');
 const notesContainer = document.getElementById('notes-container');
 const globalSearch = document.getElementById('global-search');
 const addNoteBtn = document.getElementById('add-note-btn');
@@ -19,7 +20,8 @@ let dashboardData = {
     schedule: [],
     announcements: [],
     homework: [],
-    notes: []
+    notes: [],
+    features: []
 };
 
 // Polls Logic
@@ -171,6 +173,8 @@ function checkForUpdates(type, newData) {
             showToast(`New homework: ${item.subject} — ${item.homework}`, 'ph-book-open', 'var(--success)');
         } else if (type === 'announcements') {
             showToast(`New: ${item.title}`, 'ph-megaphone', 'var(--accent-color)');
+        } else if (type === 'features') {
+            showToast(`New feature: ${item.title}`, 'ph-rocket-launch', 'var(--accent-color)');
         }
     });
     
@@ -359,6 +363,25 @@ function fetchDashboardData() {
             homeworkContainer.innerHTML = '<p style="color:var(--danger)">Failed to load homework.</p>';
         });
 
+        // Listen for Feature Updates changes + notifications
+        onSnapshot(query(collection(db, "feature_updates"), orderBy("timestamp", "desc")), (snap) => {
+            if (!snap.empty) {
+                const featData = snap.docs.map(doc => {
+                    const data = doc.data();
+                    data.id = doc.id;
+                    return data;
+                });
+                dashboardData.features = featData;
+                checkForUpdates('features', featData);
+            } else {
+                dashboardData.features = [];
+            }
+            renderDashboard();
+        }, (error) => {
+            console.error('Error fetching feature updates:', error);
+            if (featuresContainer) featuresContainer.innerHTML = '<p style="color:var(--danger)">Failed to load updates.</p>';
+        });
+
     } catch (error) {
         console.error('Error setting up Firebase listeners:', error);
         scheduleContainer.innerHTML = '<p style="color:var(--danger)">Failed to connect. Please check Firebase config.</p>';
@@ -382,6 +405,10 @@ function renderMockData() {
             { subject: "Math", homework: "Page 42, Exercises 1-10", due: "Tomorrow" },
             { subject: "Physics", homework: "Read Chapter 4", due: "Friday" },
             { subject: "English", homework: "Write an essay on 'The Great Gatsby'", due: "Next Monday" }
+        ],
+        features: [
+            { title: "New Dark Mode!", description: "You can now toggle dark mode manually using the moon/sun icon in the top right.", version: "v3.3.0", date: "Jun 26" },
+            { title: "Quick Notes", description: "Jot down quick notes that are saved in your browser. Click + to add a note.", version: "v3.2.0", date: "Jun 15" }
         ]
     };
     renderDashboard();
@@ -392,6 +419,7 @@ function renderDashboard() {
     renderSchedule();
     renderAnnouncements();
     renderHomework();
+    renderFeatures();
     renderNotes();
     highlightCurrentClass();
 }
@@ -1076,6 +1104,36 @@ function renderHomework() {
             localStorage.setItem('finishedHomework', JSON.stringify(storedFinished));
         });
     });
+}
+
+// Feature Updates Logic
+function renderFeatures() {
+    let filteredFeat = dashboardData.features.filter(f =>
+        matchesSearch(f.title || '') || matchesSearch(f.description || '') || matchesSearch(f.version || '')
+    );
+
+    if (filteredFeat.length === 0) {
+        featuresContainer.innerHTML = searchTerm ? '<p>No results found.</p>' : '<p>No recent updates.</p>';
+        return;
+    }
+
+    let html = '<div class="feature-list">';
+    filteredFeat.forEach(f => {
+        html += `
+            <div class="feature-card">
+                <div class="feature-header">
+                    <div class="feature-title">${f.title || 'Update'}</div>
+                    ${f.version ? `<span class="time-badge">${f.version}</span>` : ''}
+                </div>
+                <div class="feature-description">${f.description || ''}</div>
+                <div class="feature-footer">
+                    <span><i class="ph ph-calendar"></i> ${f.date || ''}</span>
+                </div>
+            </div>
+        `;
+    });
+    html += '</div>';
+    featuresContainer.innerHTML = html;
 }
 
 // Quick Notes Logic

@@ -116,6 +116,9 @@ const pollOptionsInput = document.getElementById('poll-options');
 const activePollsList = document.getElementById('active-polls-list');
 const cleanupToggle = document.getElementById('cleanup-toggle');
 
+const addFeatureSection = document.getElementById('add-feature-section');
+const manageFeaturesSection = document.getElementById('manage-features-section');
+
 let pollListener = null;
 let feedbackListener = null;
 let annListener = null;
@@ -124,6 +127,7 @@ let userListener = null;
 let bugListener = null;
 let systemStatesListener = null;
 let bannerListener = null;
+let featListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -603,6 +607,7 @@ onAuthStateChanged(auth, async (user) => {
         if (pollListener) { pollListener(); pollListener = null; }
         if (feedbackListener) { feedbackListener(); feedbackListener = null; }
         if (bannerListener) { bannerListener(); bannerListener = null; }
+        if (featListener) { featListener(); featListener = null; }
     }
 });
 
@@ -622,6 +627,8 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
+        addFeatureSection.style.display = 'block';
+        manageFeaturesSection.style.display = 'block';
         managePollsSection.style.display = 'block';
         systemSettingsSection.style.display = 'block';
         auditLogSection.style.display = 'block';
@@ -632,6 +639,7 @@ function updateAdminSectionsVisibility() {
         loadUsers();
         loadSchedule();
         loadAnnouncements();
+        loadFeatures();
         loadHomework();
         loadPolls();
         loadFeedback();
@@ -653,11 +661,14 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
+        addFeatureSection.style.display = 'block';
+        manageFeaturesSection.style.display = 'block';
         managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
 
         loadAnnouncements();
+        loadFeatures();
         loadHomework();
         loadPolls();
         loadFeedback();
@@ -677,6 +688,8 @@ function updateAdminSectionsVisibility() {
         addHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'none';
         manageHomeworkSection.style.display = 'block';
+        addFeatureSection.style.display = 'none';
+        manageFeaturesSection.style.display = 'none';
         managePollsSection.style.display = 'none';
         systemSettingsSection.style.display = 'none';
         auditLogSection.style.display = 'none';
@@ -896,6 +909,39 @@ logoutBtn.addEventListener('click', async () => {
             showToast("Error: " + error.message);
         } finally {
             btn.textContent = 'Post Announcement';
+            btn.disabled = false;
+        }
+    });
+
+    // Add Feature Update
+    document.getElementById('add-feat-btn').addEventListener('click', async () => {
+        const title = sanitize(document.getElementById('feat-title').value.trim());
+        const description = sanitize(document.getElementById('feat-description').value.trim());
+        const version = sanitize(document.getElementById('feat-version').value.trim());
+
+        if (!title || !description) return showToast("Title and Description required");
+
+        const btn = document.getElementById('add-feat-btn');
+        btn.textContent = 'Posting...';
+        btn.disabled = true;
+
+        try {
+            await addDoc(collection(db, "feature_updates"), {
+                title, description, version,
+                posterName: auth.currentUser.email.split('@')[0],
+                posterEmail: auth.currentUser.email,
+                date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                timestamp: new Date()
+            });
+            showToast("Feature update posted!");
+            logAction("Add Feature Update", `Title: ${title}${version ? ' (' + version + ')' : ''}`);
+            document.getElementById('feat-title').value = '';
+            document.getElementById('feat-description').value = '';
+            document.getElementById('feat-version').value = '';
+        } catch (error) {
+            showToast("Error: " + error.message);
+        } finally {
+            btn.textContent = 'Post Feature Update';
             btn.disabled = false;
         }
     });
@@ -1610,6 +1656,83 @@ logoutBtn.addEventListener('click', async () => {
                         await deleteDoc(doc(db, "announcements", id));
                         logAction("Delete Announcement", `ID: ${id}`);
                         // onSnapshot auto-refreshes the list
+                    }
+                });
+            });
+        }, (error) => {
+            list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+        });
+    }
+
+    // Load Feature Updates (real-time)
+    function loadFeatures() {
+        if (currentUserRole === 'ta') return;
+        if (featListener) { featListener(); featListener = null; }
+
+        const list = document.getElementById('features-list-admin');
+        list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
+
+        featListener = onSnapshot(collection(db, "feature_updates"), (snap) => {
+            const isMobile = window.innerWidth <= 768;
+            let html = '';
+
+            if (isMobile) {
+                html = `<div class="admin-sched-cards">`;
+                snap.forEach(d => {
+                    const data = d.data();
+                    html += `
+                    <div class="admin-sched-card">
+                        <div class="admin-sched-card-header">
+                            <div style="display:flex;flex-direction:column;">
+                                <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
+                                ${data.version ? `<span class="time-badge" style="font-size:0.65rem;width:fit-content;">${data.version}</span>` : ''}
+                            </div>
+                            <button class="remove-feat-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
+                            ${data.description} · ${data.date || ''}
+                        </div>
+                    </div>
+                `;
+                });
+                html += `</div>`;
+            } else {
+                html = `
+            <table class="schedule-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Description</th>
+                        <th>Version</th>
+                        <th>Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+                snap.forEach(d => {
+                    const data = d.data();
+                    html += `
+                <tr>
+                    <td style="font-weight:600;">${data.title}</td>
+                    <td style="max-width:300px;white-space:normal;">${data.description}</td>
+                    <td>${data.version ? `<span class="time-badge">${data.version}</span>` : '—'}</td>
+                    <td>${data.date || ''}</td>
+                    <td>
+                        <button class="remove-feat-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
+                    </td>
+                </tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            list.innerHTML = html;
+
+            document.querySelectorAll('.remove-feat-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (await customConfirm("Confirm Action", "Delete this feature update?")) {
+                        const id = e.target.closest('.remove-feat-btn').getAttribute('data-id');
+                        await deleteDoc(doc(db, "feature_updates", id));
+                        logAction("Delete Feature Update", `ID: ${id}`);
                     }
                 });
             });

@@ -124,5 +124,16 @@ service cloud.firestore {
         getUserRole() == 'teacher'
       );
     }
+
+    // 14. Feature Updates collection
+    // Read: Anyone
+    // Write: Admins and Teachers only
+    match /feature_updates/{id} {
+      allow read: if true;
+      allow write: if request.auth != null && (
+        getUserRole() == 'admin' ||
+        getUserRole() == 'teacher'
+      );
+    }
   }
 }
