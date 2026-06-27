@@ -259,6 +259,24 @@
                         <button id="maintenance-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
                     </div>
 
+                    <!-- Scheduled Maintenance Mode -->
+                    <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <div>
+                                <div style="font-weight: 600;">Scheduled Maintenance</div>
+                                <div style="font-size: 0.7rem; color: var(--text-secondary);">Set a future maintenance window; students will see a countdown</div>
+                            </div>
+                            <button id="sched-maintenance-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
+                        </div>
+                        <div id="sched-maintenance-config" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;">
+                            <input type="text" id="sched-maintenance-title" placeholder="Title (e.g. Scheduled System Update)" class="form-input" style="margin: 0;">
+                            <textarea id="sched-maintenance-msg" placeholder="Message (e.g. The system will be temporarily down for improvements)" class="form-input" rows="2" style="margin: 0;"></textarea>
+                            <label style="font-size: 0.8rem; color: var(--text-secondary);">Scheduled Date & Time</label>
+                            <input type="datetime-local" id="sched-maintenance-time" class="form-input" style="margin: 0;">
+                            <button id="save-sched-maintenance-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-calendar-check"></i> Save Schedule</button>
+                        </div>
+                    </div>
+
                     <!-- Developer Lockout Mode -->
                     <div style="padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">

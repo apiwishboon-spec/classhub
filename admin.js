@@ -1942,6 +1942,36 @@ logoutBtn.addEventListener('click', async () => {
                     classBannerPaymentBtn.className = 'btn-secondary';
                 }
             }
+
+            // 8. Scheduled Maintenance
+            const schedToggle = document.getElementById('sched-maintenance-toggle');
+            if (schedToggle) {
+                if (data.schedMaintenanceEnabled) {
+                    schedToggle.textContent = 'ON';
+                    schedToggle.className = 'btn-danger';
+                } else {
+                    schedToggle.textContent = 'OFF';
+                    schedToggle.className = 'btn-secondary';
+                }
+            }
+
+            const schedTitle = document.getElementById('sched-maintenance-title');
+            if (schedTitle && data.schedMaintenanceTitle) {
+                schedTitle.value = data.schedMaintenanceTitle;
+            }
+
+            const schedMsg = document.getElementById('sched-maintenance-msg');
+            if (schedMsg && data.schedMaintenanceMessage) {
+                schedMsg.value = data.schedMaintenanceMessage;
+            }
+
+            const schedTime = document.getElementById('sched-maintenance-time');
+            if (schedTime && data.schedMaintenanceTime) {
+                // Convert ISO to datetime-local format
+                const d = new Date(data.schedMaintenanceTime);
+                const pad = (n) => n.toString().padStart(2, '0');
+                schedTime.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            }
         }
     }
 
@@ -1975,6 +2005,55 @@ logoutBtn.addEventListener('click', async () => {
             loadSettings();
         } catch (e) {
             showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Scheduled Maintenance Toggle
+    document.getElementById('sched-maintenance-toggle').addEventListener('click', async () => {
+        const btn = document.getElementById('sched-maintenance-toggle');
+        const newState = btn.textContent !== 'ON';
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                schedMaintenanceEnabled: newState
+            }, { merge: true });
+            showToast(`Scheduled Maintenance turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Scheduled Maintenance", `State: ${newState ? 'ON' : 'OFF'}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error updating settings: " + e.message);
+        }
+    });
+
+    // Save Scheduled Maintenance
+    document.getElementById('save-sched-maintenance-btn').addEventListener('click', async () => {
+        const title = document.getElementById('sched-maintenance-title').value.trim();
+        const msg = document.getElementById('sched-maintenance-msg').value.trim();
+        const time = document.getElementById('sched-maintenance-time').value;
+
+        if (!title || !msg || !time) {
+            return showToast("Please fill in all fields including date/time", "ph-warning", "var(--warning)");
+        }
+
+        const btn = document.getElementById('save-sched-maintenance-btn');
+        btn.textContent = 'Saving...';
+        btn.disabled = true;
+
+        try {
+            await setDoc(doc(db, "settings", "maintenance"), {
+                schedMaintenanceTitle: title,
+                schedMaintenanceMessage: msg,
+                schedMaintenanceTime: new Date(time).toISOString(),
+                updatedBy: auth.currentUser.email,
+                updatedAt: serverTimestamp()
+            }, { merge: true });
+            showToast("Scheduled maintenance saved!", "ph-check", "var(--success)");
+            logAction("Save Scheduled Maintenance", `Title: ${title}, Time: ${time}`);
+            loadSettings();
+        } catch (e) {
+            showToast("Error saving: " + e.message);
+        } finally {
+            btn.textContent = 'Save Schedule';
+            btn.disabled = false;
         }
     });
 

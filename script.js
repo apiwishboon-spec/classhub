@@ -1719,6 +1719,89 @@ async function syncSystemStates() {
                     if (!bannerConfirmPayRow.dataset.origDisplay) bannerConfirmPayRow.dataset.origDisplay = window.getComputedStyle(bannerConfirmPayRow).display;
                     bannerConfirmPayRow.style.display = paymentRequired ? bannerConfirmPayRow.dataset.origDisplay : 'none';
                 }
+
+                // 6. Scheduled Maintenance Countdown
+                const existingSched = document.getElementById('sched-maintenance-banner');
+                if (data.schedMaintenanceEnabled && data.schedMaintenanceTitle && data.schedMaintenanceMessage && data.schedMaintenanceTime) {
+                    const schedTime = new Date(data.schedMaintenanceTime);
+                    const now = new Date();
+                    const diffMs = schedTime - now;
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+                    if (diffMs > 0) {
+                        const timeStr = diffHours > 0
+                            ? `in ${diffHours}h ${diffMins}m`
+                            : `in ${diffMins}m`;
+
+                        if (existingSched) {
+                            const titleEl = existingSched.querySelector('.sched-maintenance-title');
+                            const msgEl = existingSched.querySelector('.sched-maintenance-msg');
+                            const countdownEl = existingSched.querySelector('.sched-maintenance-countdown');
+                            if (titleEl) titleEl.textContent = data.schedMaintenanceTitle;
+                            if (msgEl) msgEl.textContent = data.schedMaintenanceMessage;
+                            if (countdownEl) countdownEl.textContent = timeStr;
+                        } else {
+                            const banner = document.createElement('div');
+                            banner.id = 'sched-maintenance-banner';
+                            banner.style.cssText = `
+                                position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+                                background: var(--warning); color: #000; padding: 1rem 2rem;
+                                border-radius: 12px; z-index: 9999;
+                                box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+                                display: flex; align-items: center; gap: 1rem;
+                                max-width: 90vw; font-weight: 500;
+                                animation: slideUp 0.4s ease-out;
+                            `;
+                            banner.innerHTML = `
+                                <i class="ph ph-warning" style="font-size: 1.5rem;"></i>
+                                <div>
+                                    <div class="sched-maintenance-title" style="font-weight: 700; margin-bottom: 0.25rem;">${data.schedMaintenanceTitle}</div>
+                                    <div class="sched-maintenance-msg" style="font-size: 0.85rem; opacity: 0.9;">${data.schedMaintenanceMessage}</div>
+                                    <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">
+                                        <i class="ph ph-clock-countdown"></i> <span class="sched-maintenance-countdown">${timeStr}</span>
+                                    </div>
+                                </div>
+                                <button onclick="this.closest('#sched-maintenance-banner').remove()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;margin-left:auto;color:#000;">&times;</button>
+                            `;
+                            document.body.appendChild(banner);
+                        }
+
+                        // Update countdown every 30s
+                        if (!window._schedCountdownInterval) {
+                            window._schedCountdownInterval = setInterval(() => {
+                                const b = document.getElementById('sched-maintenance-banner');
+                                if (b) {
+                                    const cd = b.querySelector('.sched-maintenance-countdown');
+                                    if (cd) {
+                                        const remaining = new Date(data.schedMaintenanceTime) - new Date();
+                                        if (remaining <= 0) {
+                                            b.remove();
+                                            clearInterval(window._schedCountdownInterval);
+                                            window._schedCountdownInterval = null;
+                                        } else {
+                                            const h = Math.floor(remaining / (1000 * 60 * 60));
+                                            const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                                            cd.textContent = h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
+                                        }
+                                    }
+                                }
+                            }, 30000);
+                        }
+                    } else {
+                        if (existingSched) existingSched.remove();
+                        if (window._schedCountdownInterval) {
+                            clearInterval(window._schedCountdownInterval);
+                            window._schedCountdownInterval = null;
+                        }
+                    }
+                } else {
+                    if (existingSched) existingSched.remove();
+                    if (window._schedCountdownInterval) {
+                        clearInterval(window._schedCountdownInterval);
+                        window._schedCountdownInterval = null;
+                    }
+                }
             }
         });
     } catch (e) {
