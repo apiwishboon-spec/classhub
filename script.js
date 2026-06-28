@@ -1292,6 +1292,7 @@ function init() {
     fetchPolls();
     initBanner();
     initBannerUpload();
+    initMyInquiry();
     
     // Show Royal Image Modal (Once every 2 days)
     const royalModal = document.getElementById('image-modal-overlay');
@@ -1506,15 +1507,23 @@ function init() {
                     }
                 }
 
-                await addDoc(collection(db, "ad_inquiries"), {
+                const docRef = await addDoc(collection(db, "ad_inquiries"), {
                     name,
                     contact,
                     time,
                     message,
                     photoURL,
                     createdAt: serverTimestamp(),
-                    status: 'new'
+                    status: 'new',
+                    replies: []
                 });
+
+                // Store in localStorage for tracking
+                const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
+                if (!myIds.includes(docRef.id)) {
+                    myIds.push(docRef.id);
+                }
+                localStorage.setItem('my_ad_inquiries', JSON.stringify(myIds));
 
                 showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
                 closeModal();
@@ -1524,6 +1533,77 @@ function init() {
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
+            }
+        });
+    }
+
+    function initMyInquiry() {
+        const section = document.getElementById('my-inquiry-section');
+        const content = document.getElementById('my-inquiry-content');
+        if (!section || !content) return;
+
+        const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
+        if (myIds.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        content.innerHTML = '<div class="loader"></div><p style="color: var(--text-secondary); margin-top: 0.5rem;">Loading...</p>';
+
+        let hasData = false;
+        let renderedHtml = '';
+
+        myIds.forEach((id, index) => {
+            const unsub = onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
+                if (!docSnap.exists()) return;
+                hasData = true;
+                const data = docSnap.data();
+                const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleString() : '';
+                const statusColor = data.status === 'new' ? 'var(--warning)' : data.status === 'seen' ? 'var(--accent-color)' : 'var(--success)';
+                const statusLabel = data.status === 'new' ? 'Pending' : data.status === 'seen' ? 'Seen' : 'Replied';
+
+                let repliesHtml = '';
+                if (data.replies && Array.isArray(data.replies) && data.replies.length > 0) {
+                    repliesHtml = data.replies.map(r => {
+                        const isAdmin = r.sender === 'admin';
+                        const time = r.timestamp ? new Date(r.timestamp.seconds * 1000 || r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+                        return `
+                            <div style="background: ${isAdmin ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.4rem; border-left: 3px solid ${isAdmin ? 'var(--accent-color)' : 'var(--text-secondary)'};">
+                                <div style="font-size: 0.65rem; font-weight: 700; color: ${isAdmin ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
+                                    ${isAdmin ? 'Staff' : 'You'} ${time ? '— ' + time : ''}
+                                </div>
+                                <div style="font-size: 0.85rem;">${r.text}</div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+
+                renderedHtml = `
+                    <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                            <span style="font-weight: 600; font-size: 0.9rem;">${sanitize(data.name)}</span>
+                            <span style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${statusColor}; color: #fff; font-weight: 600;">${statusLabel}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                            <i class="ph ph-phone"></i> ${sanitize(data.contact)} ${data.time ? '&middot; <i class="ph ph-clock"></i> ' + sanitize(data.time) : ''}
+                        </div>
+                        ${data.message ? `<div style="background: var(--bg-color); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 0.5rem;">${sanitize(data.message)}</div>` : ''}
+                        ${data.photoURL ? `<div style="margin-bottom: 0.5rem;"><img src="${data.photoURL}" alt="Attached" style="max-width: 200px; max-height: 150px; border-radius: 6px; object-fit: cover;"></div>` : ''}
+                        ${dateStr ? `<div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Sent: ${dateStr}</div>` : ''}
+                        ${repliesHtml ? `<div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border-color);"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem;">REPLIES:</div>${repliesHtml}</div>` : ''}
+                    </div>
+                `;
+
+                content.innerHTML = renderedHtml;
+            });
+
+            if (index === myIds.length - 1) {
+                setTimeout(() => {
+                    if (!hasData) {
+                        content.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Could not load inquiry. It may have been removed.</p>';
+                    }
+                }, 3000);
             }
         });
     }

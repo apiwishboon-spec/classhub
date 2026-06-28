@@ -1550,7 +1550,7 @@ logoutBtn.addEventListener('click', async () => {
                 <thead>
                     <tr>
                         <th>Image</th>
-                        <th>Contact</th>
+                        <th>Description</th>
                         <th>Link</th>
                         <th>Posted By</th>
                         <th>Upload Date</th>
@@ -2153,7 +2153,7 @@ logoutBtn.addEventListener('click', async () => {
                 return;
             }
             if (!contact) {
-                showToast("Please enter contact info.", "ph-warning", "var(--warning)");
+                showToast("Please enter an ad description.", "ph-warning", "var(--warning)");
                 contactInput?.focus();
                 return;
             }
