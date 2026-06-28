@@ -1634,8 +1634,6 @@ function init() {
                         }
                     });
                 }
-
-                content.innerHTML = renderedHtml;
             });
 
             if (index === myIds.length - 1) {
