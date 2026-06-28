@@ -103,6 +103,9 @@ const addHomeworkSection = document.getElementById('add-homework-section');
 const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
 const manageHomeworkSection = document.getElementById('manage-homework-section');
 const manageClassBannerSection = document.getElementById('manage-class-banner-section');
+const adInquiriesSection = document.getElementById('ad-inquiries-section');
+const adInquiriesList = document.getElementById('ad-inquiries-list');
+const adInquiryCount = document.getElementById('ad-inquiry-count');
 const systemSettingsSection = document.getElementById('system-settings-section');
 const auditLogSection = document.getElementById('audit-log-section');
 const bugReportsSection = document.getElementById('bug-reports-section');
@@ -128,6 +131,7 @@ let bugListener = null;
 let systemStatesListener = null;
 let bannerListener = null;
 let featListener = null;
+let adInquiryListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -608,6 +612,7 @@ onAuthStateChanged(auth, async (user) => {
         if (feedbackListener) { feedbackListener(); feedbackListener = null; }
         if (bannerListener) { bannerListener(); bannerListener = null; }
         if (featListener) { featListener(); featListener = null; }
+        if (adInquiryListener) { adInquiryListener(); adInquiryListener = null; }
     }
 });
 
@@ -635,6 +640,7 @@ function updateAdminSectionsVisibility() {
         bugReportsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
+        if (adInquiriesSection) adInquiriesSection.style.display = 'block';
 
         loadUsers();
         loadSchedule();
@@ -647,6 +653,7 @@ function updateAdminSectionsVisibility() {
         loadAuditLog();
         loadBugReports();
         loadBannerManagement();
+        loadAdInquiries();
         performSystemCleanup();
 
         // Admins can change status
@@ -666,12 +673,14 @@ function updateAdminSectionsVisibility() {
         managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
+        if (adInquiriesSection) adInquiriesSection.style.display = 'block';
 
         loadAnnouncements();
         loadHomework();
         loadPolls();
         loadFeedback();
         loadBannerManagement();
+        loadAdInquiries();
         performSystemCleanup();
 
         // Teachers can change status
@@ -695,6 +704,7 @@ function updateAdminSectionsVisibility() {
         bugReportsSection.style.display = 'none';
         feedbackInboxSection.style.display = 'none';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'none';
+        if (adInquiriesSection) adInquiriesSection.style.display = 'none';
 
         loadHomework();
 
@@ -1509,7 +1519,7 @@ logoutBtn.addEventListener('click', async () => {
             let html = '';
 
             if (snap.empty) {
-                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1.5rem 0;">No banners uploaded yet.</p>';
+                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem; padding: 1.5rem 0;">No ads uploaded yet.</p>';
                 return;
             }
 
@@ -1521,14 +1531,14 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'Posted by ' + data.postedBy : 'Caption: ' + (data.caption || 'None')}</span>
+                            <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'By ' + data.postedBy : 'Contact: ' + (data.caption || 'None')}</span>
                             <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="margin-top: 0.5rem; text-align: center;">
-                            <img src="${data.url}" alt="Banner" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
+                            <img src="${data.url}" alt="Ad" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
                         </div>
                         <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">
-                            ${data.postedBy ? 'Caption: ' + (data.caption || 'None') + ' &middot; ' : ''}Date: ${dateStr}
+                            Contact: ${data.caption || 'None'}${data.link ? ' &middot; Link: ' + data.link : ''} &middot; Date: ${dateStr}
                         </div>
                     </div>
                 `;
@@ -1540,7 +1550,8 @@ logoutBtn.addEventListener('click', async () => {
                 <thead>
                     <tr>
                         <th>Image</th>
-                        <th>Caption</th>
+                        <th>Contact</th>
+                        <th>Link</th>
                         <th>Posted By</th>
                         <th>Upload Date</th>
                         <th>Action</th>
@@ -1555,10 +1566,11 @@ logoutBtn.addEventListener('click', async () => {
                 <tr>
                     <td>
                         <a href="${data.url}" target="_blank">
-                            <img src="${data.url}" alt="Banner Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                            <img src="${data.url}" alt="Ad Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
                         </a>
                     </td>
-                    <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.caption || 'None'}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.caption || 'None'}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.link ? `<a href="${data.link}" target="_blank" style="color:var(--accent-color)">${data.link}</a>` : '—'}</td>
                     <td>${data.postedBy || '—'}</td>
                     <td>${dateStr}</td>
                     <td>
@@ -1573,14 +1585,87 @@ logoutBtn.addEventListener('click', async () => {
 
             document.querySelectorAll('.remove-banner-btn').forEach(btn => {
                 btn.addEventListener('click', async (e) => {
-                    if (await customConfirm("Confirm Action", "Delete this class banner?")) {
+                    if (await customConfirm("Confirm Action", "Delete this ad?")) {
                         const id = e.target.closest('.remove-banner-btn').getAttribute('data-id');
                         try {
                             await deleteDoc(doc(db, "banners", id));
-                            logAction("Delete Banner", `ID: ${id}`);
-                            showToast("Banner deleted successfully!", "ph-check", "var(--success)");
+                            logAction("Delete Ad", `ID: ${id}`);
+                            showToast("Ad deleted successfully!", "ph-check", "var(--success)");
                         } catch (err) {
-                            showToast("Error deleting banner: " + err.message, "ph-x", "var(--danger)");
+                            showToast("Error deleting ad: " + err.message, "ph-x", "var(--danger)");
+                        }
+                    }
+                });
+            });
+        }, (error) => {
+            list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
+        });
+    }
+
+    // Load Ad Inquiries (real-time)
+    function loadAdInquiries() {
+        if (adInquiryListener) { adInquiryListener(); adInquiryListener = null; }
+
+        const list = document.getElementById('ad-inquiries-list');
+        if (!list) return;
+        list.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading inquiries...</p>';
+
+        adInquiryListener = onSnapshot(query(collection(db, "ad_inquiries"), orderBy("createdAt", "desc")), (snap) => {
+            if (snap.empty) {
+                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No inquiries yet.</p>';
+                if (adInquiryCount) adInquiryCount.textContent = '0';
+                return;
+            }
+
+            let html = '';
+            let newCount = 0;
+
+            snap.forEach(d => {
+                const data = d.data();
+                const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : 'Just now';
+                const isNew = data.status === 'new';
+                if (isNew) newCount++;
+
+                // Auto-mark as seen when admin views
+                if (isNew) {
+                    updateDoc(doc(db, "ad_inquiries", d.id), { status: 'seen' });
+                }
+
+                html += `
+                    <div class="admin-sched-card" style="border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--accent-color)'};">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
+                            ${isNew ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">NEW</span>' : ''}
+                        </div>
+                        <div style="margin-bottom: 0.5rem;">
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <span style="font-weight:600;"><i class="ph ph-user"></i> ${data.name || 'Unknown'}</span>
+                                <span><i class="ph ph-phone"></i> ${data.contact || '—'}</span>
+                                ${data.time ? `<span><i class="ph ph-clock"></i> ${data.time}</span>` : ''}
+                            </div>
+                        </div>
+                        ${data.message ? `<div style="background: var(--bg-color); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; white-space: pre-wrap;">${data.message}</div>` : ''}
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            ${data.photoURL ? `<a href="${data.photoURL}" target="_blank" style="font-size:0.8rem; color:var(--accent-color)"><i class="ph ph-image"></i> View Picture</a>` : ''}
+                            <button class="delete-inquiry-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" style="margin-left: auto;"><i class="ph ph-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No inquiries yet.</p>';
+            if (adInquiryCount) adInquiryCount.textContent = newCount;
+
+            document.querySelectorAll('.delete-inquiry-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    if (await customConfirm("Confirm Action", "Delete this inquiry?")) {
+                        const id = btn.getAttribute('data-id');
+                        try {
+                            await deleteDoc(doc(db, "ad_inquiries", id));
+                            showToast("Inquiry deleted.", "ph-check", "var(--success)");
+                            logAction("Delete Ad Inquiry", `ID: ${id}`);
+                        } catch (err) {
+                            showToast("Error: " + err.message, "ph-x", "var(--danger)");
                         }
                     }
                 });
@@ -1919,7 +2004,7 @@ logoutBtn.addEventListener('click', async () => {
                 bannerTypeSelect.value = data.bannerType;
             }
 
-            // 6. Class Banner Visibility
+            // 6. Ad Space Visibility
             const classBannerVisibleBtn = document.getElementById('class-banner-visible-toggle');
             if (classBannerVisibleBtn) {
                 if (data.showClassBanner !== false) {
@@ -1928,18 +2013,6 @@ logoutBtn.addEventListener('click', async () => {
                 } else {
                     classBannerVisibleBtn.textContent = 'OFF';
                     classBannerVisibleBtn.className = 'btn-secondary';
-                }
-            }
-
-            // 7. Class Banner Payment Requirement
-            const classBannerPaymentBtn = document.getElementById('class-banner-payment-toggle');
-            if (classBannerPaymentBtn) {
-                if (data.classBannerPaymentRequired !== false) {
-                    classBannerPaymentBtn.textContent = 'ON';
-                    classBannerPaymentBtn.className = 'btn-primary';
-                } else {
-                    classBannerPaymentBtn.textContent = 'OFF';
-                    classBannerPaymentBtn.className = 'btn-secondary';
                 }
             }
 
@@ -2057,6 +2130,81 @@ logoutBtn.addEventListener('click', async () => {
         }
     });
 
+    // Add Ad Button
+    const addAdBtn = document.getElementById('add-ad-btn');
+    if (addAdBtn) {
+        addAdBtn.addEventListener('click', async () => {
+            const fileInput = document.getElementById('ad-image-input');
+            const contactInput = document.getElementById('ad-contact-input');
+            const linkInput = document.getElementById('ad-link-input');
+            const postedByInput = document.getElementById('ad-posted-by-input');
+
+            const file = fileInput?.files[0];
+            const contact = sanitize(contactInput?.value.trim() || '');
+            const link = sanitize(linkInput?.value.trim() || '');
+            const postedBy = sanitize(postedByInput?.value.trim() || '');
+
+            if (!file) {
+                showToast("Please select an image.", "ph-warning", "var(--warning)");
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
+                return;
+            }
+            if (!contact) {
+                showToast("Please enter contact info.", "ph-warning", "var(--warning)");
+                contactInput?.focus();
+                return;
+            }
+
+            addAdBtn.disabled = true;
+            addAdBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Uploading...';
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    throw new Error(data.error.message || "Failed to upload image.");
+                }
+
+                // Delete old ads
+                try {
+                    const existingSnap = await getDocs(collection(db, "banners"));
+                    const deletePromises = [];
+                    existingSnap.forEach(d => deletePromises.push(deleteDoc(d.ref)));
+                    await Promise.all(deletePromises);
+                } catch (_) {}
+
+                await addDoc(collection(db, "banners"), {
+                    url: data.data.url,
+                    caption: contact,
+                    link: link,
+                    postedBy: postedBy,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast("Ad uploaded successfully!", "ph-check", "var(--success)");
+                logAction("Upload Ad", `Contact: ${contact}`);
+                fileInput.value = '';
+                if (contactInput) contactInput.value = '';
+                if (linkInput) linkInput.value = '';
+                if (postedByInput) postedByInput.value = '';
+                addAdBtn.disabled = false;
+                addAdBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Upload Ad';
+            } catch (err) {
+                showToast("Upload failed: " + err.message, "ph-x", "var(--danger)");
+                addAdBtn.disabled = false;
+                addAdBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Upload Ad';
+            }
+        });
+    }
+
     // Class Banner Visible Toggle
     document.getElementById('class-banner-visible-toggle').addEventListener('click', async () => {
         const btn = document.getElementById('class-banner-visible-toggle');
@@ -2065,24 +2213,8 @@ logoutBtn.addEventListener('click', async () => {
             await setDoc(doc(db, "settings", "maintenance"), {
                 showClassBanner: newState
             }, { merge: true });
-            showToast(`Class Banner visibility turned ${newState ? 'ON' : 'OFF'}`);
-            logAction("Toggle Class Banner Visibility", `State: ${newState ? 'ON' : 'OFF'}`);
-            loadSettings();
-        } catch (e) {
-            showToast("Error updating settings: " + e.message);
-        }
-    });
-
-    // Class Banner Payment Toggle
-    document.getElementById('class-banner-payment-toggle').addEventListener('click', async () => {
-        const btn = document.getElementById('class-banner-payment-toggle');
-        const newState = btn.textContent !== 'ON';
-        try {
-            await setDoc(doc(db, "settings", "maintenance"), {
-                classBannerPaymentRequired: newState
-            }, { merge: true });
-            showToast(`Class Banner payment requirement turned ${newState ? 'ON' : 'OFF'}`);
-            logAction("Toggle Class Banner Payment Requirement", `State: ${newState ? 'ON' : 'OFF'}`);
+            showToast(`Ad Space visibility turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Ad Space Visibility", `State: ${newState ? 'ON' : 'OFF'}`);
             loadSettings();
         } catch (e) {
             showToast("Error updating settings: " + e.message);

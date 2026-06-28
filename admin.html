@@ -167,18 +167,39 @@
                 </div>
             </section>
 
-            <!-- Manage Class Banner -->
+            <!-- Manage Ad Space -->
             <section class="dashboard-card span-2" id="manage-class-banner-section" style="display: none;">
                 <div class="card-header">
-                    <h2><i class="ph ph-image"></i> Manage Class Banner</h2>
+                    <h2><i class="ph ph-megaphone"></i> Manage Ad Space</h2>
                 </div>
                 <div class="card-content">
+                    <div class="admin-form-stack" style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-weight: 600; margin-bottom: 0.8rem;">Add New Ad</div>
+                        <input type="file" id="ad-image-input" class="form-input" accept="image/*" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-contact-input" placeholder="Contact info (e.g. phone, email)" class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-link-input" placeholder="Link URL (optional)" class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-posted-by-input" placeholder="Posted By (optional)" class="form-input" style="margin-bottom: 0.5rem;">
+                        <button id="add-ad-btn" class="btn-primary btn-full"><i class="ph ph-upload-simple"></i> Upload Ad</button>
+                    </div>
                     <div id="banner-list-admin" class="overflow-x-auto">
                         <div class="loading-placeholder"><div class="loader"></div></div>
                     </div>
                 </div>
             </section>
-            
+
+            <!-- Ad Inquiries -->
+            <section class="dashboard-card card-scrollable" id="ad-inquiries-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-envelope-open"></i> Ad Inquiries</h2>
+                    <span class="time-badge" id="ad-inquiry-count">0</span>
+                </div>
+                <div class="card-content">
+                    <div id="ad-inquiries-list" style="font-size: 0.85rem;">
+                        <p style="color: var(--text-secondary); text-align: center;">Loading inquiries...</p>
+                    </div>
+                </div>
+            </section>
+
             <!-- Manage Announcements -->
             <section class="dashboard-card span-2" id="manage-announcements-section">
                 <div class="card-header">
@@ -342,22 +363,13 @@
                         </div>
                     </div>
 
-                    <!-- Class Banner Visibility Settings -->
+                    <!-- Ad Space Visibility Settings -->
                     <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-weight: 600;">Show Class Banner</div>
-                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Toggle visibility of the Class Banner on the main dashboard</div>
+                            <div style="font-weight: 600;">Show Ad Space</div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Toggle visibility of the Ad Space on the main dashboard</div>
                         </div>
                         <button id="class-banner-visible-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
-                    </div>
-
-                    <!-- Class Banner Payment Requirement Settings -->
-                    <div style="padding-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-weight: 600;">Require Banner Payment</div>
-                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Require PromptPay payment confirmation (0.01 THB) for uploads</div>
-                        </div>
-                        <button id="class-banner-payment-toggle" class="btn-secondary" style="min-width: 80px;">ON</button>
                     </div>
                 </div>
             </section>

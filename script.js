@@ -1369,7 +1369,7 @@ function init() {
         });
     }
 
-    // Class Banner Logic
+    // Ad Space Logic
     function initBanner() {
         const bannerSection = document.getElementById('banner-section');
         const bannerContainer = document.getElementById('banner-display-container');
@@ -1379,9 +1379,9 @@ function init() {
             if (snap.empty) {
                 bannerContainer.innerHTML = `
                     <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
-                        <i class="ph ph-image-square" style="font-size: 3.5rem; opacity: 0.15;"></i>
-                        <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">No banner uploaded yet.</p>
-                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">${systemSettings?.classBannerPaymentRequired !== false ? 'Be the first to share a photo/announcement with the class for 0.01 THB!' : 'Be the first to share a photo/announcement with the class!'}</p>
+                        <i class="ph ph-megaphone" style="font-size: 3.5rem; opacity: 0.15;"></i>
+                        <p style="margin: 0; font-size: 0.95rem; font-weight: 500;">No ad available</p>
+                        <p style="margin: 0; font-size: 0.8rem; opacity: 0.7;">Check back later for promotions and offers!</p>
                     </div>
                 `;
                 return;
@@ -1389,134 +1389,141 @@ function init() {
 
             snap.forEach(d => {
                 const data = d.data();
-                const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString(undefined, {
-                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                }) : 'Just now';
-
                 const url = data.url;
-                const caption = sanitize(data.caption || '');
+                const contact = sanitize(data.caption || 'Contact us for more info');
+                const link = sanitize(data.link || '');
                 const postedBy = sanitize(data.postedBy || '');
 
+                const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
+
                 bannerContainer.innerHTML = `
-                    <div style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <img src="${url}" alt="Class Banner" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
+                    <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
+                        <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
                         <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
-                            ${caption ? `<p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${caption}</p>` : ''}
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: ${caption ? '0.25rem' : '0'};">
-                                ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-user"></i> ${postedBy}</span>` : ''}
-                                <span style="font-size: 0.75rem; opacity: 0.8;">${dateStr}</span>
+                            <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                                ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
+                                ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
+                                <i class="ph ph-hand-pointing"></i> Click to inquire
                             </div>
                         </div>
                     </div>
                 `;
+
+                // Click handler to open inquiry modal
+                const adEl = document.getElementById('ad-clickable');
+                if (adEl) {
+                    adEl.addEventListener('click', () => {
+                        openInquiryModal();
+                    });
+                }
             });
         });
     }
 
+    function openInquiryModal() {
+        const modal = document.getElementById('banner-modal');
+        if (modal) modal.classList.add('active');
+    }
+
+    function closeInquiryModal() {
+        const modal = document.getElementById('banner-modal');
+        if (modal) modal.classList.remove('active');
+    }
+
     function initBannerUpload() {
-        const changeBannerBtn = document.getElementById('change-banner-btn');
-        const bannerModal = document.getElementById('banner-modal');
-        const closeBannerBtn = document.getElementById('close-banner-modal');
-        const confirmPayCheckbox = document.getElementById('banner-confirm-pay');
-        const submitBannerBtn = document.getElementById('submit-banner-btn');
-        const bannerPicInput = document.getElementById('banner-pic-input');
-        const bannerCaptionInput = document.getElementById('banner-caption-input');
-        const bannerPostedByInput = document.getElementById('banner-posted-by-input');
+        const inquireBtn = document.getElementById('change-banner-btn');
+        const inquiryModal = document.getElementById('banner-modal');
+        const closeBtn = document.getElementById('close-banner-modal');
+        const submitBtn = document.getElementById('submit-inquiry-btn');
+        const nameInput = document.getElementById('inquiry-name');
+        const contactInput = document.getElementById('inquiry-contact');
+        const timeInput = document.getElementById('inquiry-time');
+        const messageInput = document.getElementById('inquiry-message');
+        const picInput = document.getElementById('inquiry-pic');
 
-        if (!changeBannerBtn || !bannerModal) return;
+        if (!inquireBtn || !inquiryModal) return;
 
-        changeBannerBtn.addEventListener('click', (e) => {
+        inquireBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Limit check: 1 time per day
-            const lastUpload = localStorage.getItem('last_banner_upload_time');
-            if (lastUpload) {
-                const diff = Date.now() - parseInt(lastUpload);
-                const hoursLeft = Math.ceil((24 * 60 * 60 * 1000 - diff) / (1000 * 60 * 60));
-                if (diff < 24 * 60 * 60 * 1000) {
-                    showToast(`Limit reached: Next upload available in ${hoursLeft} hours.`, "ph-warning", "var(--warning)");
-                    return;
-                }
-            }
-            
-            bannerModal.classList.add('active');
-            bannerPicInput.value = '';
-            bannerCaptionInput.value = '';
-            if (bannerPostedByInput) bannerPostedByInput.value = '';
-            confirmPayCheckbox.checked = false;
-            submitBannerBtn.disabled = true;
+            openInquiryModal();
         });
 
         const closeModal = () => {
-            bannerModal.classList.remove('active');
+            inquiryModal.classList.remove('active');
+            nameInput.value = '';
+            contactInput.value = '';
+            timeInput.value = '';
+            messageInput.value = '';
+            picInput.value = '';
         };
-        if (closeBannerBtn) closeBannerBtn.addEventListener('click', closeModal);
-        bannerModal.addEventListener('click', (e) => {
-            if (e.target === bannerModal) closeModal();
+        if (closeBtn) closeBtn.addEventListener('click', closeModal);
+        inquiryModal.addEventListener('click', (e) => {
+            if (e.target === inquiryModal) closeModal();
         });
 
-        const updateSubmitBtnState = () => {
-            const paymentRequired = systemSettings?.classBannerPaymentRequired !== false;
-            submitBannerBtn.disabled = paymentRequired ? (!confirmPayCheckbox.checked || !bannerPicInput.files[0]) : !bannerPicInput.files[0];
-        };
+        submitBtn.addEventListener('click', async () => {
+            const name = sanitize(nameInput.value.trim());
+            const contact = sanitize(contactInput.value.trim());
+            const time = sanitize(timeInput.value.trim());
+            const message = sanitize(messageInput.value.trim());
+            const file = picInput.files[0];
 
-        confirmPayCheckbox.addEventListener('change', updateSubmitBtnState);
-        bannerPicInput.addEventListener('change', updateSubmitBtnState);
-
-        submitBannerBtn.addEventListener('click', async () => {
-            const file = bannerPicInput.files[0];
-            if (!file) return;
-
-            if (file.size > 5 * 1024 * 1024) {
-                showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
+            if (!name) {
+                showToast("Please enter your name.", "ph-warning", "var(--warning)");
+                nameInput.focus();
+                return;
+            }
+            if (!contact) {
+                showToast("Please enter your contact info.", "ph-warning", "var(--warning)");
+                contactInput.focus();
                 return;
             }
 
-            submitBannerBtn.disabled = true;
-            submitBannerBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Uploading Pic...';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sending...';
 
             try {
-                const formData = new FormData();
-                formData.append('image', file);
-                const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                if (!data.success) {
-                    throw new Error(data.error.message || "Failed to upload image to ImgBB.");
-                }
-                const photoURL = data.data.url;
-
-                const caption = sanitize(bannerCaptionInput.value.trim());
-                const postedBy = sanitize(bannerPostedByInput ? bannerPostedByInput.value.trim() : '');
-
-                // Best-effort cleanup of old banners (may fail for non-admin users)
-                try {
-                    const existingSnap = await getDocs(collection(db, "banners"));
-                    const deletePromises = [];
-                    existingSnap.forEach(d => deletePromises.push(deleteDoc(d.ref)));
-                    await Promise.all(deletePromises);
-                } catch (_) {
-                    // Cleanup is best-effort — proceed even if permission denied
+                let photoURL = '';
+                if (file) {
+                    if (file.size > 5 * 1024 * 1024) {
+                        showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
+                        return;
+                    }
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const imgData = await response.json();
+                    if (imgData.success) {
+                        photoURL = imgData.data.url;
+                    }
                 }
 
-                await addDoc(collection(db, "banners"), {
-                    url: photoURL,
-                    caption: caption,
-                    postedBy: postedBy || '',
-                    createdAt: serverTimestamp()
+                await addDoc(collection(db, "ad_inquiries"), {
+                    name,
+                    contact,
+                    time,
+                    message,
+                    photoURL,
+                    createdAt: serverTimestamp(),
+                    status: 'new'
                 });
 
-                localStorage.setItem('last_banner_upload_time', Date.now().toString());
-
-                showToast("Banner updated successfully!", "ph-check", "var(--success)");
+                showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
                 closeModal();
             } catch (err) {
-                console.error("Banner upload failed:", err);
-                showToast("Update failed: " + err.message, "ph-x", "var(--danger)");
-                submitBannerBtn.disabled = false;
-                submitBannerBtn.innerHTML = '<i class="ph ph-upload-simple"></i> Upload & Update';
+                console.error("Inquiry submission failed:", err);
+                showToast("Failed to send inquiry: " + err.message, "ph-x", "var(--danger)");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
             }
         });
     }
@@ -1691,34 +1698,10 @@ async function syncSystemStates() {
                     hideLockoutOverlay();
                 }
 
-                // 4. Class Banner display verification
+                // 4. Ad Space display verification
                 const bannerSection = document.getElementById('banner-section');
                 if (bannerSection) {
                     bannerSection.style.display = data.showClassBanner !== false ? 'block' : 'none';
-                }
-
-                // 5. Class Banner Payment UI
-                const paymentRequired = data.classBannerPaymentRequired !== false;
-                const changeBannerBtn = document.getElementById('change-banner-btn');
-                if (changeBannerBtn) {
-                    changeBannerBtn.innerHTML = paymentRequired
-                        ? '<i class="ph ph-upload-simple"></i> Change Banner (0.01 THB)'
-                        : '<i class="ph ph-upload-simple"></i> Change Banner';
-                }
-                const bannerPriceText = document.getElementById('banner-price-text');
-                const bannerQrSection = document.getElementById('banner-qr-section');
-                const bannerConfirmPayRow = document.getElementById('banner-confirm-pay-row');
-                if (bannerPriceText) {
-                    if (!bannerPriceText.dataset.origDisplay) bannerPriceText.dataset.origDisplay = window.getComputedStyle(bannerPriceText).display;
-                    bannerPriceText.style.display = paymentRequired ? bannerPriceText.dataset.origDisplay : 'none';
-                }
-                if (bannerQrSection) {
-                    if (!bannerQrSection.dataset.origDisplay) bannerQrSection.dataset.origDisplay = window.getComputedStyle(bannerQrSection).display;
-                    bannerQrSection.style.display = paymentRequired ? bannerQrSection.dataset.origDisplay : 'none';
-                }
-                if (bannerConfirmPayRow) {
-                    if (!bannerConfirmPayRow.dataset.origDisplay) bannerConfirmPayRow.dataset.origDisplay = window.getComputedStyle(bannerConfirmPayRow).display;
-                    bannerConfirmPayRow.style.display = paymentRequired ? bannerConfirmPayRow.dataset.origDisplay : 'none';
                 }
 
                 // 6. Scheduled Maintenance Countdown
