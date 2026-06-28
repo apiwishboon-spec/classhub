@@ -1544,7 +1544,8 @@ function init() {
 
         const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
         if (myIds.length === 0) {
-            section.style.display = 'none';
+            section.style.display = 'block';
+            content.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-secondary);"><i class="ph ph-chat-circle-dots" style="font-size: 2.5rem; opacity: 0.2; display: block; margin-bottom: 0.5rem;"></i><p style="margin: 0; font-size: 0.9rem;">No inquiries yet.</p><p style="margin: 0.3rem 0 0; font-size: 0.8rem; opacity: 0.7;">Click "Inquire Now" on the ad above to start a conversation.</p></div>';
             return;
         }
 
@@ -1553,6 +1554,7 @@ function init() {
 
         let hasData = false;
         let renderedHtml = '';
+        let unsubs = [];
 
         myIds.forEach((id, index) => {
             const unsub = onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
