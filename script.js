@@ -1527,6 +1527,7 @@ function init() {
 
                 showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
                 closeModal();
+                setTimeout(() => location.reload(), 1200);
             } catch (err) {
                 console.error("Inquiry submission failed:", err);
                 showToast("Failed to send inquiry: " + err.message, "ph-x", "var(--danger)");
@@ -1544,8 +1545,7 @@ function init() {
 
         const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
         if (myIds.length === 0) {
-            section.style.display = 'block';
-            content.innerHTML = '<div style="padding: 1.5rem; text-align: center; color: var(--text-secondary);"><i class="ph ph-chat-circle-dots" style="font-size: 2.5rem; opacity: 0.2; display: block; margin-bottom: 0.5rem;"></i><p style="margin: 0; font-size: 0.9rem;">No inquiries yet.</p><p style="margin: 0.3rem 0 0; font-size: 0.8rem; opacity: 0.7;">Click "Inquire Now" on the ad above to start a conversation.</p></div>';
+            section.style.display = 'none';
             return;
         }
 
@@ -1559,6 +1559,7 @@ function init() {
         myIds.forEach((id, index) => {
             const unsub = onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
                 if (!docSnap.exists()) return;
+                section.style.display = 'block';
                 hasData = true;
                 const data = docSnap.data();
                 const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleString() : '';
