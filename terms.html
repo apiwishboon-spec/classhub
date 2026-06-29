@@ -16,6 +16,7 @@
                 <h1 style="color: var(--accent-color);">Terms of Service</h1>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
+                <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
                 <a href="chat.html" class="icon-button"><i class="ph ph-chat-centered-text"></i></a>
                 <a href="./" class="icon-button"><i class="ph ph-house"></i></a>
             </div>
@@ -84,5 +85,19 @@
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
         </footer>
     </div>
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            var saved = localStorage.getItem('theme');
+            var hour = new Date().getHours();
+            var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) { document.documentElement.setAttribute('data-theme', 'dark'); if (toggle) toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            if (toggle) toggle.addEventListener('click', function() {
+                var dark = document.documentElement.hasAttribute('data-theme');
+                if (dark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); toggle.innerHTML = '<i class="ph ph-moon"></i>'; }
+                else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            });
+        })();
+    </script>
 </body>
 </html>
