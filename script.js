@@ -1413,129 +1413,19 @@ function init() {
                     </div>
                 `;
 
-                // Click handler to open inquiry modal
+                // Click handler to go to inquiry page
                 const adEl = document.getElementById('ad-clickable');
                 if (adEl) {
                     adEl.addEventListener('click', () => {
-                        openInquiryModal();
+                        window.location.href = 'ad-inquiry.html';
                     });
                 }
             });
         });
     }
 
-    function openInquiryModal() {
-        const modal = document.getElementById('banner-modal');
-        if (modal) modal.classList.add('active');
-    }
-
-    function closeInquiryModal() {
-        const modal = document.getElementById('banner-modal');
-        if (modal) modal.classList.remove('active');
-    }
-
     function initBannerUpload() {
-        const inquireBtn = document.getElementById('change-banner-btn');
-        const inquiryModal = document.getElementById('banner-modal');
-        const closeBtn = document.getElementById('close-banner-modal');
-        const submitBtn = document.getElementById('submit-inquiry-btn');
-        const nameInput = document.getElementById('inquiry-name');
-        const contactInput = document.getElementById('inquiry-contact');
-        const timeInput = document.getElementById('inquiry-time');
-        const messageInput = document.getElementById('inquiry-message');
-        const picInput = document.getElementById('inquiry-pic');
-
-        if (!inquireBtn || !inquiryModal) return;
-
-        inquireBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openInquiryModal();
-        });
-
-        const closeModal = () => {
-            inquiryModal.classList.remove('active');
-            nameInput.value = '';
-            contactInput.value = '';
-            timeInput.value = '';
-            messageInput.value = '';
-            picInput.value = '';
-        };
-        if (closeBtn) closeBtn.addEventListener('click', closeModal);
-        inquiryModal.addEventListener('click', (e) => {
-            if (e.target === inquiryModal) closeModal();
-        });
-
-        submitBtn.addEventListener('click', async () => {
-            const name = sanitize(nameInput.value.trim());
-            const contact = sanitize(contactInput.value.trim());
-            const time = sanitize(timeInput.value.trim());
-            const message = sanitize(messageInput.value.trim());
-            const file = picInput.files[0];
-
-            if (!name) {
-                showToast("Please enter your name.", "ph-warning", "var(--warning)");
-                nameInput.focus();
-                return;
-            }
-            if (!contact) {
-                showToast("Please enter your contact info.", "ph-warning", "var(--warning)");
-                contactInput.focus();
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sending...';
-
-            try {
-                let photoURL = '';
-                if (file) {
-                    if (file.size > 5 * 1024 * 1024) {
-                        showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
-                        return;
-                    }
-                    const formData = new FormData();
-                    formData.append('image', file);
-                    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-                        method: 'POST',
-                        body: formData
-                    });
-                    const imgData = await response.json();
-                    if (imgData.success) {
-                        photoURL = imgData.data.url;
-                    }
-                }
-
-                const docRef = await addDoc(collection(db, "ad_inquiries"), {
-                    name,
-                    contact,
-                    time,
-                    message,
-                    photoURL,
-                    createdAt: serverTimestamp(),
-                    status: 'new',
-                    replies: []
-                });
-
-                // Store in localStorage for tracking
-                const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
-                if (!myIds.includes(docRef.id)) {
-                    myIds.push(docRef.id);
-                }
-                localStorage.setItem('my_ad_inquiries', JSON.stringify(myIds));
-
-                showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
-                closeModal();
-                setTimeout(() => location.reload(), 1200);
-            } catch (err) {
-                console.error("Inquiry submission failed:", err);
-                showToast("Failed to send inquiry: " + err.message, "ph-x", "var(--danger)");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
-            }
-        });
+        // Button is now a direct link to ad-inquiry.html
     }
 
     function initMyInquiry() {

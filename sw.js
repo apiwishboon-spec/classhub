@@ -1,4 +1,4 @@
-const CACHE_NAME = 'classhub-v5';
+const CACHE_NAME = 'classhub-v6';
 const ASSETS = [
   '/',
   '/style.css?v=12',
@@ -6,6 +6,7 @@ const ASSETS = [
   '/admin.js?v=13',
   '/admin.html',
   '/index.html',
+  '/ad-inquiry.html',
   '/favicon.png',
   '/logo.png'
 ];
