@@ -398,10 +398,23 @@ body {
     opacity: 0.7;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 640px) {
     .search-wrapper {
         width: 100%;
         order: 3;
+    }
+    .top-nav {
+        gap: 0.5rem;
+    }
+    .nav-brand h1 {
+        font-size: 1rem;
+    }
+    .icon-button {
+        width: 36px;
+        height: 36px;
+    }
+    .icon-button i {
+        font-size: 1.1rem;
     }
 }
 
@@ -1214,11 +1227,25 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 
 @media (max-width: 768px) {
     .admin-header-actions {
-        gap: 0.25rem;
+        gap: 0.15rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
     .admin-header-actions .time-badge {
-        font-size: 0.7rem;
-        padding: 0.15rem 0.5rem;
+        font-size: 0.6rem;
+        padding: 0.1rem 0.4rem;
+    }
+    .admin-header-actions .icon-button {
+        width: 30px;
+        height: 30px;
+    }
+    .admin-header-actions .icon-button i {
+        font-size: 0.95rem;
+    }
+    .admin-header-actions #staff-status-toggle {
+        font-size: 0.6rem;
+        padding: 1px 4px;
+        max-width: 80px;
     }
 }
 
@@ -1244,6 +1271,13 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 
 @media (max-width: 768px) {
     .admin-user-form .form-input {
+        min-width: 100%;
+    }
+    .admin-user-form {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .admin-user-form select.form-input {
         min-width: 100%;
     }
 }
@@ -1496,12 +1530,12 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 /* Responsive Overrides */
 @media (max-width: 768px) {
     .app-container {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .dashboard-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .span-2 {
@@ -1509,103 +1543,352 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     }
 
     .dashboard-card {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0;
+        min-height: auto;
     }
 
-    .schedule-table {
-        min-width: 700px;
+    .card-content {
+        padding: 1rem;
     }
 
-    .schedule-table th, .schedule-table td {
-        padding: 0.35rem 0.3rem;
-        min-height: 40px;
-    }
-
-    .schedule-table thead th {
-        min-width: 70px;
-    }
-
-    .class-cell {
-        min-width: 80px;
-    }
-
-    .cell-subject {
-        font-size: 0.75rem;
-    }
-
-    .cell-teacher {
-        font-size: 0.6rem;
-    }
-
-    .time-col {
-        min-width: 80px;
-        padding-left: 0.75rem !important;
-    }
-
-    .period-num {
-        font-size: 0.75rem;
-    }
-
-    .time-sub-header {
-        font-size: 0.6rem;
-    }
-
-    .day-label {
-        font-size: 0.8rem;
+    .card-header {
+        padding: 0.75rem 1rem;
     }
 
     .card-header h2 {
-        font-size: 1rem;
+        font-size: 0.95rem;
+    }
+
+    .schedule-table {
+        min-width: 600px;
+    }
+
+    .schedule-table th, .schedule-table td {
+        padding: 0.3rem 0.25rem;
+        min-height: 36px;
+    }
+
+    .schedule-table thead th {
+        min-width: 60px;
+    }
+
+    .class-cell {
+        min-width: 70px;
+    }
+
+    .cell-subject {
+        font-size: 0.7rem;
+    }
+
+    .cell-teacher {
+        font-size: 0.55rem;
+    }
+
+    .time-col {
+        min-width: 60px;
+        padding-left: 0.5rem !important;
+        font-size: 0.75rem;
+    }
+
+    .period-num {
+        font-size: 0.7rem;
+    }
+
+    .time-sub-header {
+        font-size: 0.55rem;
+    }
+
+    .day-label {
+        font-size: 0.75rem;
     }
 
     #schedule-section {
-        min-height: 300px;
+        min-height: 250px;
     }
 
-    /* Mobile: Help modal full width */
+    #schedule-section .card-content {
+        padding: 0.5rem;
+    }
+
+    /* Announcements & Homework on mobile */
+    .announcement-card, .homework-item {
+        padding: 0.75rem 0;
+    }
+    .announcement-title, .hw-title {
+        font-size: 0.9rem;
+    }
+    .hw-categories {
+        gap: 0.25rem;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .hw-cat-btn {
+        padding: 0.4rem 0.5rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+
+    /* Quick Notes on mobile */
+    .card-scrollable .card-content {
+        max-height: 350px;
+    }
+    .notes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Polls on mobile */
+    .poll-card {
+        padding: 0.75rem !important;
+    }
+    .poll-option-wrapper .poll-vote-btn {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    /* Weekend message on mobile */
+    .weekend-title {
+        font-size: 1.2rem;
+    }
+    .weekend-icon i {
+        font-size: 2.5rem;
+    }
+
+    /* Countdown banner on mobile */
+    .countdown-banner {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.6rem;
+    }
+
+    /* Mobile schedule items */
+    .schedule-item {
+        padding: 0.6rem;
+        gap: 0.5rem;
+    }
+    .sched-time {
+        min-width: 55px;
+        font-size: 0.65rem;
+    }
+    .sched-period {
+        min-width: 42px;
+        font-size: 0.6rem;
+    }
+    .sched-subject {
+        font-size: 0.8rem;
+    }
+    .day-tab {
+        padding: 0.4rem 0.3rem;
+        font-size: 0.7rem;
+        min-width: 48px;
+    }
+
+    /* Progress bar mobile */
+    .day-progress-container {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Admin system settings mobile */
+    #system-settings-section > .card-content > div {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    #system-settings-section button.btn-secondary {
+        min-width: 70px !important;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.6rem;
+    }
+    #lockout-config-container {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    #lockout-passcode-input {
+        max-width: 100% !important;
+    }
+    #banner-config-container > div {
+        flex-wrap: wrap;
+    }
+    #banner-type-select {
+        max-width: 100% !important;
+    }
+
+    /* Admin schedule cards mobile */
+    .admin-sched-card {
+        padding: 0.5rem;
+    }
+    .admin-sched-time {
+        font-size: 0.8rem;
+    }
+    .sched-day-bar {
+        min-width: 42px;
+        padding: 0.2rem 0.15rem;
+    }
+    .sched-day-val {
+        font-size: 0.65rem;
+    }
+    .sched-day-label {
+        font-size: 0.5rem;
+    }
+
+    /* Admin feedback list mobile */
+    #feedback-list-admin > div,
+    #ad-inquiries-list > div,
+    #bug-reports-list > div {
+        font-size: 0.8rem;
+        padding: 0.6rem 0 !important;
+    }
+
+    /* Admin table mobile */
+    .admin-action-cell {
+        font-size: 0.75rem;
+    }
+    .admin-btn-icon {
+        font-size: 0.75rem;
+        padding: 0.2rem 0.3rem;
+    }
+
+    /* Banner/modal mobile */
+    .modal-content {
+        margin: 0 0.5rem;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .modal-header {
+        padding: 0.75rem 1rem;
+    }
+    .modal-header h3 {
+        font-size: 1rem;
+    }
+    .modal-body {
+        padding: 1rem;
+    }
+
+    /* Ad banner mobile */
+    #banner-display-container {
+        min-height: 100px !important;
+    }
+
+    /* Footer mobile */
+    footer, .admin-footer {
+        margin-top: 2rem !important;
+        padding: 1.5rem 0 !important;
+        font-size: 0.8rem;
+    }
+
+    /* Inquiry section mobile */
+    #my-inquiry-section .card-content {
+        font-size: 0.85rem;
+    }
+
+    /* PWA install banner mobile */
+    .pwa-install-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        bottom: 0.75rem;
+        left: 0.75rem;
+        right: 0.75rem;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    .pwa-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    .pwa-content {
+        font-size: 0.85rem;
+    }
+}
+
+/* Extra small screens */
+/* Admin modal card mobile */
+@media (max-width: 768px) {
+    .modal-card {
+        padding: 1.5rem !important;
+        margin: 0 0.5rem !important;
+        max-width: 100% !important;
+    }
+}
+
+@media (max-width: 400px) {
+    .app-container {
+        padding: 0.5rem;
+    }
+    .dashboard-grid {
+        gap: 0.75rem;
+    }
+    .card-header h2 {
+        font-size: 0.85rem;
+    }
+    .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    .card-content {
+        padding: 0.75rem;
+    }
+    .time-badge {
+        font-size: 0.7rem;
+        padding: 0.15rem 0.5rem;
+    }
+    .icon-button {
+        width: 32px;
+        height: 32px;
+    }
+    .icon-button i {
+        font-size: 1rem;
+    }
+    .nav-brand h1 {
+        font-size: 0.9rem;
+    }
+    .top-nav {
+        gap: 0.35rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+    }
+}
+
+/* Mobile: Help modal full width */
+@media (max-width: 768px) {
     .help-modal-card {
         max-width: 100% !important;
         max-height: 90vh !important;
-        margin: 0 10px !important;
+        margin: 0 8px !important;
         border-radius: 12px !important;
     }
 
     .help-modal-body {
-        padding: 1rem 1.25rem 1.5rem !important;
+        padding: 0.75rem 1rem 1.25rem !important;
     }
 
     .help-title {
-        font-size: 1.2rem !important;
-    }
-
-    .help-section-item {
-        padding: 0.6rem 0.75rem !important;
-    }
-
-    .help-section-icon {
-        width: 34px !important;
-        height: 34px !important;
-        min-width: 34px !important;
         font-size: 1.1rem !important;
     }
 
+    .help-section-item {
+        padding: 0.5rem 0.6rem !important;
+    }
+
+    .help-section-icon {
+        width: 30px !important;
+        height: 30px !important;
+        min-width: 30px !important;
+        font-size: 1rem !important;
+    }
+
     .help-section-text h4 {
-        font-size: 0.85rem !important;
+        font-size: 0.8rem !important;
     }
 
     .help-section-text p {
-        font-size: 0.78rem !important;
+        font-size: 0.72rem !important;
     }
 
     .help-modal-header {
-        padding: 0.75rem 1rem !important;
+        padding: 0.6rem 0.75rem !important;
         flex-wrap: wrap !important;
-        gap: 0.5rem !important;
+        gap: 0.4rem !important;
     }
 
     .help-lang-btn {
-        padding: 0.3rem 0.7rem !important;
-        font-size: 0.75rem !important;
+        padding: 0.25rem 0.6rem !important;
+        font-size: 0.7rem !important;
     }
 }
 
