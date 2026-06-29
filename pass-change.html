@@ -149,8 +149,12 @@
         const submitBtn = document.getElementById('submit-btn');
 
         // Theme initialization
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        (function() {
+            const saved = localStorage.getItem('theme');
+            const hour = new Date().getHours();
+            const isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        })();
 
         // Get parameters from URL
         const urlParams = new URLSearchParams(window.location.search);

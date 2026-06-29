@@ -29,6 +29,7 @@
                 <h1 style="color: var(--accent-color);">Contact Admin</h1>
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
+                <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
                 <a href="chat.html" class="icon-button" aria-label="Message Staff"><i class="ph ph-chat-centered-text"></i></a>
                 <a href="./" class="icon-button" aria-label="Home"><i class="ph ph-house"></i></a>
             </div>
@@ -72,22 +73,34 @@
     </div>
     <script>
         function initTheme() {
+            const toggle = document.getElementById('theme-toggle');
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
+            const hour = new Date().getHours();
+            const isDark = savedTheme === 'dark' || (savedTheme !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-            } else if (savedTheme === 'light') {
-                document.documentElement.removeAttribute('data-theme');
+                if (toggle) toggle.innerHTML = '<i class="ph ph-sun"></i>';
             } else {
-                const now = new Date();
-                const totalMinutes = now.getHours() * 60 + now.getMinutes();
-                const sunsetMin = 18 * 60 + 30;
-                const sunriseMin = 6 * 60;
-                if (totalMinutes >= sunsetMin || totalMinutes < sunriseMin) {
-                    document.documentElement.setAttribute('data-theme', 'dark');
-                }
+                document.documentElement.removeAttribute('data-theme');
+                if (toggle) toggle.innerHTML = '<i class="ph ph-moon"></i>';
             }
         }
-        document.addEventListener('DOMContentLoaded', initTheme);
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            document.getElementById('theme-toggle')?.addEventListener('click', () => {
+                const isDark = document.documentElement.hasAttribute('data-theme');
+                const toggle = document.getElementById('theme-toggle');
+                if (isDark) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    toggle.innerHTML = '<i class="ph ph-moon"></i>';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    toggle.innerHTML = '<i class="ph ph-sun"></i>';
+                }
+            });
+        });
     </script>
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>

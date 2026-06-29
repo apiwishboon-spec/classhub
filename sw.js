@@ -1,4 +1,4 @@
-const CACHE_NAME = 'classhub-v3';
+const CACHE_NAME = 'classhub-v4';
 const ASSETS = [
   '/',
   '/style.css?v=12',

@@ -72,6 +72,7 @@
                     <option value="offline">⚪ Offline</option>
                 </select>
                 <span id="user-role-badge" class="time-badge">Role: Staff</span>
+                <button id="theme-toggle-admin" class="icon-button" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
                 <a href="./" class="icon-button" aria-label="Home" title="Back to Dashboard"><i class="ph ph-house"></i></a>
                 <button id="logout-btn" class="icon-button" aria-label="Logout" title="Logout Account"><i class="ph ph-sign-out"></i></button>
             </div>
@@ -479,6 +480,33 @@
     <script type="module" src="chat.js"></script>
 <script type="module" src="game.js"></script>    <script src="help.js?v=2"></script>
     <script type="module" src="bug-report.js"></script>
+    <script>
+        // Theme toggle for admin page
+        function initAdminTheme() {
+            const toggle = document.getElementById('theme-toggle-admin');
+            if (!toggle) return;
+            const saved = localStorage.getItem('theme');
+            const hour = new Date().getHours();
+            const isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            toggle.innerHTML = isDark ? '<i class="ph ph-sun"></i>' : '<i class="ph ph-moon"></i>';
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            initAdminTheme();
+            document.getElementById('theme-toggle-admin')?.addEventListener('click', () => {
+                const isDark = document.documentElement.hasAttribute('data-theme');
+                const toggle = document.getElementById('theme-toggle-admin');
+                if (isDark) {
+                    document.documentElement.removeAttribute('data-theme');
+                    localStorage.setItem('theme', 'light');
+                    toggle.innerHTML = '<i class="ph ph-moon"></i>';
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                    toggle.innerHTML = '<i class="ph ph-sun"></i>';
+                }
+            });
+        });
+    </script>
 
             
 

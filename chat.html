@@ -76,20 +76,32 @@
 
     <script type="module" src="chat.js"></script>
     <script type="module" src="game.js"></script>
-    <script type="module">
-        import { initTheme } from './admin.js';
+    <script>
+        function applyChatTheme() {
+            const toggle = document.getElementById('theme-toggle');
+            if (!toggle) return;
+            const saved = localStorage.getItem('theme');
+            const isDark = saved === 'dark' || (saved !== 'light' && (new Date().getHours() < 6 || new Date().getHours() > 18));
+            if (isDark) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                toggle.innerHTML = '<i class="ph ph-sun"></i>';
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                toggle.innerHTML = '<i class="ph ph-moon"></i>';
+            }
+        }
         document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-            
+            applyChatTheme();
             document.getElementById('theme-toggle')?.addEventListener('click', () => {
-                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const isDark = document.documentElement.hasAttribute('data-theme');
                 if (isDark) {
                     document.documentElement.removeAttribute('data-theme');
                     localStorage.setItem('theme', 'light');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="ph ph-moon"></i>';
                 } else {
                     document.documentElement.setAttribute('data-theme', 'dark');
                     localStorage.setItem('theme', 'dark');
+                    document.getElementById('theme-toggle').innerHTML = '<i class="ph ph-sun"></i>';
                 }
             });
         });

@@ -84,16 +84,21 @@
         </div>
     </div>
 
+    <script>
+        // Theme initialization for vote page
+        (function() {
+            const saved = localStorage.getItem('theme');
+            const hour = new Date().getHours();
+            const isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+    </script>
     <script type="module">
         import { db } from './firebase-config.js';
         import { doc, getDoc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         const container = document.querySelector('.vote-container');
         const voteUi = document.getElementById('vote-ui');
-        
-        // Theme initialization
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
 
         const urlParams = new URLSearchParams(window.location.search);
         const pollId = urlParams.get('pollId');
