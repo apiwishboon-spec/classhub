@@ -1603,11 +1603,15 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     }
 
     #schedule-section {
-        min-height: 250px;
+        min-height: auto;
     }
 
     #schedule-section .card-content {
         padding: 0.5rem;
+    }
+
+    #schedule-section .card-header {
+        padding: 0.5rem 0.75rem;
     }
 
     /* Announcements & Homework on mobile */
@@ -1841,6 +1845,57 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
         gap: 0.35rem;
         margin-bottom: 0.75rem;
         padding-bottom: 0.5rem;
+    }
+    /* Tighten schedule on very small screens */
+    .schedule-item {
+        padding: 0.4rem;
+        gap: 0.35rem;
+        border-radius: 6px;
+    }
+    .sched-time {
+        min-width: 42px;
+        font-size: 0.6rem;
+    }
+    .sched-period {
+        min-width: 34px;
+        font-size: 0.55rem;
+    }
+    .sched-subject {
+        font-size: 0.75rem;
+    }
+    .sched-free {
+        font-size: 0.7rem;
+    }
+    .day-tab {
+        padding: 0.35rem 0.2rem;
+        font-size: 0.65rem;
+        min-width: 40px;
+    }
+    .day-tabs {
+        gap: 0.25rem;
+    }
+    .countdown-banner {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.5rem;
+        gap: 0.3rem;
+    }
+    .weekend-message {
+        padding: 1rem 0.5rem;
+    }
+    .weekend-title {
+        font-size: 1rem;
+    }
+    .weekend-icon i {
+        font-size: 2rem;
+    }
+    .weekend-sub {
+        font-size: 0.85rem;
+    }
+    .day-progress-container {
+        margin-bottom: 0.35rem;
+    }
+    .day-progress-label {
+        font-size: 0.6rem;
     }
 }
 
