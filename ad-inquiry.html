@@ -19,7 +19,7 @@
     <div class="app-container">
         <header class="top-nav">
             <div class="nav-brand">
-                <a href="./" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="ph ph-arrow-left" style="color: var(--accent-color); font-size: 1.2rem;"></i>
                     <h1 style="color: var(--accent-color); font-size: 1.25rem;">Ad Inquiry</h1>
                 </a>
@@ -47,10 +47,6 @@
                         <div>
                             <label for="inquiry-contact" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Contact (Phone / Email)</label>
                             <input type="text" id="inquiry-contact" placeholder="Phone number or email..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="200">
-                        </div>
-                        <div>
-                            <label for="inquiry-time" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Preferred Time</label>
-                            <input type="text" id="inquiry-time" placeholder="e.g. After 4 PM, Weekends, etc." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="100">
                         </div>
                         <div>
                             <label for="inquiry-message" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Message</label>
@@ -104,14 +100,12 @@
             const submitBtn = document.getElementById('submit-inquiry-btn');
             const nameInput = document.getElementById('inquiry-name');
             const contactInput = document.getElementById('inquiry-contact');
-            const timeInput = document.getElementById('inquiry-time');
             const messageInput = document.getElementById('inquiry-message');
             const picInput = document.getElementById('inquiry-pic');
 
             submitBtn.addEventListener('click', async () => {
                 const name = sanitize(nameInput.value.trim());
                 const contact = sanitize(contactInput.value.trim());
-                const time = sanitize(timeInput.value.trim());
                 const message = sanitize(messageInput.value.trim());
                 const file = picInput.files[0];
 
@@ -153,7 +147,6 @@
                     const docRef = await addDoc(collection(db, "ad_inquiries"), {
                         name,
                         contact,
-                        time,
                         message,
                         photoURL,
                         createdAt: serverTimestamp(),
@@ -170,7 +163,6 @@
                     showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
                     nameInput.value = '';
                     contactInput.value = '';
-                    timeInput.value = '';
                     messageInput.value = '';
                     picInput.value = '';
                     setTimeout(() => { window.location.href = './'; }, 1500);
