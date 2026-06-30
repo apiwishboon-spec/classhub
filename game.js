@@ -2,12 +2,11 @@
   'use strict';
 
   // ─── EASTER EGG TRIGGERS ────────────────────────────────────────────
-  // Rainbow:  click "MyClassHub" 5 times
-  // Arrow:    click version number 3 times
-  // Chess:    click help (?) button 7 times
+  // Rainbow:  click "MyClassHub" 3 times
+  // Arrow:    click commit hash once
+  // Chess:    click help (?) button 4 times
 
   let rainbowClicks = 0, rainbowTimer = null;
-  let arrowClicks = 0, arrowTimer = null;
   let chessClicks = 0, chessTimer = null;
 
   function initEasterEggs() {
@@ -18,7 +17,7 @@
       logo.addEventListener('click', () => {
         rainbowClicks++;
         clearTimeout(rainbowTimer);
-        if (rainbowClicks >= 5) {
+        if (rainbowClicks >= 3) {
           rainbowClicks = 0;
           launchRainbow();
         }
@@ -26,19 +25,11 @@
       });
     }
 
-    // -- Arrow Swipe: version number --
-    const versionEl = document.querySelector('.app-version');
-    if (versionEl) {
-      versionEl.style.cursor = 'pointer';
-      versionEl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        arrowClicks++;
-        clearTimeout(arrowTimer);
-        if (arrowClicks >= 3) {
-          arrowClicks = 0;
-          launchArrowSwipe();
-        }
-        arrowTimer = setTimeout(() => arrowClicks = 0, 1200);
+    // -- Arrow Swipe: commit hash in footer --
+    const commitEl = document.querySelector('.commit-hash');
+    if (commitEl) {
+      commitEl.addEventListener('click', () => {
+        launchArrowSwipe();
       });
     }
 
@@ -48,7 +39,7 @@
       if (!btn) return;
       chessClicks++;
       clearTimeout(chessTimer);
-      if (chessClicks >= 7) {
+      if (chessClicks >= 4) {
         chessClicks = 0;
         e.stopPropagation();
         e.preventDefault();
@@ -304,19 +295,19 @@
     updateTimer();
   }
 
-  // ─── GAME 3 — CHESS ────────────────────────────────────────────────
+  // ─── GAME 3 — CHESS (vs AI) ─────────────────────────────────────────
   function launchChess() {
     const overlay = makeOverlay('game-chess', `
       <div class="gc-modal" style="background:#1a1a1a;border-radius:12px;max-width:700px;width:95%;text-align:center;position:relative;box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;">
         <button class="gc-close" style="position:absolute;top:8px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;color:#fff;z-index:10;">✕</button>
         <div style="padding:1rem 0 0;color:#fff;">
           <h3 style="margin:0;font-family:'IBM Plex Sans',sans-serif;">♔ Chess</h3>
-          <p style="margin:0.25rem 0 0;font-size:0.75rem;color:#999;">Click a piece, then click where to move — 2-player local</p>
+          <p style="margin:0.25rem 0 0;font-size:0.75rem;color:#999;">You are White · AI is Black</p>
         </div>
         <div style="display:flex;justify-content:center;padding:1rem;">
           <div id="chessboard-container" style="width:480px;max-width:100%;aspect-ratio:1;"></div>
         </div>
-        <div id="chess-status" style="color:#aaa;font-size:0.85rem;padding:0 1rem 1rem;">White's turn</div>
+        <div id="chess-status" style="color:#aaa;font-size:0.85rem;padding:0 1rem 1rem;">Your turn</div>
       </div>
     `);
     overlay.querySelector('.gc-close').onclick = () => overlay.remove();
@@ -324,13 +315,13 @@
     const boardEl = document.getElementById('chessboard-container');
     const statusEl = document.getElementById('chess-status');
 
-    // Simple chess implementation
     const PIECES = {
       'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙',
       'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟'
     };
+    const PIECE_VALUES = { 'P': 100, 'N': 320, 'B': 330, 'R': 500, 'Q': 900, 'K': 20000 };
+    const AI_DEPTH = 2;
 
-    // Initial board
     let board = [
       ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
       ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
@@ -343,13 +334,12 @@
     ];
     let turn = 'white';
     let selected = null;
+    let aiThinking = false;
 
     function isWhite(p) { return p === p.toUpperCase() && p !== ''; }
     function isBlack(p) { return p === p.toLowerCase() && p !== ''; }
     function owner(p) { return isWhite(p) ? 'white' : (isBlack(p) ? 'black' : null); }
-
     function inBounds(r, c) { return r >= 0 && r < 8 && c >= 0 && c < 8; }
-
     function cloneBoard(b) { return b.map(row => [...row]); }
 
     function generateMoves(b, r, c) {
@@ -359,7 +349,6 @@
       const color = owner(p);
       const type = p.toUpperCase();
       const enemy = color === 'white' ? 'black' : 'white';
-
       const addIf = (tr, tc) => {
         if (!inBounds(tr, tc)) return false;
         const t = b[tr][tc];
@@ -367,7 +356,6 @@
         if (owner(t) === enemy) { moves.push([tr, tc]); return false; }
         return false;
       };
-
       if (type === 'P') {
         const dir = color === 'white' ? -1 : 1;
         const startRow = color === 'white' ? 6 : 1;
@@ -380,11 +368,8 @@
           if (inBounds(nr, nc) && owner(b[nr][nc]) === enemy) moves.push([nr, nc]);
         }
       } else if (type === 'N') {
-        const offsets = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];
-        for (const [dr, dc] of offsets) {
-          const nr = r + dr, nc = c + dc;
-          if (inBounds(nr, nc) && owner(b[nr][nc]) !== color) moves.push([nr, nc]);
-        }
+        for (const [dr, dc] of [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]])
+          if (inBounds(r + dr, c + dc) && owner(b[r + dr][c + dc]) !== color) moves.push([r + dr, c + dc]);
       } else if (type === 'B') {
         for (const [dr, dc] of [[-1, -1], [-1, 1], [1, -1], [1, 1]])
           for (let i = 1; i < 8; i++) if (!addIf(r + dr * i, c + dc * i)) break;
@@ -411,15 +396,13 @@
       const enemy = color === 'white' ? 'black' : 'white';
       for (let r = 0; r < 8; r++)
         for (let c = 0; c < 8; c++)
-          if (owner(b[r][c]) === enemy) {
-            const enemyMoves = generateMoves(b, r, c);
-            for (const [mr, mc] of enemyMoves)
+          if (owner(b[r][c]) === enemy)
+            for (const [mr, mc] of generateMoves(b, r, c))
               if (mr === kr && mc === kc) return true;
-          }
       return false;
     }
 
-    function getLegalMoves(b, r, c) {
+    function getLegalMoves(b, r, c, color) {
       const raw = generateMoves(b, r, c);
       const legal = [];
       for (const [tr, tc] of raw) {
@@ -427,7 +410,7 @@
         nb[tr][tc] = nb[r][c];
         nb[r][c] = '';
         if (nb[tr][tc].toUpperCase() === 'P' && (tr === 0 || tr === 7))
-          nb[tr][tc] = turn === 'white' ? 'Q' : 'q';
+          nb[tr][tc] = color === 'white' ? 'Q' : 'q';
         if (!isInCheck(nb, owner(b[r][c]))) legal.push([tr, tc]);
       }
       return legal;
@@ -436,13 +419,108 @@
     function hasLegalMoves(b, color) {
       for (let r = 0; r < 8; r++)
         for (let c = 0; c < 8; c++)
-          if (owner(b[r][c]) === color && getLegalMoves(b, r, c).length > 0) return true;
+          if (owner(b[r][c]) === color && getLegalMoves(b, r, c, color).length > 0) return true;
       return false;
     }
 
+    // ── AI helpers ────────────────────────────────────────
+    function evaluateBoard(b) {
+      let score = 0;
+      for (let r = 0; r < 8; r++)
+        for (let c = 0; c < 8; c++) {
+          const p = b[r][c];
+          if (!p) continue;
+          const v = PIECE_VALUES[p.toUpperCase()] || 0;
+          score += owner(p) === 'white' ? v : -v;
+        }
+      return score;
+    }
+
+    function getAllLegalMoves(b, color) {
+      const all = [];
+      for (let r = 0; r < 8; r++)
+        for (let c = 0; c < 8; c++)
+          if (owner(b[r][c]) === color) {
+            const moves = getLegalMoves(b, r, c, color);
+            for (const m of moves) all.push({ from: [r, c], to: m });
+          }
+      return all;
+    }
+
+    function applyMove(b, move) {
+      const nb = cloneBoard(b);
+      const [sr, sc] = move.from;
+      const [tr, tc] = move.to;
+      nb[tr][tc] = nb[sr][sc];
+      nb[sr][sc] = '';
+      if (nb[tr][tc].toUpperCase() === 'P' && (tr === 0 || tr === 7))
+        nb[tr][tc] = turn === 'white' ? 'q' : 'Q';
+      return nb;
+    }
+
+    function minimax(b, depth, alpha, beta, maximizing) {
+      const color = maximizing ? 'black' : 'white';
+      if (depth === 0) return { score: evaluateBoard(b) };
+      const moves = getAllLegalMoves(b, color);
+      if (moves.length === 0) return { score: maximizing ? -99999 : 99999 };
+
+      if (maximizing) {
+        let best = { score: -Infinity };
+        for (const m of moves) {
+          const nb = applyMove(b, m);
+          const result = minimax(nb, depth - 1, alpha, beta, false);
+          if (result.score > best.score) { best = { ...result, from: m.from, to: m.to }; }
+          alpha = Math.max(alpha, result.score);
+          if (beta <= alpha) break;
+        }
+        return best;
+      } else {
+        let best = { score: Infinity };
+        for (const m of moves) {
+          const nb = applyMove(b, m);
+          const result = minimax(nb, depth - 1, alpha, beta, true);
+          if (result.score < best.score) { best = { ...result, from: m.from, to: m.to }; }
+          beta = Math.min(beta, result.score);
+          if (beta <= alpha) break;
+        }
+        return best;
+      }
+    }
+
+    function aiMove() {
+      aiThinking = true;
+      statusEl.textContent = 'AI is thinking...';
+      // Slight delay so UI updates before heavy computation
+      setTimeout(() => {
+        const result = minimax(board, AI_DEPTH - 1, -Infinity, Infinity, true);
+        if (result.from && result.to) {
+          board[result.to[0]][result.to[1]] = board[result.from[0]][result.from[1]];
+          board[result.from[0]][result.from[1]] = '';
+          if (board[result.to[0]][result.to[1]].toUpperCase() === 'P' && (result.to[0] === 0 || result.to[0] === 7))
+            board[result.to[0]][result.to[1]] = 'q';
+          turn = 'white';
+          selected = null;
+          aiThinking = false;
+
+          if (isInCheck(board, 'white')) {
+            if (!hasLegalMoves(board, 'white')) {
+              statusEl.textContent = '♚ Checkmate! AI wins!';
+            } else {
+              statusEl.textContent = 'You are in check!';
+            }
+          } else if (!hasLegalMoves(board, 'white')) {
+            statusEl.textContent = 'Stalemate — Draw!';
+          } else {
+            statusEl.textContent = "Your turn";
+          }
+          renderBoard();
+        }
+      }, 50);
+    }
+
+    // ── Rendering ─────────────────────────────────────────
     function renderBoard() {
       let html = '<table style="border-collapse:collapse;width:100%;aspect-ratio:1;table-layout:fixed;">';
-      const squareSize = 60;
       for (let r = 0; r < 8; r++) {
         html += '<tr>';
         for (let c = 0; c < 8; c++) {
@@ -450,21 +528,14 @@
           const bg = isLight ? '#f0d9b5' : '#b58863';
           const p = board[r][c];
           const isSelected = selected && selected[0] === r && selected[1] === c;
-          const isLegal = selected && getLegalMoves(board, selected[0], selected[1]).some(([mr, mc]) => mr === r && mc === c);
-          let style = `background:${bg};width:${squareSize}px;height:${squareSize}px;text-align:center;font-size:2rem;cursor:pointer;position:relative;`;
-          if (isSelected) style += `outline:3px solid #ff0;outline-offset:-3px;`;
-          style += 'box-sizing:border-box;';
+          const isLegal = selected && getLegalMoves(board, selected[0], selected[1], 'white').some(([mr, mc]) => mr === r && mc === c);
+          let style = `background:${bg};width:60px;height:60px;text-align:center;font-size:2rem;cursor:pointer;position:relative;box-sizing:border-box;`;
+          if (isSelected) style += 'outline:3px solid #ff0;outline-offset:-3px;';
           html += `<td class="ch-cell" data-r="${r}" data-c="${c}" style="${style}">`;
-          if (p) {
-            const pieceColor = isWhite(p) ? '#fff' : '#000';
-            html += `<span style="filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));color:${pieceColor};">${PIECES[p]}</span>`;
-          }
+          if (p) html += `<span style="filter:drop-shadow(0 1px 1px rgba(0,0,0,0.3));color:${isWhite(p) ? '#fff' : '#000'};">${PIECES[p]}</span>`;
           if (isLegal) {
-            const isCapture = p !== '';
-            if (isCapture)
-              html += `<div style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,0.1);box-sizing:border-box;border:4px solid rgba(0,0,0,0.2);"></div>`;
-            else
-              html += `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:rgba(0,0,0,0.25);"></div>`;
+            if (p !== '') html += `<div style="position:absolute;top:0;left:0;width:100%;height:100%;border-radius:50%;background:rgba(0,0,0,0.1);box-sizing:border-box;border:4px solid rgba(0,0,0,0.2);"></div>`;
+            else html += `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:12px;height:12px;border-radius:50%;background:rgba(0,0,0,0.25);"></div>`;
           }
           html += '</td>';
         }
@@ -475,74 +546,49 @@
 
       boardEl.querySelectorAll('.ch-cell').forEach(td => {
         td.addEventListener('click', () => {
+          if (aiThinking || turn === 'black') return;
           const r = parseInt(td.dataset.r);
           const c = parseInt(td.dataset.c);
           const p = board[r][c];
 
           if (selected) {
             const [sr, sc] = selected;
-            const legal = getLegalMoves(board, sr, sc);
-            const isTarget = legal.some(([mr, mc]) => mr === r && mc === c);
-
-            if (isTarget) {
-              // Make move
+            const legal = getLegalMoves(board, sr, sc, 'white');
+            if (legal.some(([mr, mc]) => mr === r && mc === c)) {
               board[r][c] = board[sr][sc];
               board[sr][sc] = '';
-              if (board[r][c].toUpperCase() === 'P' && (r === 0 || r === 7))
-                board[r][c] = turn === 'white' ? 'Q' : 'q';
-              turn = turn === 'white' ? 'black' : 'white';
+              if (board[r][c].toUpperCase() === 'P' && (r === 0 || r === 7)) board[r][c] = 'Q';
+              turn = 'black';
               selected = null;
 
-              // Check game state
-              if (isInCheck(board, turn)) {
-                if (!hasLegalMoves(board, turn)) {
-                  statusEl.textContent = `♚ Checkmate! ${turn === 'white' ? 'Black' : 'White'} wins!`;
+              if (isInCheck(board, 'black')) {
+                if (!hasLegalMoves(board, 'black')) {
+                  statusEl.textContent = '♚ Checkmate! You win!';
                   renderBoard();
                   return;
                 }
-                statusEl.textContent = `${turn === 'white' ? 'White' : 'Black'} is in check!`;
-              } else if (!hasLegalMoves(board, turn)) {
+                statusEl.textContent = 'AI is in check';
+              } else if (!hasLegalMoves(board, 'black')) {
                 statusEl.textContent = 'Stalemate — Draw!';
               } else {
-                statusEl.textContent = `${turn === 'white' ? 'White' : 'Black'}'s turn`;
+                statusEl.textContent = "AI is thinking...";
               }
               renderBoard();
+              if (hasLegalMoves(board, 'black')) aiMove();
               return;
             }
-
-            // Clicking own piece = reselect
-            if (owner(p) === turn) {
-              selected = [r, c];
-              renderBoard();
-              return;
-            }
-            selected = null;
-            renderBoard();
-            return;
+            if (owner(p) === 'white') { selected = [r, c]; renderBoard(); return; }
+            selected = null; renderBoard(); return;
           }
-
-          if (owner(p) === turn) {
-            selected = [r, c];
-            renderBoard();
-          }
+          if (owner(p) === 'white') { selected = [r, c]; renderBoard(); }
         });
       });
     }
 
-    // Reset
-    board = [
-      ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'],
-      ['p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['', '', '', '', '', '', '', ''],
-      ['P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'],
-      ['R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R']
-    ];
     turn = 'white';
     selected = null;
-    statusEl.textContent = "White's turn";
+    aiThinking = false;
+    statusEl.textContent = "Your turn";
     renderBoard();
   }
 
