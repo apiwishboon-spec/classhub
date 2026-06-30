@@ -1417,7 +1417,7 @@ function init() {
                 const adEl = document.getElementById('ad-clickable');
                 if (adEl) {
                     adEl.addEventListener('click', () => {
-                        window.location.href = 'ad-inquiry.html';
+                        window.location.href = '/ad-inquiry';
                     });
                 }
             });

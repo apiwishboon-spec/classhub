@@ -31,6 +31,18 @@ const HELP_CONTENT = {
             footer: "ต้องการความช่วยเหลือเพิ่มเติม? ติดต่อผู้ดูแลระบบ"
         }
     },
+    hidden_games: {
+        en: [
+            { icon: "ph-rainbow", title: "🎮 Find the Rainbow", desc: "A colorful grid game! Click the 'MyClassHub' title 5 times fast to unlock." },
+            { icon: "ph-arrow-circle-right", title: "🎮 Arrow Swipe", desc: "Swipe arrows in the right direction. Tap the version number in the footer 3 times to launch." },
+            { icon: "ph-chess-knight", title: "🎮 Chess", desc: "Local 2-player chess. Click the help (?) button 7 times to reveal the board." }
+        ],
+        th: [
+            { icon: "ph-rainbow", title: "🎮 หาสายรุ้ง", desc: "เกมค้นหาสายรุ้ง! คลิกที่ 'MyClassHub' 5 ครั้งเพื่อเล่น" },
+            { icon: "ph-arrow-circle-right", title: "🎮 ปัดลูกศร", desc: "ปัดตามทิศทางลูกศร กดที่เลขเวอร์ชัน 3 ครั้งเพื่อเล่น" },
+            { icon: "ph-chess-knight", title: "🎮 หมากรุก", desc: "หมากรุก 2 ผู้เล่น กดปุ่มช่วยเหลือ (?) 7 ครั้งเพื่อเปิด" }
+        ]
+    },
     admin: {
         en: {
             title: "Admin Dashboard Guide ⚙️",
@@ -134,6 +146,7 @@ function getHelpLanguage() {
 function renderHelpContent(modal, lang) {
     const context = window.location.pathname.includes('admin') ? 'admin' : 'user';
     const content = HELP_CONTENT[context][lang] || HELP_CONTENT.user.en;
+    const games = HELP_CONTENT.hidden_games[lang] || HELP_CONTENT.hidden_games.en;
     modal.innerHTML = `
         <div class="help-modal-header">
             <div class="help-lang-tabs">
@@ -146,6 +159,12 @@ function renderHelpContent(modal, lang) {
             <h2 class="help-title">${content.title}</h2>
             <div class="help-sections">
                 ${content.sections.map(s => `
+                    <div class="help-section-item">
+                        <div class="help-section-icon"><i class="ph ${s.icon}"></i></div>
+                        <div class="help-section-text"><h4>${s.title}</h4><p>${s.desc}</p></div>
+                    </div>`).join('')}
+                <h3 style="margin:1.5rem 0 0.5rem;font-size:1.05rem;">🎮 Hidden Games</h3>
+                ${games.map(s => `
                     <div class="help-section-item">
                         <div class="help-section-icon"><i class="ph ${s.icon}"></i></div>
                         <div class="help-section-text"><h4>${s.title}</h4><p>${s.desc}</p></div>
