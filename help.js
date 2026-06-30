@@ -34,12 +34,12 @@ const HELP_CONTENT = {
     hidden_games: {
         en: [
             { icon: "ph-rainbow", title: "🎮 Find the Rainbow", desc: "A colorful grid game! Click the 'MyClassHub' title 3 times fast to unlock." },
-            { icon: "ph-arrow-circle-right", title: "🎮 Arrow Swipe", desc: "Swipe arrows in the right direction. Click the commit hash in the footer to launch." },
+            { icon: "ph-arrow-circle-right", title: "🎮 Arrow Swipe", desc: "Swipe arrows in the right direction. Click the version number in the footer 3 times to launch." },
             { icon: "ph-chess-knight", title: "🎮 Chess vs AI", desc: "Play chess against an AI opponent. Click the search icon (magnifying glass) 4 times to reveal the board." }
         ],
         th: [
             { icon: "ph-rainbow", title: "🎮 หาสายรุ้ง", desc: "เกมค้นหาสายรุ้ง! คลิกที่ 'MyClassHub' 3 ครั้งเพื่อเล่น" },
-            { icon: "ph-arrow-circle-right", title: "🎮 ปัดลูกศร", desc: "ปัดตามทิศทางลูกศร คลิกที่ commit hash ใน footer เพื่อเปิด" },
+            { icon: "ph-arrow-circle-right", title: "🎮 ปัดลูกศร", desc: "ปัดตามทิศทางลูกศร คลิกที่หมายเลขเวอร์ชันใน footer 3 ครั้งเพื่อเปิด" },
             { icon: "ph-chess-knight", title: "🎮 หมากรุก AI", desc: "เล่นหมากรุกกับ AI คลิกที่ไอคอนค้นหา (แว่นขยาย) 4 ครั้งเพื่อเปิด" }
         ]
     },
