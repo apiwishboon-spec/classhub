@@ -4,7 +4,7 @@
   // ─── EASTER EGG TRIGGERS ────────────────────────────────────────────
   // Rainbow:  click "MyClassHub" 3 times
   // Arrow:    click commit hash once
-  // Chess:    click help (?) button 4 times
+  // Chess:    click search icon 4 times
 
   let rainbowClicks = 0, rainbowTimer = null;
   let chessClicks = 0, chessTimer = null;
@@ -33,21 +33,23 @@
       });
     }
 
-    // -- Chess: help button (capture phase to intercept before help.js listener) --
-    document.body.addEventListener('click', (e) => {
-      const btn = e.target.closest('#help-btn');
-      if (!btn) return;
-      chessClicks++;
-      clearTimeout(chessTimer);
-      if (chessClicks >= 4) {
-        chessClicks = 0;
-        e.stopPropagation();
-        e.preventDefault();
-        launchChess();
-        return;
-      }
-      chessTimer = setTimeout(() => chessClicks = 0, 2000);
-    }, true);
+    // -- Chess: search icon --
+    const searchIcon = document.querySelector('.search-icon');
+    if (searchIcon) {
+      searchIcon.style.cursor = 'pointer';
+      searchIcon.addEventListener('click', (e) => {
+        chessClicks++;
+        clearTimeout(chessTimer);
+        if (chessClicks >= 4) {
+          chessClicks = 0;
+          e.stopPropagation();
+          e.preventDefault();
+          launchChess();
+          return;
+        }
+        chessTimer = setTimeout(() => chessClicks = 0, 2000);
+      });
+    }
   }
 
   // ─── HELPERS ─────────────────────────────────────────────────────────
