@@ -964,6 +964,15 @@ class Control {
         this.inputPerspectiveBlack.addEventListener("change", this.updateViewPerspective.bind(this));
         this.inputPerspectiveWhite.addEventListener("change", this.updateViewPerspective.bind(this));
         this.updateViewPerspective();
+        this._autoplayTimer = null;
+        this._running = true;
+    }
+    stop() {
+        this._running = false;
+        if (this._autoplayTimer) {
+            clearTimeout(this._autoplayTimer);
+            this._autoplayTimer = null;
+        }
     }
     get speed() {
         if (this.inputSpeedAsap.checked) {
@@ -980,24 +989,28 @@ class Control {
         }
     }
     autoplay() {
+        if (!this._running) return;
         const input = this.game.turn === "WHITE" ? this.inputRandomWhite : this.inputRandomBlack;
         if (!input.checked) {
-            setTimeout(this.autoplay.bind(this), this.speed);
+            this._autoplayTimer = setTimeout(this.autoplay.bind(this), this.speed);
             return;
         }
         const position = this.game.randomMove();
         this.view.handleTileClick(position);
-        setTimeout(this.autoplay.bind(this), this.speed);
+        this._autoplayTimer = setTimeout(this.autoplay.bind(this), this.speed);
     }
     updateViewPerspective() {
         this.view.setPerspective(this.inputPerspectiveBlack.checked ? "BLACK" : "WHITE");
     }
 }
 
-const initialPositions = Utils.getInitialPiecePositions();
-const initialTurn = "WHITE";
-const perspective = "WHITE";
-const game = new Game(Utils.getInitialPieces(), initialPositions, initialTurn);
-const view = new View(document.getElementById("board"), game, perspective);
-const control = new Control(game, view);
+if (typeof control !== 'undefined' && control) {
+    control.stop();
+}
+var initialPositions = Utils.getInitialPiecePositions();
+var initialTurn = "WHITE";
+var perspective = "WHITE";
+var game = new Game(Utils.getInitialPieces(), initialPositions, initialTurn);
+var view = new View(document.getElementById("board"), game, perspective);
+var control = new Control(game, view);
 control.autoplay();

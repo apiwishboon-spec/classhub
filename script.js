@@ -1527,6 +1527,8 @@ function init() {
                         }
                     });
                 }
+            }, (error) => {
+                console.warn("My Inquiry load failed:", error.message);
             });
 
             if (index === myIds.length - 1) {

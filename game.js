@@ -345,11 +345,11 @@
           <div id="board"></div>
         </section>
       </div>
-    `);
+    `, () => { if (typeof control !== 'undefined' && control) control.stop(); });
     overlay.querySelector('.gc-close').onclick = () => overlay.remove();
     // Dynamically load chess engine
     var s = document.createElement('script');
-    s.src = 'chess-game.js';
+    s.src = 'chess-game.js?v=2';
     document.body.appendChild(s);
   }
 
