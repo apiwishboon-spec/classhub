@@ -23,6 +23,34 @@
         "destination": "/ad-inquiry.html"
       },
       {
+        "source": "/admin",
+        "destination": "/admin.html"
+      },
+      {
+        "source": "/chat",
+        "destination": "/chat.html"
+      },
+      {
+        "source": "/contact",
+        "destination": "/contact.html"
+      },
+      {
+        "source": "/pass-change",
+        "destination": "/pass-change.html"
+      },
+      {
+        "source": "/privacy",
+        "destination": "/privacy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/terms.html"
+      },
+      {
+        "source": "/vote",
+        "destination": "/vote.html"
+      },
+      {
         "source": "**",
         "destination": "/"
       }

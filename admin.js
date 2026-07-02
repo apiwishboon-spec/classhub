@@ -12,7 +12,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 // Helper functions
@@ -308,7 +308,7 @@ function loadPolls() {
         // Generate QRs
         snap.forEach(d => {
             const isOpen = d.data().isOpen !== false;
-            const pollUrl = `${window.location.origin}/vote.html?pollId=${d.id}`;
+            const pollUrl = `${window.location.origin}/vote?pollId=${d.id}`;
             new QRCode(document.getElementById(`qr-${d.id}`), {
                 text: pollUrl,
                 width: 80,
@@ -339,7 +339,7 @@ function loadPolls() {
             btn.addEventListener('click', (e) => {
                 const id = btn.getAttribute('data-id');
                 const question = btn.getAttribute('data-question');
-                const pollUrl = `${window.location.origin}/vote.html?pollId=${id}`;
+                const pollUrl = `${window.location.origin}/vote?pollId=${id}`;
 
                 document.getElementById('qr-modal-question').textContent = question;
                 const container = document.getElementById('qr-modal-container');
@@ -477,16 +477,14 @@ async function loadFeedback() {
                 try {
                     const docSnap = await getDoc(doc(db, "feedback", id));
                     if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        const currentReplies = data.replies || [];
                         await updateDoc(doc(db, "feedback", id), {
-                            replies: [...currentReplies, { 
+                            replies: arrayUnion({ 
                                 sender: 'admin', 
                                 senderName: currentUserName || 'Staff',
                                 senderPhoto: currentUserPhoto,
                                 text: replyText, 
                                 timestamp: new Date() 
-                            }],
+                            }),
                             status: 'replied'
                         });
                         showToast("Reply sent");
@@ -1700,14 +1698,12 @@ logoutBtn.addEventListener('click', async () => {
                     try {
                         const docSnap = await getDoc(doc(db, "ad_inquiries", id));
                         if (docSnap.exists()) {
-                            const data = docSnap.data();
-                            const currentReplies = data.replies || [];
                             await updateDoc(doc(db, "ad_inquiries", id), {
-                                replies: [...currentReplies, {
+                                replies: arrayUnion({
                                     sender: 'admin',
                                     text: replyText,
                                     timestamp: new Date()
-                                }],
+                                }),
                                 status: 'replied'
                             });
                             showToast("Reply sent");

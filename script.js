@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -1425,7 +1425,7 @@ function init() {
     }
 
     function initBannerUpload() {
-        // Button is now a direct link to ad-inquiry.html
+        // Button is now a direct link to /ad-inquiry
     }
 
     function initMyInquiry() {
@@ -1443,14 +1443,29 @@ function init() {
         content.innerHTML = '<div class="loader"></div><p style="color: var(--text-secondary); margin-top: 0.5rem;">Loading...</p>';
 
         let hasData = false;
-        let renderedHtml = '';
-        let unsubs = [];
+        let loadTimer = setTimeout(() => {
+            if (!hasData) {
+                content.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Could not load inquiries. They may have been removed.</p>';
+            }
+        }, 5000);
 
-        myIds.forEach((id, index) => {
-            const unsub = onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
+        myIds.forEach((id) => {
+            const containerId = `inquiry-${id}`;
+            let container = document.getElementById(containerId);
+
+            onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
                 if (!docSnap.exists()) return;
+                clearTimeout(loadTimer);
                 section.style.display = 'block';
                 hasData = true;
+
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = containerId;
+                    container.style.marginBottom = '1rem';
+                    content.appendChild(container);
+                }
+
                 const data = docSnap.data();
                 const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleString() : '';
                 const statusColor = data.status === 'new' ? 'var(--warning)' : data.status === 'seen' ? 'var(--accent-color)' : 'var(--success)';
@@ -1472,7 +1487,7 @@ function init() {
                     }).join('');
                 }
 
-                renderedHtml = `
+                container.innerHTML = `
                     <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
                             <span style="font-weight: 600; font-size: 0.9rem;">${sanitize(data.name)}</span>
@@ -1486,36 +1501,27 @@ function init() {
                         ${dateStr ? `<div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Sent: ${dateStr}</div>` : ''}
                         ${repliesHtml ? `<div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border-color);"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem;">REPLIES:</div>${repliesHtml}</div>` : ''}
                         <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem;">
-                            <input type="text" id="my-inquiry-reply-${id}" class="form-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;">
-                            <button class="my-inquiry-reply-btn" data-id="${id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem; background: var(--accent-color); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Send</button>
+                            <input type="text" class="form-input inquiry-reply-input" placeholder="Type a reply..." data-id="${id}" style="font-size: 0.85rem; padding: 0.5rem; flex: 1;">
+                            <button class="inquiry-reply-btn" data-id="${id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem; background: var(--accent-color); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Send</button>
                         </div>
                     </div>
                 `;
 
-                content.innerHTML = renderedHtml;
-
-                // Attach reply handler
-                const replyBtn = content.querySelector(`.my-inquiry-reply-btn[data-id="${id}"]`);
-                const replyInput = content.querySelector(`#my-inquiry-reply-${id}`);
+                const replyBtn = container.querySelector(`.inquiry-reply-btn[data-id="${id}"]`);
+                const replyInput = container.querySelector(`.inquiry-reply-input[data-id="${id}"]`);
                 if (replyBtn && replyInput) {
                     const sendReply = async () => {
                         const text = sanitize(replyInput.value.trim());
                         if (!text) return;
                         replyBtn.disabled = true;
                         try {
-                            const docSnap = await getDoc(doc(db, "ad_inquiries", id));
-                            if (docSnap.exists()) {
-                                const d = docSnap.data();
-                                const currentReplies = d.replies || [];
-                                await updateDoc(doc(db, "ad_inquiries", id), {
-                                    replies: [...currentReplies, { sender: 'user', text, timestamp: new Date() }],
-                                    status: 'replied'
-                                });
-                                replyInput.value = '';
-                            }
+                            await updateDoc(doc(db, "ad_inquiries", id), {
+                                replies: arrayUnion({ sender: 'user', text, timestamp: new Date() }),
+                                status: 'replied'
+                            });
+                            replyInput.value = '';
                         } catch (e) {
                             showToast("Error sending reply: " + e.message, "ph-x", "var(--danger)");
-                        } finally {
                             replyBtn.disabled = false;
                         }
                     };
@@ -1530,14 +1536,6 @@ function init() {
             }, (error) => {
                 console.warn("My Inquiry load failed:", error.message);
             });
-
-            if (index === myIds.length - 1) {
-                setTimeout(() => {
-                    if (!hasData) {
-                        content.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Could not load inquiry. It may have been removed.</p>';
-                    }
-                }, 3000);
-            }
         });
     }
 

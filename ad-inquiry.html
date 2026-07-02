@@ -26,7 +26,7 @@
             </div>
             <div style="display: flex; gap: 1rem; align-items: center;">
                 <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
-                <a href="chat.html" class="icon-button" aria-label="Message Staff"><i class="ph ph-chat-centered-text"></i></a>
+                <a href="/chat" class="icon-button" aria-label="Message Staff"><i class="ph ph-chat-centered-text"></i></a>
             </div>
         </header>
 
@@ -66,9 +66,9 @@
 
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
             <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
-                <a href="privacy.html" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
-                <a href="terms.html" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
-                <a href="contact.html" style="color: var(--text-secondary); text-decoration: none;">Contact Admin</a>
+                <a href="/privacy" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
+                <a href="/terms" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
+                <a href="/contact" style="color: var(--text-secondary); text-decoration: none;">Contact Admin</a>
             </div>
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
         </footer>
@@ -103,7 +103,10 @@
             const messageInput = document.getElementById('inquiry-message');
             const picInput = document.getElementById('inquiry-pic');
 
-            submitBtn.addEventListener('click', async () => {
+            let isSubmitting = false;
+
+            async function handleSubmit() {
+                if (isSubmitting) return;
                 const name = sanitize(nameInput.value.trim());
                 const contact = sanitize(contactInput.value.trim());
                 const message = sanitize(messageInput.value.trim());
@@ -120,6 +123,7 @@
                     return;
                 }
 
+                isSubmitting = true;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sending...';
 
@@ -128,6 +132,7 @@
                     if (file) {
                         if (file.size > 5 * 1024 * 1024) {
                             showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
+                            isSubmitting = false;
                             submitBtn.disabled = false;
                             submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
                             return;
@@ -169,10 +174,21 @@
                 } catch (err) {
                     console.error("Inquiry submission failed:", err);
                     showToast("Failed to send inquiry: " + err.message, "ph-x", "var(--danger)");
-                } finally {
+                    isSubmitting = false;
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
                 }
+            }
+
+            submitBtn.addEventListener('click', handleSubmit);
+
+            [nameInput, contactInput, messageInput].forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit();
+                    }
+                });
             });
         });
     </script>
