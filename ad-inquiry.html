@@ -180,7 +180,7 @@
         }
 
         async function submitAdToFirestore(adData) {
-            return await addDoc(collection(db, "banners"), {
+            const bannerRef = await addDoc(collection(db, "banners"), {
                 url: adData.url,
                 caption: adData.caption,
                 link: adData.link,
@@ -188,6 +188,16 @@
                 status: 'active',
                 createdAt: serverTimestamp()
             });
+            await addDoc(collection(db, "ad_inquiries"), {
+                name: adData.postedBy,
+                contact: adData.contact,
+                message: adData.caption,
+                photoURL: adData.url,
+                createdAt: serverTimestamp(),
+                status: 'replied',
+                replies: [{ sender: 'admin', text: '✅ Payment received. Your ad is now live!', timestamp: new Date() }]
+            });
+            return bannerRef;
         }
 
         document.addEventListener('DOMContentLoaded', () => {

@@ -1438,11 +1438,14 @@ function init() {
 
         if (bannerListener) bannerListener();
         bannerListener = onSnapshot(
-            query(collection(db, "banners"), where("status", "==", "active"), orderBy("createdAt", "desc")),
+            query(collection(db, "banners"), orderBy("createdAt", "desc")),
             (snap) => {
                 if (rotationTimer) clearInterval(rotationTimer);
                 ads = [];
-                snap.forEach(d => ads.push(d.data()));
+                snap.forEach(d => {
+                    const data = d.data();
+                    if (data.status === 'active') ads.push(data);
+                });
                 currentIndex = 0;
                 renderAd(0);
                 startRotation();
@@ -1638,13 +1641,15 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function detectAdBlock() {
-    // Try to fetch a resource that is commonly blocked by ad blockers (Firebase-related)
-    try {
-        const url = 'https://firestore.googleapis.com/google.firestore.v1.Firestore/Write/channel?VER=8';
-        const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-    } catch (error) {
-        // If fetch fails, it might be due to an ad blocker
-        console.warn('Ad blocker detected or connection issue:', error);
+    const bait = document.createElement('div');
+    bait.className = 'pub_300x250';
+    bait.style.cssText = 'position:absolute;left:-999px;width:1px;height:1px;visibility:hidden';
+    document.body.appendChild(bait);
+    await new Promise(r => setTimeout(r, 100));
+    const blocked = bait.offsetParent === null || bait.offsetHeight === 0;
+    document.body.removeChild(bait);
+    if (blocked) {
+        console.warn('Ad blocker detected');
         showAdBlockPopup();
     }
 }
