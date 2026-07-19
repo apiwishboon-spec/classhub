@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
