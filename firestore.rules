@@ -116,9 +116,11 @@ service cloud.firestore {
       );
     }
 
-    // 13. Banners collection (Public read & create for students, admin/teacher manage)
+    // 13. Banners collection (Public read. User submit with status='active', admin/teacher manage)
     match /banners/{id} {
-      allow read, create: if true;
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['url', 'caption', 'status', 'createdAt']);
+      // Status can be 'active' (auto-approved via payment) or 'pending' (needs admin approval)
       allow update, delete: if request.auth != null && (
         getUserRole() == 'admin' || 
         getUserRole() == 'teacher'

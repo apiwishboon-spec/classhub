@@ -31,13 +31,14 @@
         </header>
 
         <main style="max-width: 600px; margin: 0 auto;">
-            <section class="dashboard-card">
+            <!-- Step 1: Inquiry Form -->
+            <section class="dashboard-card" id="step-form">
                 <div class="card-header">
-                    <h2><i class="ph ph-megaphone"></i> Ad Inquiry</h2>
+                    <h2><i class="ph ph-megaphone"></i> Place an Ad</h2>
                 </div>
                 <div class="card-content">
                     <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; text-align: center;">
-                        Interested in an ad? Fill in your details below and we'll get back to you.
+                        Upload your ad image and pay 5 THB to get it displayed. Payment via PromptPay.
                     </p>
                     <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
@@ -49,27 +50,66 @@
                             <input type="text" id="inquiry-contact" placeholder="Phone number or email..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="200">
                         </div>
                         <div>
-                            <label for="inquiry-message" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Message</label>
-                            <textarea id="inquiry-message" placeholder="Tell us about your interest or ask a question..." class="form-input" rows="4" style="width: 100%; box-sizing: border-box; resize: vertical;" maxlength="500"></textarea>
+                            <label for="inquiry-message" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Caption / Description</label>
+                            <textarea id="inquiry-message" placeholder="Describe your ad..." class="form-input" rows="3" style="width: 100%; box-sizing: border-box; resize: vertical;" maxlength="500"></textarea>
                         </div>
                         <div>
-                            <label for="inquiry-pic" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Attach Picture (Optional, Max 5MB)</label>
+                            <label for="inquiry-link" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Link URL (Optional)</label>
+                            <input type="text" id="inquiry-link" placeholder="https://..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="500">
+                        </div>
+                        <div>
+                            <label for="inquiry-pic" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Image (Required, Max 5MB)</label>
                             <input type="file" id="inquiry-pic" class="form-input" accept="image/*" style="width: 100%; box-sizing: border-box;">
                         </div>
                         <button id="submit-inquiry-btn" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                            <i class="ph ph-paper-plane-tilt"></i> Send Inquiry
+                            <i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)
                         </button>
                     </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Payment -->
+            <section class="dashboard-card" id="step-payment" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-qr-code"></i> Payment</h2>
+                </div>
+                <div class="card-content" style="text-align: center;">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Scan the QR code below to pay <strong style="color: var(--text-primary);">5 THB</strong> via PromptPay</p>
+                    <div id="qr-container" style="margin: 1rem auto; max-width: 260px; background: #fff; padding: 1rem; border-radius: 12px;">
+                        <div class="loader"></div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem;">Generating QR code...</p>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0.5rem 0 1rem;" id="qr-expiry"></p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        <i class="ph ph-check-circle" style="color: var(--success);"></i> After paying, click the button below to verify.
+                    </p>
+                    <button id="verify-payment-btn" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                        <i class="ph ph-magnifying-glass"></i> Verify Payment
+                    </button>
+                    <button id="cancel-payment-btn" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="ph ph-x"></i> Cancel
+                    </button>
+                    <p id="payment-status" style="margin-top: 0.75rem; font-size: 0.85rem;"></p>
+                </div>
+            </section>
+
+            <!-- Step 3: Success -->
+            <section class="dashboard-card" id="step-success" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-check-circle" style="color: var(--success);"></i> Payment Successful!</h2>
+                </div>
+                <div class="card-content" style="text-align: center;">
+                    <i class="ph ph-check-circle" style="font-size: 4rem; color: var(--success); margin: 1rem 0;"></i>
+                    <p style="font-size: 1rem; font-weight: 600;">Your ad has been submitted!</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">It will be reviewed and displayed on the dashboard shortly.</p>
+                    <a href="/" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; text-decoration: none;">
+                        <i class="ph ph-house"></i> Back to Dashboard
+                    </a>
                 </div>
             </section>
         </main>
 
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
-            <div style="margin-bottom: 1rem; display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap;">
-                <a href="/privacy" style="color: var(--text-secondary); text-decoration: none;">Privacy Policy</a>
-                <a href="/terms" style="color: var(--text-secondary); text-decoration: none;">Terms of Service</a>
-                <a href="/contact" style="color: var(--text-secondary); text-decoration: none;">Contact Admin</a>
-            </div>
             <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
         </footer>
     </div>
@@ -77,9 +117,12 @@
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>
     <script type="module">
-        import { db, imgbbApiKey } from './firebase-config.js';
+        import { db, imgbbApiKey, paymentApiKey } from './firebase-config.js';
         import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { sanitize } from './profanity-filter.js';
+
+        const PAYMENT_AMOUNT = 5;
+        const BASE_URL = 'https://api.inwcloud.shop';
 
         function showToast(message, icon, color) {
             const container = document.getElementById('toast-container');
@@ -96,68 +139,139 @@
             }, 4500);
         }
 
+        async function uploadToImgBB(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error.message || 'Image upload failed');
+            return data.data.url;
+        }
+
+        async function generateQR() {
+            const response = await fetch(`${BASE_URL}/v1/promptpay/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${paymentApiKey}`
+                },
+                body: JSON.stringify({ amount: PAYMENT_AMOUNT })
+            });
+            const data = await response.json();
+            if (data.status !== 'success') throw new Error(data.message || 'Failed to generate QR');
+            return data.data;
+        }
+
+        async function verifyPayment(transactionId) {
+            const response = await fetch(`${BASE_URL}/v1/promptpay/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${paymentApiKey}`
+                },
+                body: JSON.stringify({ transactionId })
+            });
+            const data = await response.json();
+            if (data.status !== 'success') throw new Error(data.message || 'Payment verification failed');
+            return data;
+        }
+
+        async function submitAdToFirestore(adData) {
+            return await addDoc(collection(db, "banners"), {
+                url: adData.url,
+                caption: adData.caption,
+                link: adData.link,
+                postedBy: adData.postedBy,
+                status: 'active',
+                createdAt: serverTimestamp()
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            const stepForm = document.getElementById('step-form');
+            const stepPayment = document.getElementById('step-payment');
+            const stepSuccess = document.getElementById('step-success');
             const submitBtn = document.getElementById('submit-inquiry-btn');
+            const verifyBtn = document.getElementById('verify-payment-btn');
+            const cancelBtn = document.getElementById('cancel-payment-btn');
+            const qrContainer = document.getElementById('qr-container');
+            const qrExpiry = document.getElementById('qr-expiry');
+            const paymentStatus = document.getElementById('payment-status');
+
             const nameInput = document.getElementById('inquiry-name');
             const contactInput = document.getElementById('inquiry-contact');
             const messageInput = document.getElementById('inquiry-message');
+            const linkInput = document.getElementById('inquiry-link');
             const picInput = document.getElementById('inquiry-pic');
 
-            let isSubmitting = false;
+            let transactionId = null;
+            let pendingAdData = null;
+            let isVerifying = false;
 
             async function handleSubmit() {
-                if (isSubmitting) return;
                 const name = sanitize(nameInput.value.trim());
                 const contact = sanitize(contactInput.value.trim());
-                const message = sanitize(messageInput.value.trim());
+                const caption = sanitize(messageInput.value.trim());
+                const link = sanitize(linkInput.value.trim());
                 const file = picInput.files[0];
 
-                if (!name) {
-                    showToast("Please enter your name.", "ph-warning", "var(--warning)");
-                    nameInput.focus();
-                    return;
-                }
-                if (!contact) {
-                    showToast("Please enter your contact info.", "ph-warning", "var(--warning)");
-                    contactInput.focus();
-                    return;
-                }
+                if (!name) { showToast("Please enter your name.", "ph-warning", "var(--warning)"); nameInput.focus(); return; }
+                if (!contact) { showToast("Please enter your contact info.", "ph-warning", "var(--warning)"); contactInput.focus(); return; }
+                if (!caption) { showToast("Please enter an ad description.", "ph-warning", "var(--warning)"); messageInput.focus(); return; }
+                if (!file) { showToast("Please select an ad image.", "ph-warning", "var(--warning)"); picInput.focus(); return; }
+                if (file.size > 5 * 1024 * 1024) { showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)"); return; }
 
-                isSubmitting = true;
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Sending...';
+                submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Uploading image...';
 
                 try {
-                    let photoURL = '';
-                    if (file) {
-                        if (file.size > 5 * 1024 * 1024) {
-                            showToast("Image too large. Max 5MB allowed.", "ph-x", "var(--danger)");
-                            isSubmitting = false;
-                            submitBtn.disabled = false;
-                            submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
-                            return;
-                        }
-                        const formData = new FormData();
-                        formData.append('image', file);
-                        const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, {
-                            method: 'POST',
-                            body: formData
-                        });
-                        const imgData = await response.json();
-                        if (imgData.success) {
-                            photoURL = imgData.data.url;
-                        }
-                    }
+                    const imageUrl = await uploadToImgBB(file);
 
-                    const docRef = await addDoc(collection(db, "ad_inquiries"), {
-                        name,
-                        contact,
-                        message,
-                        photoURL,
-                        createdAt: serverTimestamp(),
-                        status: 'new',
-                        replies: []
-                    });
+                    pendingAdData = {
+                        url: imageUrl,
+                        caption,
+                        link,
+                        postedBy: name,
+                        contact
+                    };
+
+                    submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Generating QR...';
+                    const qrData = await generateQR();
+                    transactionId = qrData.transactionId;
+
+                    qrContainer.innerHTML = `<img src="${qrData.qr_url}" alt="PromptPay QR" style="width: 100%; border-radius: 8px;">`;
+                    const expiresDate = new Date(qrData.expires_at * 1000);
+                    qrExpiry.textContent = `Expires at: ${expiresDate.toLocaleTimeString()}`;
+                    verifyBtn.disabled = false;
+
+                    stepForm.style.display = 'none';
+                    stepPayment.style.display = 'block';
+                    showToast('QR code generated! Please scan and pay 5 THB.', 'ph-qr-code', 'var(--accent-color)');
+
+                } catch (err) {
+                    showToast("Error: " + err.message, "ph-x", "var(--danger)");
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)';
+                }
+            }
+
+            async function handleVerify() {
+                if (isVerifying || !transactionId) return;
+                isVerifying = true;
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Verifying...';
+                paymentStatus.textContent = 'Checking payment...';
+                paymentStatus.style.color = 'var(--text-secondary)';
+
+                try {
+                    const result = await verifyPayment(transactionId);
+                    paymentStatus.textContent = '✓ Payment confirmed! Submitting your ad...';
+                    paymentStatus.style.color = 'var(--success)';
+
+                    const docRef = await submitAdToFirestore(pendingAdData);
 
                     const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
                     if (!myIds.includes(docRef.id)) {
@@ -165,24 +279,43 @@
                     }
                     localStorage.setItem('my_ad_inquiries', JSON.stringify(myIds));
 
-                    showToast("Inquiry sent! We'll get back to you soon.", "ph-check", "var(--success)");
-                    nameInput.value = '';
-                    contactInput.value = '';
-                    messageInput.value = '';
-                    picInput.value = '';
-                    setTimeout(() => { window.location.href = './'; }, 1500);
+                    stepPayment.style.display = 'none';
+                    stepSuccess.style.display = 'block';
+                    showToast('Ad submitted successfully!', 'ph-check', 'var(--success)');
+
                 } catch (err) {
-                    console.error("Inquiry submission failed:", err);
-                    showToast("Failed to send inquiry: " + err.message, "ph-x", "var(--danger)");
-                    isSubmitting = false;
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Send Inquiry';
+                    if (err.message && err.message.includes('ยังไม่ชำระ')) {
+                        paymentStatus.textContent = '⚠ Payment not detected yet. Please scan and pay, then try again.';
+                        paymentStatus.style.color = 'var(--warning)';
+                    } else {
+                        paymentStatus.textContent = '✗ ' + err.message;
+                        paymentStatus.style.color = 'var(--danger)';
+                    }
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Verify Payment';
+                    isVerifying = false;
                 }
             }
 
-            submitBtn.addEventListener('click', handleSubmit);
+            function handleCancel() {
+                transactionId = null;
+                pendingAdData = null;
+                isVerifying = false;
+                stepPayment.style.display = 'none';
+                stepForm.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)';
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Verify Payment';
+                paymentStatus.textContent = '';
+                qrContainer.innerHTML = '<div class="loader"></div><p style="color: var(--text-secondary); font-size: 0.85rem;">Generating QR code...</p>';
+            }
 
-            [nameInput, contactInput, messageInput].forEach(input => {
+            submitBtn.addEventListener('click', handleSubmit);
+            verifyBtn.addEventListener('click', handleVerify);
+            cancelBtn.addEventListener('click', handleCancel);
+
+            [nameInput, contactInput, messageInput, linkInput].forEach(input => {
                 input.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();

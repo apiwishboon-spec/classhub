@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -1370,14 +1370,19 @@ function init() {
         });
     }
 
-    // Ad Space Logic
+    // Ad Space Logic — Rotation every 30 seconds
     function initBanner() {
         const bannerSection = document.getElementById('banner-section');
         const bannerContainer = document.getElementById('banner-display-container');
         if (!bannerSection || !bannerContainer) return;
 
-        onSnapshot(query(collection(db, "banners"), orderBy("createdAt", "desc"), limit(1)), (snap) => {
-            if (snap.empty) {
+        let ads = [];
+        let currentIndex = 0;
+        let rotationTimer = null;
+        let bannerListener = null;
+
+        function renderAd(index) {
+            if (!ads.length) {
                 bannerContainer.innerHTML = `
                     <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
                         <i class="ph ph-megaphone" style="font-size: 3.5rem; opacity: 0.15;"></i>
@@ -1388,40 +1393,65 @@ function init() {
                 return;
             }
 
-            snap.forEach(d => {
-                const data = d.data();
-                const url = data.url;
-                const contact = sanitize(data.caption || 'Contact us for more info');
-                const link = sanitize(data.link || '');
-                const postedBy = sanitize(data.postedBy || '');
+            const data = ads[index];
+            const url = data.url;
+            const contact = sanitize(data.caption || 'Contact us for more info');
+            const link = sanitize(data.link || '');
+            const postedBy = sanitize(data.postedBy || '');
+            const total = ads.length;
 
-                const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
+            const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
 
-                bannerContainer.innerHTML = `
-                    <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
-                        <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
-                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
-                            <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
-                                ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
-                                ${linkHtml ? `<span>${linkHtml}</span>` : ''}
-                            </div>
-                            <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
-                                <i class="ph ph-hand-pointing"></i> Click to inquire
-                            </div>
+            bannerContainer.innerHTML = `
+                <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
+                    <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
+                        <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                            ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
+                            ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                        </div>
+                        <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
+                            <i class="ph ph-hand-pointing"></i> Click to inquire
                         </div>
                     </div>
-                `;
+                    ${total > 1 ? `<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;">${index + 1}/${total}</div>` : ''}
+                </div>
+            `;
 
-                // Click handler to go to inquiry page
-                const adEl = document.getElementById('ad-clickable');
-                if (adEl) {
-                    adEl.addEventListener('click', () => {
-                        window.location.href = '/ad-inquiry';
-                    });
-                }
-            });
-        });
+            const adEl = document.getElementById('ad-clickable');
+            if (adEl) {
+                adEl.addEventListener('click', () => {
+                    window.location.href = '/ad-inquiry';
+                });
+            }
+        }
+
+        function startRotation() {
+            if (rotationTimer) clearInterval(rotationTimer);
+            if (ads.length <= 1) return;
+            rotationTimer = setInterval(() => {
+                currentIndex = (currentIndex + 1) % ads.length;
+                renderAd(currentIndex);
+            }, 30000);
+        }
+
+        if (bannerListener) bannerListener();
+        bannerListener = onSnapshot(
+            query(collection(db, "banners"), where("status", "==", "active"), orderBy("createdAt", "desc")),
+            (snap) => {
+                if (rotationTimer) clearInterval(rotationTimer);
+                ads = [];
+                snap.forEach(d => ads.push(d.data()));
+                currentIndex = 0;
+                renderAd(0);
+                startRotation();
+            },
+            (error) => {
+                console.warn("Banner load failed:", error.message);
+                bannerContainer.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-secondary);"><p>Failed to load ads.</p></div>`;
+            }
+        );
     }
 
     function initBannerUpload() {

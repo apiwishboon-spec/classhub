@@ -16,3 +16,4 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
 export const imgbbApiKey = "d851661ef4c88b4f97ee8b6857c184a7";
+export const paymentApiKey = "inwcloud_live_fde0a8bb3d4e5858215342b46dc8417bdcfbc63d";
