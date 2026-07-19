@@ -1816,7 +1816,7 @@ async function syncSystemStates() {
                                         }
                                     }
                                 }
-                            }, 30000);
+            }, 10000);
                         }
                     } else {
                         if (existingSched) existingSched.remove();
