@@ -1398,10 +1398,11 @@ function init() {
                 const url = data.url;
                 const contact = sanitize(data.caption || 'Contact us for more info');
                 const link = sanitize(data.link || '');
+            const linkUrl = link ? (link.match(/^https?:\/\//i) ? link : 'https://' + link) : '';
                 const postedBy = sanitize(data.postedBy || '');
                 const total = ads.length;
 
-                const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
+                const linkHtml = link ? `<a href="${linkUrl}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
 
                 bannerContainer.innerHTML = `
                     <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; opacity: 0; transition: opacity 0.4s ease;">
@@ -1428,8 +1429,8 @@ function init() {
                         adEl.style.opacity = '1';
                     }
                     adEl.addEventListener('click', () => {
-                        if (link) {
-                            window.open(link, '_blank', 'noopener');
+                        if (linkUrl) {
+                            window.open(linkUrl, '_blank', 'noopener');
                         } else {
                             window.location.href = '/ad-inquiry';
                         }
