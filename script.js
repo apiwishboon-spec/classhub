@@ -1479,7 +1479,6 @@ function init() {
                 startRotation();
             },
             (error) => {
-                console.warn("Banner load failed:", error.message);
                 bannerContainer.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-secondary);"><p>Failed to load ads.</p></div>`;
             }
         );
@@ -1494,9 +1493,7 @@ function init() {
         window.addEventListener('load', () => {
             // Register main SW
             navigator.serviceWorker.register('./sw.js').then(reg => {
-                console.log('SW registered!', reg);
             }).catch(err => {
-                console.log('SW registration failed: ', err);
             });
         });
     }
@@ -1538,7 +1535,6 @@ function showInstallBanner(prompt) {
         prompt.prompt();
         prompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
             }
             banner.remove();
         });
@@ -1566,7 +1562,6 @@ async function detectAdBlock() {
     const blocked = bait.offsetParent === null || bait.offsetHeight === 0;
     document.body.removeChild(bait);
     if (blocked) {
-        console.warn('Ad blocker detected');
         showAdBlockPopup();
     }
 }

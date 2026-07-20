@@ -93,7 +93,6 @@ async function checkEmailLinkSignIn() {
 
 // DOM Elements
 const loginContainer = document.getElementById('login-container');
-console.log("admin.js: Module loading...");
 const adminContainer = document.getElementById('admin-container');
 const loginBtn = document.getElementById('login-btn');
 const emailInput = document.getElementById('email');
@@ -1026,6 +1025,7 @@ logoutBtn.addEventListener('click', async () => {
             await signOut(secondaryAuth);
 
             showToast(`User ${email} added successfully as ${role}!`);
+            logAction("Create User", `Created account: ${email} as ${role}`);
             document.getElementById('new-user-email').value = '';
             document.getElementById('new-user-name').value = '';
             document.getElementById('new-user-pass').value = '';
@@ -1061,6 +1061,7 @@ logoutBtn.addEventListener('click', async () => {
                 time, monday, tuesday, wednesday, thursday, friday
             });
             showToast("Schedule added/updated!");
+            logAction("Update Schedule", `Updated schedule for ${time}`);
             document.getElementById('sched-time').value = '';
             document.getElementById('sched-mon').value = '';
             document.getElementById('sched-tue').value = '';
@@ -1122,7 +1123,7 @@ logoutBtn.addEventListener('click', async () => {
                             </div>
                             <div style="display:flex; gap:0.25rem;">
                                 <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}" title="See Info"><i class="ph ph-info"></i></button>
-                                <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}" title="Remove"><i class="ph ph-trash"></i></button>
+                                <button class="remove-user-btn admin-btn-danger admin-btn-icon" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" title="Remove"><i class="ph ph-trash"></i></button>
                             </div>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.25rem;">
@@ -1140,14 +1141,14 @@ logoutBtn.addEventListener('click', async () => {
                                 <span class="user-info-label" style="color:var(--accent-color);">Private Admin Notes:</span>
                                 <div style="display:flex; gap:0.4rem; margin-top:0.25rem;">
                                     <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${escapeHtml(data.adminNote || '')}" placeholder="e.g. Likes to yap">
-                                    <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
+                                    <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
                                 </div>
                             </div>
                             <div class="user-info-row" style="margin-top:0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                                 <span class="user-info-label">Edit Profile:</span>
                                 <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
                                 <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" accept="image/*">
-                                <button class="save-user-edit-btn btn-primary btn-full" data-uid="${doc.id}" style="margin-top:0.5rem; font-size:0.75rem; padding:0.5rem;">Save Changes</button>
+                                <button class="save-user-edit-btn btn-primary btn-full" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="margin-top:0.5rem; font-size:0.75rem; padding:0.5rem;">Save Changes</button>
                             </div>
                             <div class="user-actions-grid">
                                 <button class="user-action-btn reset-pass-btn" data-email="${escapeHtml(data.email)}">
@@ -1197,7 +1198,7 @@ logoutBtn.addEventListener('click', async () => {
                     <td>${statusBadge}</td>
                     <td>
                         <button class="see-info-btn admin-btn-icon" data-uid="${doc.id}"><i class="ph ph-info"></i> Info</button>
-                        <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}"><i class="ph ph-trash"></i> Remove</button>
+                        <button class="remove-user-btn admin-btn-danger" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}"><i class="ph ph-trash"></i> Remove</button>
                     </td>
                 </tr>
                 <tr id="info-row-${doc.id}" style="display:none;">
@@ -1222,7 +1223,7 @@ logoutBtn.addEventListener('click', async () => {
                                             <label style="font-size:0.65rem; color:var(--text-secondary);">Change Profile Pic</label>
                                             <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.8rem;" accept="image/*">
                                         </div>
-                                        <button class="save-user-edit-btn btn-primary" data-uid="${doc.id}" style="font-size:0.8rem; padding:0.5rem;">Save Changes</button>
+                                        <button class="save-user-edit-btn btn-primary" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="font-size:0.8rem; padding:0.5rem;">Save Changes</button>
                                     </div>
                                 </div>
                                 <div class="user-actions-grid" style="margin-top:0;">
@@ -1232,7 +1233,7 @@ logoutBtn.addEventListener('click', async () => {
                                     <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" data-status="${data.disabled || false}">
                                         <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable Account' : 'Disable Account'}
                                     </button>
-                                    <button class="user-action-btn btn-danger-alt remove-user-btn" data-uid="${doc.id}">
+                                    <button class="user-action-btn btn-danger-alt remove-user-btn" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}">
                                         <i class="ph ph-trash"></i> Delete from Database
                                     </button>
                                 </div>
@@ -1257,7 +1258,8 @@ logoutBtn.addEventListener('click', async () => {
             document.querySelectorAll('.remove-user-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     const uid = btn.getAttribute('data-uid');
-                    removeUser(uid);
+                    const email = btn.getAttribute('data-email');
+                    removeUser(uid, email);
                 });
             });
 
@@ -1280,10 +1282,12 @@ logoutBtn.addEventListener('click', async () => {
             document.querySelectorAll('.save-note-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const uid = btn.getAttribute('data-uid');
+                    const userEmail = btn.getAttribute('data-email');
                     const noteVal = document.getElementById(`admin-note-${uid}`)?.value.trim() || '';
                     try {
                         await setDoc(doc(db, "users", uid), { adminNote: noteVal }, { merge: true });
                         showToast("Note saved!", "ph-floppy-disk", "var(--success)");
+                        logAction("Save Admin Note", `Updated note for user: ${userEmail}`);
                     } catch (e) {
                         showToast("Error saving note: " + e.message, "ph-x-circle", "var(--danger)");
                     }
@@ -1293,6 +1297,7 @@ logoutBtn.addEventListener('click', async () => {
             document.querySelectorAll('.save-user-edit-btn').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const uid = btn.getAttribute('data-uid');
+                    const userEmail = btn.getAttribute('data-email');
                     const nameVal = document.getElementById(`edit-name-${uid}`)?.value.trim();
                     const picFile = document.getElementById(`edit-pic-${uid}`)?.files[0];
 
@@ -1313,6 +1318,7 @@ logoutBtn.addEventListener('click', async () => {
                         await setDoc(doc(db, "users", uid), updates, { merge: true });
                         showToast("User profile updated!");
                         loadUsers();
+                        logAction("Edit User Profile", `Updated profile for ${userEmail}`);
                     } catch (e) {
                         showToast("Error updating user: " + e.message, "ph-x", "var(--danger)");
                     } finally {
@@ -1345,6 +1351,7 @@ logoutBtn.addEventListener('click', async () => {
             try {
                 await sendPasswordResetEmail(auth, email);
                 showToast(`Password reset email sent to ${email}`);
+                logAction("Reset Password", `Password reset sent to ${email}`);
             } catch (error) {
                 showToast("Error: " + error.message);
             }
@@ -1358,6 +1365,7 @@ logoutBtn.addEventListener('click', async () => {
             try {
                 await setDoc(doc(db, "users", uid), { disabled: !isCurrentlyDisabled }, { merge: true });
                 showToast(`Account ${email} ${isCurrentlyDisabled ? 'enabled' : 'disabled'}.`);
+                logAction("Toggle User Status", `${action} user: ${email}`);
                 loadUsers();
             } catch (error) {
                 showToast("Error: " + error.message);
@@ -1366,13 +1374,14 @@ logoutBtn.addEventListener('click', async () => {
     }
 
     // Remove User Function
-    async function removeUser(uid) {
+    async function removeUser(uid, userEmail) {
         if (currentUserRole !== 'admin') return;
 
         if (await customConfirm("Confirm Deletion", "Remove this user's data from the database? (Note: This will not delete the Authentication account, only their permissions and role.)")) {
             try {
                 await deleteDoc(doc(db, "users", uid));
                 showToast("User role and data removed.");
+                logAction("Remove User", `Deleted user: ${userEmail}`);
                 loadUsers();
             } catch (error) {
                 showToast("Error removing user: " + error.message);
@@ -2109,6 +2118,7 @@ logoutBtn.addEventListener('click', async () => {
                 cleanupEnabled: newState
             }, { merge: true });
             showToast(`Auto-Cleanup turned ${newState ? 'ON' : 'OFF'}`);
+            logAction("Toggle Auto-Cleanup", `Auto-Cleanup: ${newState ? 'ON' : 'OFF'}`);
             loadSettings();
         } catch (e) {
             showToast("Error updating settings: " + e.message);
