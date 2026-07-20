@@ -1370,7 +1370,7 @@ function init() {
         });
     }
 
-    // Ad Space Logic — Rotation every 30 seconds
+    // Ad Space Logic — Rotation every 5 seconds
     function initBanner() {
         const bannerSection = document.getElementById('banner-section');
         const bannerContainer = document.getElementById('banner-display-container');
@@ -1422,7 +1422,11 @@ function init() {
             const adEl = document.getElementById('ad-clickable');
             if (adEl) {
                 adEl.addEventListener('click', () => {
-                    window.location.href = '/ad-inquiry';
+                    if (link) {
+                        window.open(link, '_blank', 'noopener');
+                    } else {
+                        window.location.href = '/ad-inquiry';
+                    }
                 });
             }
         }
@@ -1433,7 +1437,7 @@ function init() {
             rotationTimer = setInterval(() => {
                 currentIndex = (currentIndex + 1) % ads.length;
                 renderAd(currentIndex);
-            }, 30000);
+            }, 5000);
         }
 
         if (bannerListener) bannerListener();

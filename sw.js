@@ -1,9 +1,9 @@
-const CACHE_NAME = 'classhub-v13';
+const CACHE_NAME = 'classhub-v15';
 const ASSETS = [
   '/',
-  '/style.css?v=13',
-  '/script.js?v=13',
-  '/admin.js?v=14',
+  '/style.css?v=15',
+  '/script.js?v=15',
+  '/admin.js?v=16',
   '/admin',
   '/index.html',
   '/ad-inquiry',
@@ -13,9 +13,9 @@ const ASSETS = [
   '/privacy',
   '/terms',
   '/vote',
-  '/game.js?v=2',
-  '/chess-game.js?v=2',
-  '/help.js?v=3',
+  '/game.js?v=3',
+  '/chess-game.js?v=3',
+  '/help.js?v=4',
   '/favicon.png',
   '/logo.png'
 ];
