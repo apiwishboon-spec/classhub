@@ -38,7 +38,7 @@
                 </div>
                 <div class="card-content">
                     <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; text-align: center;">
-                        Upload your ad image and pay 5 THB to get it displayed. Payment via PromptPay.
+                        Upload your ad image and choose a duration. Payment via PromptPay.
                     </p>
                     <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 1rem;">
                         <div>
@@ -61,6 +61,28 @@
                             <label for="inquiry-pic" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Image (Required, Max 5MB)</label>
                             <input type="file" id="inquiry-pic" class="form-input" accept="image/*" style="width: 100%; box-sizing: border-box;">
                         </div>
+                        <div>
+                            <label for="inquiry-duration" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Duration</label>
+                            <select id="inquiry-duration" class="form-input" style="width: 100%; box-sizing: border-box;">
+                                <option value="1">1 Day (5 THB)</option>
+                                <option value="3">3 Days (10 THB)</option>
+                                <option value="7" selected>7 Days (20 THB)</option>
+                                <option value="14">14 Days (35 THB)</option>
+                                <option value="30">30 Days (50 THB)</option>
+                            </select>
+                        </div>
+
+                        <!-- Live Preview -->
+                        <div>
+                            <label style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Preview</label>
+                            <div id="ad-preview" style="position: relative; width: 100%; min-height: 180px; max-height: 300px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 10px; border: 1px dashed var(--border-color);">
+                                <div style="padding: 2rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; gap: 0.5rem;">
+                                    <i class="ph ph-image" style="font-size: 2.5rem; opacity: 0.2;"></i>
+                                    <p style="margin: 0; font-size: 0.85rem;">Your ad will appear here</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <button id="submit-inquiry-btn" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                             <i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)
                         </button>
@@ -121,7 +143,7 @@
         import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { sanitize } from './profanity-filter.js';
 
-        const PAYMENT_AMOUNT = 5;
+        const PRICING = { 1: 5, 3: 10, 7: 20, 14: 35, 30: 50 };
         const BASE_URL = 'https://api.inwcloud.shop';
 
         function showToast(message, icon, color) {
@@ -151,14 +173,14 @@
             return data.data.url;
         }
 
-        async function generateQR() {
+        async function generateQR(price) {
             const response = await fetch(`${BASE_URL}/v1/promptpay/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${paymentApiKey}`
                 },
-                body: JSON.stringify({ amount: PAYMENT_AMOUNT })
+                body: JSON.stringify({ amount: price || 5 })
             });
             const data = await response.json();
             if (data.status !== 'success') throw new Error(data.message || 'Failed to generate QR');
@@ -180,12 +202,16 @@
         }
 
         async function submitAdToFirestore(adData) {
+            const expiresAt = new Date();
+            expiresAt.setDate(expiresAt.getDate() + adData.duration);
             const bannerRef = await addDoc(collection(db, "banners"), {
                 url: adData.url,
                 caption: adData.caption,
                 link: adData.link,
                 postedBy: adData.postedBy,
                 status: 'active',
+                duration: adData.duration,
+                expiresAt: expiresAt.getTime(),
                 createdAt: serverTimestamp()
             });
             await addDoc(collection(db, "ad_inquiries"), {
@@ -216,16 +242,61 @@
             const messageInput = document.getElementById('inquiry-message');
             const linkInput = document.getElementById('inquiry-link');
             const picInput = document.getElementById('inquiry-pic');
+            const durationSelect = document.getElementById('inquiry-duration');
+            const previewEl = document.getElementById('ad-preview');
 
             let transactionId = null;
             let pendingAdData = null;
             let isVerifying = false;
+
+            // Live pricing update
+            function updatePrice() {
+                const days = parseInt(durationSelect.value);
+                const price = PRICING[days] || 5;
+                submitBtn.innerHTML = `<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (${price} THB)`;
+            }
+            durationSelect.addEventListener('change', updatePrice);
+
+            // Live ad preview
+            function updatePreview() {
+                const caption = messageInput.value.trim() || 'Your ad caption';
+                const name = nameInput.value.trim() || 'Your Name';
+                const link = linkInput.value.trim();
+                const file = picInput.files[0];
+
+                let imgHtml = '';
+                if (file) {
+                    const url = URL.createObjectURL(file);
+                    imgHtml = `<img src="${url}" alt="Preview" style="width: 100%; height: 100%; min-height: 180px; max-height: 300px; object-fit: cover; display: block; opacity: 0.9;">`;
+                } else {
+                    imgHtml = `<div style="padding: 2rem; text-align: center; color: #999; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;"><i class="ph ph-image" style="font-size: 2.5rem; opacity: 0.2;"></i><p style="margin: 0; font-size: 0.85rem;">Select an image to preview</p></div>`;
+                }
+
+                const linkHtml = link ? `<a href="#" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${sanitize(link)}</a>` : '';
+
+                previewEl.innerHTML = `
+                    ${imgHtml}
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.2rem 0.8rem 0.8rem 0.8rem; color: #fff; text-align: left; box-sizing: border-box;">
+                        <p style="margin: 0; font-size: 0.9rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${sanitize(caption)}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.2rem;">
+                            <span style="font-size: 0.75rem; opacity: 0.9;"><i class="ph ph-building"></i> ${sanitize(name)}</span>
+                            ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                        </div>
+                    </div>
+                `;
+            }
+
+            [nameInput, messageInput, linkInput].forEach(el => el.addEventListener('input', updatePreview));
+            picInput.addEventListener('change', updatePreview);
+            updatePreview();
 
             async function handleSubmit() {
                 const name = sanitize(nameInput.value.trim());
                 const contact = sanitize(contactInput.value.trim());
                 const caption = sanitize(messageInput.value.trim());
                 const link = sanitize(linkInput.value.trim());
+                const duration = parseInt(durationSelect.value);
+                const price = PRICING[duration] || 5;
                 const file = picInput.files[0];
 
                 if (!name) { showToast("Please enter your name.", "ph-warning", "var(--warning)"); nameInput.focus(); return; }
@@ -245,11 +316,12 @@
                         caption,
                         link,
                         postedBy: name,
-                        contact
+                        contact,
+                        duration
                     };
 
                     submitBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Generating QR...';
-                    const qrData = await generateQR();
+                    const qrData = await generateQR(price);
                     transactionId = qrData.transactionId;
 
                     qrContainer.innerHTML = `<img src="${qrData.qr_url}" alt="PromptPay QR" style="width: 100%; border-radius: 8px;">`;
@@ -259,12 +331,12 @@
 
                     stepForm.style.display = 'none';
                     stepPayment.style.display = 'block';
-                    showToast('QR code generated! Please scan and pay 5 THB.', 'ph-qr-code', 'var(--accent-color)');
+                    showToast(`QR code generated! Please scan and pay ${price} THB.`, 'ph-qr-code', 'var(--accent-color)');
 
                 } catch (err) {
                     showToast("Error: " + err.message, "ph-x", "var(--danger)");
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)';
+                    submitBtn.innerHTML = `<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (${price} THB)`;
                 }
             }
 
@@ -314,7 +386,7 @@
                 stepPayment.style.display = 'none';
                 stepForm.style.display = 'block';
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="ph ph-paper-plane-tilt"></i> Proceed to Payment (5 THB)';
+                updatePrice();
                 verifyBtn.disabled = true;
                 verifyBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Verify Payment';
                 paymentStatus.textContent = '';

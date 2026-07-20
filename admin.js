@@ -1514,6 +1514,7 @@ logoutBtn.addEventListener('click', async () => {
             function statusBadge(status) {
                 if (status === 'active') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--success);color:#fff;font-weight:600;">Active</span>';
                 if (status === 'pending') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--warning);color:#fff;font-weight:600;">Pending</span>';
+                if (status === 'expired') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--text-secondary);color:#fff;font-weight:600;">Expired</span>';
                 return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--text-secondary);color:#fff;font-weight:600;">' + (status || 'Active') + '</span>';
             }
 
@@ -1523,8 +1524,12 @@ logoutBtn.addEventListener('click', async () => {
                     const data = d.data();
                     const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'Just now';
                     const status = data.status || 'active';
+                    const now = Date.now();
+                    const isExpired = data.expiresAt && data.expiresAt < now;
+                    const expiryStr = data.expiresAt ? new Date(data.expiresAt).toLocaleDateString() : 'Never';
+                    const displayStatus = isExpired ? 'expired' : status;
                     html += `
-                    <div class="admin-sched-card" style="border-left:4px solid ${status === 'pending' ? 'var(--warning)' : 'var(--success)'};">
+                    <div class="admin-sched-card" style="border-left:4px solid ${displayStatus === 'pending' ? 'var(--warning)' : displayStatus === 'expired' ? 'var(--text-secondary)' : 'var(--success)'};">
                         <div class="admin-sched-card-header">
                             <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'By ' + data.postedBy : 'Contact: ' + (data.caption || 'None')}</span>
                             <div style="display:flex;gap:0.3rem;">
@@ -1532,12 +1537,15 @@ logoutBtn.addEventListener('click', async () => {
                                 <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                             </div>
                         </div>
-                        <div style="margin-top: 0.25rem;">${statusBadge(status)}</div>
+                        <div style="margin-top: 0.25rem;">${statusBadge(displayStatus)}</div>
                         <div style="margin-top: 0.5rem; text-align: center;">
                             <img src="${data.url}" alt="Ad" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
                         </div>
                         <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">
                             ${data.caption || 'None'}${data.link ? ' &middot; Link: ' + data.link : ''} &middot; ${dateStr}
+                        </div>
+                        <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:0.15rem;">
+                            <i class="ph ph-clock"></i> Expires: ${expiryStr} ${isExpired ? '(Expired)' : ''}
                         </div>
                     </div>
                 `;
@@ -1553,6 +1561,7 @@ logoutBtn.addEventListener('click', async () => {
                         <th>Link</th>
                         <th>Posted By</th>
                         <th>Upload Date</th>
+                        <th>Expires</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -1563,8 +1572,12 @@ logoutBtn.addEventListener('click', async () => {
                     const data = d.data();
                     const dateStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'Just now';
                     const status = data.status || 'active';
+                    const now = Date.now();
+                    const isExpired = data.expiresAt && data.expiresAt < now;
+                    const expiryStr = data.expiresAt ? new Date(data.expiresAt).toLocaleDateString() : 'Never';
+                    const displayStatus = isExpired ? 'expired' : status;
                     html += `
-                <tr style="${status === 'pending' ? 'background: rgba(255,193,7,0.08);' : ''}">
+                <tr style="${displayStatus === 'pending' ? 'background: rgba(255,193,7,0.08);' : displayStatus === 'expired' ? 'background: rgba(128,128,128,0.08);' : ''}">
                     <td>
                         <a href="${data.url}" target="_blank">
                             <img src="${data.url}" alt="Ad Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
@@ -1574,7 +1587,8 @@ logoutBtn.addEventListener('click', async () => {
                     <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.link ? `<a href="${data.link}" target="_blank" style="color:var(--accent-color)">${data.link}</a>` : '—'}</td>
                     <td>${data.postedBy || '—'}</td>
                     <td>${dateStr}</td>
-                    <td>${statusBadge(status)}</td>
+                    <td>${expiryStr}</td>
+                    <td>${statusBadge(displayStatus)}</td>
                     <td>
                         <div style="display:flex;gap:0.3rem;">
                             ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}" title="Approve"><i class="ph ph-check"></i></button>` : ''}

@@ -1465,9 +1465,12 @@ function init() {
             (snap) => {
                 if (rotationTimer) clearInterval(rotationTimer);
                 ads = [];
+                const now = Date.now();
                 snap.forEach(d => {
                     const data = d.data();
-                    if (data.status === 'active') ads.push(data);
+                    if (data.status !== 'active') return;
+                    if (data.expiresAt && data.expiresAt < now) return;
+                    ads.push(data);
                 });
                 currentIndex = 0;
                 renderAd(0);
