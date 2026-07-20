@@ -226,8 +226,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="version.js"></script>
     <script type="module" src="visits.js"></script>
+    <script>
+        // YouTube API callback must be defined in a regular script (not module)
+        window.ytPlayerReady = new Promise(resolve => {
+            window.onYouTubeIframeAPIReady = () => resolve();
+        });
+    </script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script type="module" src="script.js?v=25"></script>
+    <script type="module" src="script.js?v=26"></script>
     <script type="module" src="chat.js"></script>
 <script type="module" src="game.js?v=2"></script>    <script src="help.js?v=3"></script>
     <script type="module" src="bug-report.js"></script>

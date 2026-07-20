@@ -1876,7 +1876,8 @@ document.head.appendChild(style);
 // ==================== STUDY TIMER + YOUTUBE MUSIC ====================
 let ytPlayer = null;
 
-window.onYouTubeIframeAPIReady = function () {
+(async function initYouTubePlayer() {
+    await window.ytPlayerReady;
     ytPlayer = new YT.Player('yt-player', {
         height: '1',
         width: '1',
@@ -1885,11 +1886,15 @@ window.onYouTubeIframeAPIReady = function () {
         events: {
             onReady: () => {
                 ytPlayer.setVolume(30);
-                document.getElementById('music-status').textContent = 'Lo-Fi Music (Ready)';
+                document.getElementById('music-status').textContent = 'Lo-Fi (Ready)';
+            },
+            onError: (e) => {
+                console.error('YT Error:', e);
+                document.getElementById('music-status').textContent = 'Load failed';
             }
         }
     });
-};
+})();
 
 (function initStudyTimer() {
     const timerDisplay = document.getElementById('timer-display');
