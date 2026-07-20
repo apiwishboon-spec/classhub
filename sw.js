@@ -1,8 +1,8 @@
-const CACHE_NAME = 'classhub-v27';
+const CACHE_NAME = 'classhub-v28';
 const ASSETS = [
   '/',
-  '/style.css?v=27',
-  '/script.js?v=27',
+  '/style.css?v=28',
+  '/script.js?v=28',
   '/admin.js?v=21',
   '/admin',
   '/index.html',

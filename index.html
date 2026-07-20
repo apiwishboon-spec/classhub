@@ -137,11 +137,11 @@
                         </label>
                     </div>
 
-                    <!-- YouTube Music Player (hidden iframe, custom controls) -->
+                    <!-- YouTube Music Player -->
                     <div id="music-player" style="background: var(--bg-color); border-radius: 10px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.5rem; max-width: 420px; margin: 0 auto;">
-                        <button id="music-toggle" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--accent-color);"><i class="ph ph-music-note"></i></button>
-                        <input type="range" id="music-volume" min="0" max="100" value="30" style="width: 70px; accent-color: var(--accent-color);">
-                        <select id="music-speed" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.7rem; padding: 0.2rem 0.3rem; color: var(--text-main); cursor: pointer;">
+                        <button id="music-toggle" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; color: var(--accent-color);" title="Play / Pause"><i class="ph ph-play-circle"></i></button>
+                        <input type="range" id="music-volume" min="0" max="100" value="30" style="width: 70px; accent-color: var(--accent-color);" title="Volume">
+                        <select id="music-speed" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.7rem; padding: 0.2rem 0.3rem; color: var(--text-main); cursor: pointer;" title="Speed">
                             <option value="0.5">0.5x</option>
                             <option value="0.75">0.75x</option>
                             <option value="1" selected>1x</option>
@@ -150,7 +150,7 @@
                         </select>
                         <span id="music-status" style="font-size: 0.7rem; color: var(--text-secondary); flex: 1; text-align: left;">Lo-Fi Music</span>
                     </div>
-                    <div id="yt-player-container" style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
+                    <div style="position: absolute; width: 200px; height: 200px; overflow: hidden; opacity: 0; pointer-events: none; z-index: -1;">
                         <div id="yt-player"></div>
                     </div>
                 </div>
@@ -233,7 +233,7 @@
         });
     </script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script type="module" src="script.js?v=27"></script>
+    <script type="module" src="script.js?v=28"></script>
     <script type="module" src="chat.js"></script>
 <script type="module" src="game.js?v=2"></script>    <script src="help.js?v=3"></script>
     <script type="module" src="bug-report.js"></script>

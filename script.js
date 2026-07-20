@@ -1879,17 +1879,25 @@ let ytPlayer = null;
 (async function initYouTubePlayer() {
     await window.ytPlayerReady;
     ytPlayer = new YT.Player('yt-player', {
-        height: '1',
-        width: '1',
+        height: '200',
+        width: '200',
         videoId: 'Q5aGoc2pW04',
-        playerVars: { autoplay: 0, controls: 0, modestbranding: 1, rel: 0, loop: 1, playlist: 'Q5aGoc2pW04' },
+        playerVars: {
+            autoplay: 0,
+            controls: 0,
+            modestbranding: 1,
+            rel: 0,
+            loop: 1,
+            playlist: 'Q5aGoc2pW04',
+            enablejsapi: 1
+        },
         events: {
             onReady: () => {
                 ytPlayer.setVolume(30);
                 document.getElementById('music-status').textContent = 'Lo-Fi (Ready)';
             },
             onError: (e) => {
-                console.error('YT Error:', e);
+                console.error('YT Error:', e.data);
                 document.getElementById('music-status').textContent = 'Load failed';
             }
         }
@@ -2010,11 +2018,11 @@ let ytPlayer = null;
 
     if (musicToggle) {
         musicToggle.addEventListener('click', () => {
-            if (!ytPlayer) { musicStatus.textContent = 'Loading...'; return; }
+            if (!ytPlayer || !ytPlayer.playVideo) { musicStatus.textContent = 'Loading...'; return; }
             if (musicPlaying) {
                 ytPlayer.pauseVideo();
                 musicPlaying = false;
-                musicToggle.innerHTML = '<i class="ph ph-music-note"></i>';
+                musicToggle.innerHTML = '<i class="ph ph-play-circle"></i>';
                 musicStatus.textContent = 'Paused';
             } else {
                 ytPlayer.playVideo();
@@ -2039,7 +2047,17 @@ let ytPlayer = null;
 })();
 
 // ==================== ANNOUNCEMENT REACTIONS ====================
+// 1 person, 1 emoji, 1 time per emoji. Click to react, click again to unreact.
 const ANN_REACTIONS = ['👍', '❤️', '🔥', '😮', '😢'];
+
+function getVisitorId() {
+    let vid = localStorage.getItem('visitor_id');
+    if (!vid) {
+        vid = 'v_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        localStorage.setItem('visitor_id', vid);
+    }
+    return vid;
+}
 
 function getMyReactions(annId) {
     return JSON.parse(localStorage.getItem(`ann_r_${annId}`) || '[]');
@@ -2078,10 +2096,11 @@ function updateReactionCounts(card) {
     const annId = card.getAttribute('data-ann-id');
     if (!annId) return;
     const ann = dashboardData.announcements.find(a => a.id === annId);
-    const counts = ann?.reactions || {};
+    const reactions = ann?.reactions || {};
     card.querySelectorAll('.ann-reaction-btn').forEach(btn => {
         const emoji = btn.dataset.emoji;
-        const count = counts[emoji] || 0;
+        const voters = reactions[emoji] || [];
+        const count = Array.isArray(voters) ? voters.length : 0;
         btn.querySelector('.reaction-count').textContent = count > 0 ? count : '';
     });
 }
@@ -2089,6 +2108,7 @@ function updateReactionCounts(card) {
 (async function initAnnouncementReactions() {
     const container = document.getElementById('announcements-container');
     if (!container) return;
+    const visitorId = getVisitorId();
 
     container.addEventListener('click', async (e) => {
         const btn = e.target.closest('.ann-reaction-btn');
@@ -2106,10 +2126,10 @@ function updateReactionCounts(card) {
 
         try {
             if (isReacted) {
-                await updateDoc(annRef, { [`reactions.${emoji}`]: increment(-1) });
+                await updateDoc(annRef, { [`reactions.${emoji}`]: arrayRemove(visitorId) });
                 myReacted.splice(myReacted.indexOf(emoji), 1);
             } else {
-                await updateDoc(annRef, { [`reactions.${emoji}`]: increment(1) });
+                await updateDoc(annRef, { [`reactions.${emoji}`]: arrayUnion(visitorId) });
                 myReacted.push(emoji);
             }
             saveMyReactions(annId, myReacted);
