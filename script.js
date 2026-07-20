@@ -1403,6 +1403,11 @@ function init() {
 
                 const linkHtml = link ? `<a href="${linkUrl}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
 
+                const now = Date.now();
+                const daysLeft = data.expiresAt ? Math.ceil((data.expiresAt - now) / (1000 * 60 * 60 * 24)) : null;
+                const isExpiring = daysLeft !== null && daysLeft <= 3;
+                const renewHtml = isExpiring ? `<a href="/ad-renew" onclick="event.stopPropagation()" style="color: #ffb74d; font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(255,183,77,0.2); padding: 0.15rem 0.5rem; border-radius: 4px;"><i class="ph ph-arrows-clockwise"></i> Renew${daysLeft !== null ? ` (${daysLeft}d)` : ''}</a>` : '';
+
                 bannerContainer.innerHTML = `
                     <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; opacity: 0; transition: opacity 0.4s ease;">
                         <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
@@ -1410,7 +1415,10 @@ function init() {
                             <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
                                 ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
-                                ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    ${renewHtml}
+                                    ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                                </div>
                             </div>
                             <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
                                 <i class="ph ph-hand-pointing"></i> Click to view
@@ -1469,6 +1477,7 @@ function init() {
                 snap.forEach(d => {
                     const data = d.data();
                     if (data.status !== 'active') return;
+                    if (data.status === 'disabled') return;
                     if (data.expiresAt && data.expiresAt < now) return;
                     ads.push(data);
                 });

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renew Ad - MyClassHub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body>
+    <div id="toast-container"></div>
+    
+    <div class="app-container">
+        <header class="top-nav">
+            <div class="nav-brand">
+                <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="ph ph-arrow-left" style="color: var(--accent-color); font-size: 1.2rem;"></i>
+                    <h1 style="color: var(--accent-color); font-size: 1.25rem;">Renew Ad</h1>
+                </a>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button id="theme-toggle" class="icon-button" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
+                <a href="/chat" class="icon-button" aria-label="Message Staff"><i class="ph ph-chat-centered-text"></i></a>
+            </div>
+        </header>
+
+        <main style="max-width: 600px; margin: 0 auto;">
+            <!-- Step 1: Find Ad -->
+            <section class="dashboard-card" id="step-find">
+                <div class="card-header">
+                    <h2><i class="ph ph-magnifying-glass"></i> Find Your Ad</h2>
+                </div>
+                <div class="card-content">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; text-align: center;">
+                        Enter the name or contact you used when posting the ad.
+                    </p>
+                    <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div>
+                            <label for="renew-search" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Name or Contact</label>
+                            <input type="text" id="renew-search" placeholder="Enter name or phone/email..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="200">
+                        </div>
+                        <button id="search-btn" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <i class="ph ph-magnifying-glass"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 2: Select Ad -->
+            <section class="dashboard-card" id="step-select" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-list-checks"></i> Your Ads</h2>
+                </div>
+                <div class="card-content" id="ad-list-container">
+                    <p style="color: var(--text-secondary); text-align: center;">Loading...</p>
+                </div>
+            </section>
+
+            <!-- Step 3: Payment -->
+            <section class="dashboard-card" id="step-payment" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-qr-code"></i> Renewal Payment</h2>
+                </div>
+                <div class="card-content" style="text-align: center;">
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Scan the QR code below to pay <strong style="color: var(--text-primary);">4 THB</strong> via PromptPay</p>
+                    <div id="qr-container" style="margin: 1rem auto; max-width: 260px; background: #fff; padding: 1rem; border-radius: 12px;">
+                        <div class="loader"></div>
+                        <p style="color: var(--text-secondary); font-size: 0.85rem;">Generating QR code...</p>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0.5rem 0 1rem;" id="qr-expiry"></p>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        <i class="ph ph-check-circle" style="color: var(--success);"></i> After paying, click the button below to verify.
+                    </p>
+                    <button id="verify-payment-btn" class="btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" disabled>
+                        <i class="ph ph-magnifying-glass"></i> Verify Payment
+                    </button>
+                    <button id="cancel-payment-btn" class="btn-secondary" style="width: 100%; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <i class="ph ph-x"></i> Cancel
+                    </button>
+                    <p id="payment-status" style="margin-top: 0.75rem; font-size: 0.85rem;"></p>
+                </div>
+            </section>
+
+            <!-- Step 4: Success -->
+            <section class="dashboard-card" id="step-success" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-check-circle" style="color: var(--success);"></i> Renewal Successful!</h2>
+                </div>
+                <div class="card-content" style="text-align: center;">
+                    <i class="ph ph-check-circle" style="font-size: 4rem; color: var(--success); margin: 1rem 0;"></i>
+                    <p style="font-size: 1rem; font-weight: 600;">Your ad has been renewed!</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary);">It will continue showing on the dashboard for 30 more days.</p>
+                    <a href="/" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; margin-top: 1rem; text-decoration: none;">
+                        <i class="ph ph-house"></i> Back to Dashboard
+                    </a>
+                </div>
+            </section>
+        </main>
+
+        <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
+            <div>&copy; 2026 Apiwish Anutaravanichkul.</div>
+        </footer>
+    </div>
+
+    <script src="version.js"></script>
+    <script type="module" src="visits.js"></script>
+    <script type="module">
+        import { db, paymentApiKey } from './firebase-config.js';
+        import { collection, query, where, orderBy, doc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { sanitize } from './profanity-filter.js';
+
+        const RENEWAL_PRICE = 4;
+        const RENEWAL_DAYS = 30;
+        const BASE_URL = 'https://api.inwcloud.shop';
+
+        function showToast(message, icon, color) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<span class="toast-icon"><i class="ph ${icon}"></i></span><span class="toast-text">${message}</span>`;
+            toast.style.borderLeftColor = color || 'var(--accent-color)';
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('show'));
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 4500);
+        }
+
+        async function generateQR(amount) {
+            const response = await fetch(`${BASE_URL}/v1/promptpay/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${paymentApiKey}`
+                },
+                body: JSON.stringify({ amount })
+            });
+            const data = await response.json();
+            if (data.status !== 'success') throw new Error(data.message || 'Failed to generate QR');
+            return data.data;
+        }
+
+        async function verifyPayment(transactionId) {
+            const response = await fetch(`${BASE_URL}/v1/promptpay/check`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${paymentApiKey}`
+                },
+                body: JSON.stringify({ transactionId })
+            });
+            const data = await response.json();
+            if (data.status !== 'success') throw new Error(data.message || 'Payment verification failed');
+            return data;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const stepFind = document.getElementById('step-find');
+            const stepSelect = document.getElementById('step-select');
+            const stepPayment = document.getElementById('step-payment');
+            const stepSuccess = document.getElementById('step-success');
+            const searchBtn = document.getElementById('search-btn');
+            const searchInput = document.getElementById('renew-search');
+            const adListContainer = document.getElementById('ad-list-container');
+            const verifyBtn = document.getElementById('verify-payment-btn');
+            const cancelBtn = document.getElementById('cancel-payment-btn');
+            const qrContainer = document.getElementById('qr-container');
+            const qrExpiry = document.getElementById('qr-expiry');
+            const paymentStatus = document.getElementById('payment-status');
+
+            let transactionId = null;
+            let selectedAdId = null;
+            let isVerifying = false;
+
+            async function handleSearch() {
+                const search = sanitize(searchInput.value.trim());
+                if (!search) { showToast("Please enter a name or contact.", "ph-warning", "var(--warning)"); searchInput.focus(); return; }
+
+                searchBtn.disabled = true;
+                searchBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Searching...';
+
+                try {
+                    const q = query(collection(db, "banners"), orderBy("createdAt", "desc"));
+                    const snap = await getDocs(q);
+                    const matches = [];
+                    const searchLower = search.toLowerCase();
+
+                    snap.forEach(d => {
+                        const data = d.data();
+                        const postedBy = (data.postedBy || '').toLowerCase();
+                        const contact = (data.contact || '').toLowerCase();
+                        if (postedBy.includes(searchLower) || contact.includes(searchLower)) {
+                            matches.push({ id: d.id, ...data });
+                        }
+                    });
+
+                    if (matches.length === 0) {
+                        showToast("No ads found for that search.", "ph-magnifying-glass", "var(--text-secondary)");
+                        searchBtn.disabled = false;
+                        searchBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Search';
+                        return;
+                    }
+
+                    const now = Date.now();
+                    let html = '';
+                    matches.forEach(ad => {
+                        const isExpired = ad.expiresAt && ad.expiresAt < now;
+                        const expiryStr = ad.expiresAt ? new Date(ad.expiresAt).toLocaleDateString() : 'Never';
+                        const daysLeft = ad.expiresAt ? Math.ceil((ad.expiresAt - now) / (1000 * 60 * 60 * 24)) : null;
+                        const statusColor = isExpired ? 'var(--danger)' : (daysLeft !== null && daysLeft <= 3) ? 'var(--warning)' : 'var(--success)';
+                        const statusText = isExpired ? 'Expired' : (daysLeft !== null ? `${daysLeft} days left` : 'Active');
+
+                        html += `
+                            <div class="admin-sched-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0.75rem; cursor: pointer;" data-id="${d.id}" onclick="selectAd('${d.id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <span style="font-weight: 600; font-size: 0.85rem;">${sanitize(data.postedBy || 'Unknown')}</span>
+                                    <span style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: ${statusColor}; color: #fff; font-weight: 600;">${statusText}</span>
+                                </div>
+                                <div style="text-align: center; margin-bottom: 0.5rem;">
+                                    <img src="${data.url}" alt="Ad" style="max-width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px;">
+                                </div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">
+                                    ${data.caption || 'No caption'} &middot; Expires: ${expiryStr}
+                                </div>
+                                ${isExpired || (daysLeft !== null && daysLeft <= 7) ? `<button class="renew-ad-btn btn-primary" data-id="${d.id}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; font-size: 0.85rem;"><i class="ph ph-arrows-clockwise"></i> Renew (4 THB)</button>` : ''}
+                            </div>
+                        `;
+                    });
+
+                    adListContainer.innerHTML = html;
+                    stepFind.style.display = 'none';
+                    stepSelect.style.display = 'block';
+
+                    document.querySelectorAll('.renew-ad-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            startRenewal(btn.getAttribute('data-id'));
+                        });
+                    });
+
+                } catch (err) {
+                    showToast("Error: " + err.message, "ph-x", "var(--danger)");
+                } finally {
+                    searchBtn.disabled = false;
+                    searchBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Search';
+                }
+            }
+
+            window.selectAd = function(id) {
+                if (!document.querySelector(`.renew-ad-btn[data-id="${id}"]`)) {
+                    startRenewal(id);
+                }
+            };
+
+            async function startRenewal(adId) {
+                selectedAdId = adId;
+                try {
+                    const qrData = await generateQR(RENEWAL_PRICE);
+                    transactionId = qrData.transactionId;
+
+                    qrContainer.innerHTML = `<img src="${qrData.qr_url}" alt="PromptPay QR" style="width: 100%; border-radius: 8px;">`;
+                    const expiresDate = new Date(qrData.expires_at * 1000);
+                    qrExpiry.textContent = `Expires at: ${expiresDate.toLocaleTimeString()}`;
+                    verifyBtn.disabled = false;
+
+                    stepSelect.style.display = 'none';
+                    stepPayment.style.display = 'block';
+                    showToast(`QR code generated! Please scan and pay ${RENEWAL_PRICE} THB.`, 'ph-qr-code', 'var(--accent-color)');
+                } catch (err) {
+                    showToast("Error generating QR: " + err.message, "ph-x", "var(--danger)");
+                }
+            }
+
+            async function handleVerify() {
+                if (isVerifying || !transactionId) return;
+                isVerifying = true;
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Verifying...';
+                paymentStatus.textContent = 'Checking payment...';
+                paymentStatus.style.color = 'var(--text-secondary)';
+
+                try {
+                    await verifyPayment(transactionId);
+                    paymentStatus.textContent = 'Payment confirmed! Renewing ad...';
+                    paymentStatus.style.color = 'var(--success)';
+
+                    const newExpiresAt = Date.now() + (RENEWAL_DAYS * 24 * 60 * 60 * 1000);
+                    await updateDoc(doc(db, "banners", selectedAdId), {
+                        expiresAt: newExpiresAt,
+                        renewedAt: Date.now()
+                    });
+
+                    stepPayment.style.display = 'none';
+                    stepSuccess.style.display = 'block';
+                    showToast('Ad renewed successfully!', 'ph-check', 'var(--success)');
+
+                } catch (err) {
+                    if (err.message && err.message.includes('ยังไม่ชำระ')) {
+                        paymentStatus.textContent = 'Payment not detected yet. Please scan and pay, then try again.';
+                        paymentStatus.style.color = 'var(--warning)';
+                    } else {
+                        paymentStatus.textContent = err.message;
+                        paymentStatus.style.color = 'var(--danger)';
+                    }
+                    verifyBtn.disabled = false;
+                    verifyBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Verify Payment';
+                    isVerifying = false;
+                }
+            }
+
+            function handleCancel() {
+                transactionId = null;
+                selectedAdId = null;
+                isVerifying = false;
+                stepPayment.style.display = 'none';
+                stepSelect.style.display = 'block';
+                verifyBtn.disabled = true;
+                verifyBtn.innerHTML = '<i class="ph ph-magnifying-glass"></i> Verify Payment';
+                paymentStatus.textContent = '';
+                qrContainer.innerHTML = '<div class="loader"></div><p style="color: var(--text-secondary); font-size: 0.85rem;">Generating QR code...</p>';
+            }
+
+            searchBtn.addEventListener('click', handleSearch);
+            verifyBtn.addEventListener('click', handleVerify);
+            cancelBtn.addEventListener('click', handleCancel);
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleSearch();
+            });
+        });
+    </script>
+    <script>
+        (function() {
+            var toggle = document.getElementById('theme-toggle');
+            var saved = localStorage.getItem('theme');
+            var hour = new Date().getHours();
+            var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) { document.documentElement.setAttribute('data-theme', 'dark'); if (toggle) toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            if (toggle) toggle.addEventListener('click', function() {
+                var dark = document.documentElement.hasAttribute('data-theme');
+                if (dark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); toggle.innerHTML = '<i class="ph ph-moon"></i>'; }
+                else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            });
+        })();
+    </script>
+</body>
+</html>

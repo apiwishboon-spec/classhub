@@ -23,6 +23,10 @@
         "destination": "/ad-inquiry.html"
       },
       {
+        "source": "/ad-renew",
+        "destination": "/ad-renew.html"
+      },
+      {
         "source": "/admin",
         "destination": "/admin.html"
       },

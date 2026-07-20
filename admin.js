@@ -1515,6 +1515,7 @@ logoutBtn.addEventListener('click', async () => {
                 if (status === 'active') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--success);color:#fff;font-weight:600;">Active</span>';
                 if (status === 'pending') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--warning);color:#fff;font-weight:600;">Pending</span>';
                 if (status === 'expired') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--text-secondary);color:#fff;font-weight:600;">Expired</span>';
+                if (status === 'disabled') return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--danger);color:#fff;font-weight:600;">Disabled</span>';
                 return '<span style="font-size:0.7rem;padding:0.15rem 0.5rem;border-radius:4px;background:var(--text-secondary);color:#fff;font-weight:600;">' + (status || 'Active') + '</span>';
             }
 
@@ -1533,8 +1534,11 @@ logoutBtn.addEventListener('click', async () => {
                         <div class="admin-sched-card-header">
                             <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'By ' + data.postedBy : 'Contact: ' + (data.caption || 'None')}</span>
                             <div style="display:flex;gap:0.3rem;">
-                                ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}"><i class="ph ph-check"></i></button>` : ''}
-                                <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
+                                ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}" title="Approve"><i class="ph ph-check"></i></button>` : ''}
+                                <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${(data.caption || '').replace(/"/g, '&quot;')}" data-link="${(data.link || '').replace(/"/g, '&quot;')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="ban-banner-btn admin-btn-icon" data-id="${d.id}" data-status="${status}" title="${status === 'active' ? 'Disable' : 'Enable'}"><i class="ph ph-${status === 'active' ? 'prohibit' : 'check-circle'}"></i></button>
+                                <button class="renew-banner-btn admin-btn-icon" data-id="${d.id}" title="Renew 30 days"><i class="ph ph-arrows-clockwise"></i></button>
+                                <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" title="Delete"><i class="ph ph-trash"></i></button>
                             </div>
                         </div>
                         <div style="margin-top: 0.25rem;">${statusBadge(displayStatus)}</div>
@@ -1592,6 +1596,9 @@ logoutBtn.addEventListener('click', async () => {
                     <td>
                         <div style="display:flex;gap:0.3rem;">
                             ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}" title="Approve"><i class="ph ph-check"></i></button>` : ''}
+                            <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${(data.caption || '').replace(/"/g, '&quot;')}" data-link="${(data.link || '').replace(/"/g, '&quot;')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="ban-banner-btn admin-btn-icon" data-id="${d.id}" data-status="${status}" title="${status === 'active' ? 'Disable' : 'Enable'}"><i class="ph ph-${status === 'active' ? 'prohibit' : 'check-circle'}"></i></button>
+                            <button class="renew-banner-btn admin-btn-icon" data-id="${d.id}" title="Renew 30 days"><i class="ph ph-arrows-clockwise"></i></button>
                             <button class="remove-banner-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
                         </div>
                     </td>
@@ -1625,6 +1632,59 @@ logoutBtn.addEventListener('click', async () => {
                             await updateDoc(doc(db, "banners", id), { status: 'active' });
                             logAction("Approve Ad", `ID: ${id}`);
                             showToast("Ad approved!", "ph-check", "var(--success)");
+                        } catch (err) {
+                            showToast("Error: " + err.message, "ph-x", "var(--danger)");
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.edit-banner-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.target.closest('.edit-banner-btn').getAttribute('data-id');
+                    const currentCaption = e.target.closest('.edit-banner-btn').getAttribute('data-caption');
+                    const currentLink = e.target.closest('.edit-banner-btn').getAttribute('data-link');
+                    const newCaption = prompt("Edit caption:", currentCaption);
+                    if (newCaption === null) return;
+                    const newLink = prompt("Edit link:", currentLink);
+                    if (newLink === null) return;
+                    try {
+                        await updateDoc(doc(db, "banners", id), { caption: sanitize(newCaption), link: sanitize(newLink) });
+                        logAction("Edit Ad", `ID: ${id}`);
+                        showToast("Ad updated!", "ph-check", "var(--success)");
+                    } catch (err) {
+                        showToast("Error: " + err.message, "ph-x", "var(--danger)");
+                    }
+                });
+            });
+
+            document.querySelectorAll('.ban-banner-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.target.closest('.ban-banner-btn').getAttribute('data-id');
+                    const currentStatus = e.target.closest('.ban-banner-btn').getAttribute('data-status');
+                    const newStatus = currentStatus === 'active' ? 'disabled' : 'active';
+                    const action = newStatus === 'disabled' ? 'Disable' : 'Enable';
+                    if (await customConfirm(`${action} Ad`, `${action} this ad?`)) {
+                        try {
+                            await updateDoc(doc(db, "banners", id), { status: newStatus });
+                            logAction(`${action} Ad`, `ID: ${id}`);
+                            showToast(`Ad ${newStatus === 'disabled' ? 'disabled' : 'enabled'}!`, "ph-check", "var(--success)");
+                        } catch (err) {
+                            showToast("Error: " + err.message, "ph-x", "var(--danger)");
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.renew-banner-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const id = e.target.closest('.renew-banner-btn').getAttribute('data-id');
+                    if (await customConfirm("Renew Ad", "Extend this ad by 30 days?")) {
+                        try {
+                            const newExpiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000);
+                            await updateDoc(doc(db, "banners", id), { expiresAt: newExpiresAt, renewedAt: Date.now() });
+                            logAction("Renew Ad", `ID: ${id}`);
+                            showToast("Ad renewed for 30 days!", "ph-check", "var(--success)");
                         } catch (err) {
                             showToast("Error: " + err.message, "ph-x", "var(--danger)");
                         }
