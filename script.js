@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -1970,62 +1970,88 @@ document.head.appendChild(style);
 })();
 
 // ==================== ANNOUNCEMENT REACTIONS ====================
-(function initAnnouncementReactions() {
-    const container = document.getElementById('announcements-container');
-    if (!container) return;
+const ANN_REACTIONS = ['👍', '❤️', '🔥', '😮', '😢'];
 
-    const REACTIONS = ['👍', '❤️', '🔥', '😮', '😢'];
+function getMyReactions(annId) {
+    return JSON.parse(localStorage.getItem(`ann_r_${annId}`) || '[]');
+}
 
-    container.addEventListener('click', async (e) => {
-        const reactionBtn = e.target.closest('.ann-reaction-btn');
-        if (!reactionBtn) return;
-
-        const annId = reactionBtn.getAttribute('data-ann-id');
-        const emoji = reactionBtn.getAttribute('data-emoji');
-        if (!annId || !emoji) return;
-
-        const storageKey = `ann_reaction_${annId}`;
-        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const idx = saved.indexOf(emoji);
-        if (idx > -1) {
-            saved.splice(idx, 1);
-        } else {
-            saved.push(emoji);
-        }
-        localStorage.setItem(storageKey, JSON.stringify(saved));
-
-        const countEl = reactionBtn.querySelector('.reaction-count');
-        const currentCount = parseInt(countEl.textContent) || 0;
-        const newCount = idx > -1 ? currentCount - 1 : currentCount + 1;
-        countEl.textContent = newCount > 0 ? newCount : '';
-        reactionBtn.classList.toggle('reacted', saved.includes(emoji));
-    });
-})();
+function saveMyReactions(annId, list) {
+    localStorage.setItem(`ann_r_${annId}`, JSON.stringify(list));
+}
 
 function attachReactions() {
     const cards = document.querySelectorAll('.announcement-card');
     cards.forEach(card => {
         if (card.querySelector('.ann-reactions')) return;
-        const annId = card.getAttribute('data-ann-id') || Math.random().toString(36).slice(2, 10);
-        card.setAttribute('data-ann-id', annId);
-        const storageKey = `ann_reaction_${annId}`;
-        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const reactions = ['👍', '❤️', '🔥', '😮', '😢'];
+        const annId = card.getAttribute('data-ann-id');
+        if (!annId) return;
+
+        const myReacted = getMyReactions(annId);
         const wrap = document.createElement('div');
         wrap.className = 'ann-reactions';
-        wrap.style.cssText = 'display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap;';
-        reactions.forEach(emoji => {
+
+        ANN_REACTIONS.forEach(emoji => {
             const btn = document.createElement('button');
-            btn.className = 'ann-reaction-btn' + (saved.includes(emoji) ? ' reacted' : '');
-            btn.setAttribute('data-ann-id', annId);
-            btn.setAttribute('data-emoji', emoji);
-            btn.style.cssText = 'display:inline-flex;align-items:center;gap:0.2rem;padding:0.2rem 0.5rem;border:1px solid var(--border-color);border-radius:20px;background:var(--card-bg);cursor:pointer;font-size:0.8rem;transition:all 0.2s;';
-            btn.innerHTML = `${emoji} <span class="reaction-count" style="font-size:0.7rem;color:var(--text-secondary);"></span>`;
+            btn.className = 'ann-reaction-btn' + (myReacted.includes(emoji) ? ' reacted' : '');
+            btn.dataset.annId = annId;
+            btn.dataset.emoji = emoji;
+            btn.innerHTML = `${emoji} <span class="reaction-count"></span>`;
             wrap.appendChild(btn);
         });
+
         card.appendChild(wrap);
+        updateReactionCounts(card);
     });
 }
+
+function updateReactionCounts(card) {
+    const annId = card.getAttribute('data-ann-id');
+    if (!annId) return;
+    const ann = dashboardData.announcements.find(a => a.id === annId);
+    const counts = ann?.reactions || {};
+    card.querySelectorAll('.ann-reaction-btn').forEach(btn => {
+        const emoji = btn.dataset.emoji;
+        const count = counts[emoji] || 0;
+        btn.querySelector('.reaction-count').textContent = count > 0 ? count : '';
+    });
+}
+
+(async function initAnnouncementReactions() {
+    const container = document.getElementById('announcements-container');
+    if (!container) return;
+
+    container.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.ann-reaction-btn');
+        if (!btn) return;
+
+        const annId = btn.dataset.annId;
+        const emoji = btn.dataset.emoji;
+        if (!annId || !emoji) return;
+
+        btn.style.pointerEvents = 'none';
+
+        const myReacted = getMyReactions(annId);
+        const isReacted = myReacted.includes(emoji);
+        const annRef = doc(db, "announcements", annId);
+
+        try {
+            if (isReacted) {
+                await updateDoc(annRef, { [`reactions.${emoji}`]: increment(-1) });
+                myReacted.splice(myReacted.indexOf(emoji), 1);
+            } else {
+                await updateDoc(annRef, { [`reactions.${emoji}`]: increment(1) });
+                myReacted.push(emoji);
+            }
+            saveMyReactions(annId, myReacted);
+            btn.classList.toggle('reacted', !isReacted);
+        } catch (err) {
+            console.error("Reaction failed:", err);
+        }
+
+        btn.style.pointerEvents = '';
+    });
+})();
 
 // ==================== DARK MODE TOGGLE ANIMATION ====================
 (function initThemeToggleAnimation() {

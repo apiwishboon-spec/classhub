@@ -894,7 +894,8 @@ logoutBtn.addEventListener('click', async () => {
                 posterName: auth.currentUser.email.split('@')[0],
                 posterEmail: auth.currentUser.email,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                timestamp: new Date()
+                timestamp: new Date(),
+                reactions: {}
             });
             showToast("Announcement added!");
             logAction("Add Announcement", `Title: ${title}`);
