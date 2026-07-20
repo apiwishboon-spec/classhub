@@ -2484,12 +2484,6 @@ logoutBtn.addEventListener('click', async () => {
         });
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     // Initialization
     document.addEventListener('DOMContentLoaded', () => {
         initTheme();
