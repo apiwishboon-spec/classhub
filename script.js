@@ -1293,20 +1293,6 @@ function init() {
     initBanner();
     initBannerUpload();
     
-    // Show Royal Image Modal (Once every 2 days)
-    const royalModal = document.getElementById('image-modal-overlay');
-    const lastDismissed = localStorage.getItem('royal_modal_last_dismissed');
-    const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
-
-    if (royalModal && (!lastDismissed || (now - parseInt(lastDismissed)) > twoDaysInMs)) {
-        royalModal.style.display = 'flex';
-        royalModal.addEventListener('click', () => {
-            royalModal.style.display = 'none';
-            localStorage.setItem('royal_modal_last_dismissed', Date.now().toString());
-        });
-    }
-
     // What's New Modal close handler
     const whatsnewModal = document.getElementById('whatsnew-modal');
     if (whatsnewModal) {

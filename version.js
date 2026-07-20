@@ -1,5 +1,5 @@
 // MyClassHub Version
-const BASE_VERSION = "force-update-009";
+const BASE_VERSION = "force-update-010";
 
 // Force clear all old caches on load
 if ('caches' in window) {
