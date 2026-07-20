@@ -24,54 +24,111 @@
 
         <main class="dashboard-card" style="padding: 2rem; max-width: 800px; margin: 0 auto; line-height: 1.6;">
             <h2>Privacy Policy</h2>
-            <p><strong>Last Updated: June 14, 2026</strong></p>
+            <p><strong>Last Updated: July 20, 2026</strong></p>
             <p>At MyClassHub, we are committed to safeguarding your privacy. This Privacy Policy outlines our practices regarding the collection, use, and disclosure of information when you use our platform.</p>
 
             <h3>1. Information We Collect</h3>
             <p>We collect information to provide and improve our services to you:</p>
             <ul>
-                <li><strong>Personal Identification Information:</strong> If you are a staff member, we process your email address for authentication purposes.</li>
-                <li><strong>User-Generated Content:</strong> Any content you input, including classroom announcements, homework assignments, schedule details, or support messages, is collected and stored within our database.</li>
-                <li><strong>Usage Data:</strong> We may collect technical information such as device identifiers and access logs to maintain the security and operational integrity of the system.</li>
+                <li><strong>Personal Identification Information:</strong> If you are a staff member, we process your email address for authentication purposes via Google Firebase Authentication.</li>
+                <li><strong>User-Generated Content:</strong> Any content you create, including announcements, homework assignments, schedule entries, chat messages, notes, poll responses, suggestions, bug reports, support conversations, and ad submissions, is stored in our database.</li>
+                <li><strong>Ad Submission Data:</strong> When you submit an advertisement, we collect the ad image URL, caption, link, contact information (name, LINE ID, phone number, or email), and payment transaction details you provide.</li>
+                <li><strong>Device &amp; Usage Data:</strong> We collect browser type, device information, IP address, page visit logs, and access timestamps for security, analytics, and service improvement.</li>
+                <li><strong>Push Notification Tokens:</strong> When you enable notifications, your browser generates a unique token that is stored solely to deliver push notifications you have opted into.</li>
+                <li><strong>Local Storage Data:</strong> We store theme preferences, authentication sessions, search history, reaction state, study timer settings, and PWA cache data in your browser's local storage.</li>
             </ul>
 
-            <h3>2. Use of Firebase Services</h3>
-            <p>MyClassHub utilizes Google Firebase infrastructure to power our services:</p>
+            <h3>2. How We Use Your Information</h3>
+            <p>The information we collect is used exclusively for:</p>
             <ul>
-                <li><strong>Authentication:</strong> Google Firebase Authentication for secure user logins.</li>
-                <li><strong>Database:</strong> Google Firestore for real-time data storage.</li>
-                <li><strong>Hosting:</strong> Firebase Hosting for platform accessibility.</li>
+                <li>Managing user authentication, authorization levels, and role-based access control.</li>
+                <li>Facilitating administrative tasks such as posting announcements, homework, and schedules.</li>
+                <li>Enabling real-time communication between students and staff via the internal chat system.</li>
+                <li>Processing and displaying advertisements submitted by users, including moderation and expiry management.</li>
+                <li>Delivering push notifications for new announcements and homework (only if you have enabled them).</li>
+                <li>Operating the study timer and lo-fi music player features.</li>
+                <li>Recording announcement reactions and poll/vote tallies.</li>
+                <li>Maintaining audit logs of administrative actions for security and accountability.</li>
+                <li>Preventing abuse through profanity filtering and content moderation.</li>
+                <li>Improving the platform through aggregated, anonymized usage analytics.</li>
             </ul>
 
-            <h3>3. Use of Information</h3>
-            <p>The information we collect is utilized exclusively for:</p>
+            <h3>3. Third-Party Services</h3>
+            <p>MyClassHub integrates with the following third-party services, each governed by their own privacy policies:</p>
             <ul>
-                <li>Managing user authentication and authorization levels.</li>
-                <li>Facilitating administrative tasks, such as posting homework and announcements.</li>
-                <li>Enabling secure communication between students and staff.</li>
-                <li>Maintaining the security and functionality of the platform.</li>
+                <li><strong>Google Firebase:</strong> Provides authentication (Google Sign-In), Cloud Firestore database, cloud functions, and hosting. <a href="https://firebase.google.com/support/privacy" target="_blank" style="color: var(--accent-color);">Firebase Privacy Policy</a></li>
+                <li><strong>Google YouTube IFrame API:</strong> Used to embed background lo-fi music in the study timer. YouTube may collect viewing data according to <a href="https://policies.google.com/privacy" target="_blank" style="color: var(--accent-color);">Google's Privacy Policy</a>.</li>
+                <li><strong>ImgBB:</strong> Used for ad image hosting when you upload advertisement images. <a href="https://api.imgbb.com/" target="_blank" style="color: var(--accent-color);">ImgBB API</a></li>
+                <li><strong>inW Cloud Payment API:</strong> Used to verify PromptPay payment transactions for ad submissions. Transaction data (amount, timestamp, reference) is processed to confirm payment status.</li>
+                <li><strong>Cloudflare:</strong> Provides CDN hosting and performance optimization. <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" style="color: var(--accent-color);">Cloudflare Privacy Policy</a></li>
             </ul>
 
-            <h3>4. Administrative Logging & Security</h3>
-            <p>Administrative actions are logged for security, troubleshooting, and accountability purposes to ensure the integrity of the classroom environment.</p>
+            <h3>4. Data Storage and Security</h3>
+            <ul>
+                <li>All data is stored in Google Cloud Firestore with security rules that restrict access based on user roles.</li>
+                <li>Data in transit is encrypted via HTTPS/TLS.</li>
+                <li>Administrative actions are logged in an audit trail for security monitoring.</li>
+                <li>We employ content moderation tools including automated profanity filtering on user inputs.</li>
+                <li>We do not sell, trade, or rent your personal information to third parties.</li>
+            </ul>
 
-            <h3>5. Data Protection & Content Moderation</h3>
-            <p>We employ industry-standard protocols to protect your personal data. Furthermore, we reserve the right to remove content that violates our policies, including spam, harassment, hate speech, threats, or inappropriate content.</p>
+            <h3>5. Data Retention</h3>
+            <ul>
+                <li><strong>Account Data:</strong> Retained for the duration of your enrollment or employment at the institution.</li>
+                <li><strong>Announcements &amp; Homework:</strong> May be auto-archived after a configurable period (default: 7 days) set by administrators.</li>
+                <li><strong>Ad Listings:</strong> Expire after the purchased duration (1, 3, 7, 14, or 30 days) and may be removed by administrators.</li>
+                <li><strong>Chat Messages:</strong> Retained indefinitely unless deleted by administrators.</li>
+                <li><strong>Audit Logs:</strong> Retained for administrative review and are accessible only by administrators.</li>
+                <li><strong>FCM Tokens:</strong> Deleted when you disable notifications or clear your browser data.</li>
+                <li><strong>Push Notification Tokens:</strong> Automatically cleaned up when browsers report invalid tokens.</li>
+            </ul>
 
-            <h3>6. Data Deletion</h3>
-            <p>Users may request the deletion of their account and associated personal data by contacting the administrator. Please note that certain records may be retained when required for school administration, security, or legal compliance.</p>
+            <h3>6. Your Rights</h3>
+            <ul>
+                <li><strong>Access:</strong> You may view your own data through the platform interface.</li>
+                <li><strong>Deletion:</strong> You may request deletion of your account and personal data by contacting the administrator. Certain records may be retained for school administration, security, or legal compliance.</li>
+                <li><strong>Correction:</strong> You may update certain profile information through your account settings.</li>
+                <li><strong>Opt-Out:</strong> You may disable push notifications at any time through your browser settings. You may clear stored local data by clearing your browser storage.</li>
+                <li><strong>Portability:</strong> Upon request, we can provide your data in a machine-readable format.</li>
+            </ul>
 
             <h3>7. Cookies and Local Storage</h3>
-            <p>We utilize browser local storage solely to enhance your user experience by persisting your preferences, such as theme settings and authentication sessions. We do not employ third-party tracking cookies.</p>
+            <p>We utilize browser local storage to enhance your experience by persisting:</p>
+            <ul>
+                <li>Theme preferences (light/dark mode)</li>
+                <li>Authentication sessions</li>
+                <li>Search history and filter state</li>
+                <li>Announcement reaction state (per device)</li>
+                <li>Study timer settings</li>
+                <li>Service worker cache for offline access</li>
+                <li>What's New modal dismissal state</li>
+            </ul>
+            <p>We do not use third-party tracking cookies or advertising cookies.</p>
 
-            <h3>8. Age Restrictions</h3>
-            <p>MyClassHub is intended for use by students, teachers, teaching assistants, and school staff. Users under the age of 18 should use the platform under the supervision of their educational institution.</p>
+            <h3>8. Children's Privacy</h3>
+            <p>MyClassHub is designed for use within educational institutions. Users under the age of 18 should use the platform under the supervision of their school or educational institution. We do not knowingly collect information from children outside the educational context.</p>
 
-            <h3>9. Changes to this Privacy Policy</h3>
-            <p>We may update this Privacy Policy periodically. We will notify you of any changes by updating the "Last Updated" date at the top of this document.</p>
+            <h3>9. Content Moderation and Filtering</h3>
+            <ul>
+                <li>All user-generated text inputs are automatically screened through a profanity filter.</li>
+                <li>Administrators may review, edit, or remove any content posted on the platform.</li>
+                <li>Users who violate community guidelines may be banned from the platform.</li>
+                <li>Advertisement submissions undergo admin review before being displayed publicly.</li>
+            </ul>
 
-            <h3>10. Contact Us</h3>
-            <p>If you have questions, please contact the administrator via our internal support chat system.</p>
+            <h3>10. Data Breach Notification</h3>
+            <p>In the unlikely event of a data breach that compromises personal information, we will notify affected users and relevant authorities as required by applicable data protection laws.</p>
+
+            <h3>11. Changes to this Privacy Policy</h3>
+            <p>We may update this Privacy Policy periodically. We will notify you of significant changes by updating the "Last Updated" date and announcing changes through the platform's What's New feature.</p>
+
+            <h3>12. Contact Us</h3>
+            <p>If you have questions, concerns, or requests regarding your privacy or this policy, please contact the administrator via:</p>
+            <ul>
+                <li>The internal support chat system on MyClassHub</li>
+                <li>The Contact Admin page at <a href="/contact" style="color: var(--accent-color);">/contact</a></li>
+                <li>Email: apiwish.boon@gmail.com</li>
+            </ul>
         </main>
 
         <footer style="text-align: center; margin-top: 3rem; padding: 2rem 0; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 0.85rem;">
