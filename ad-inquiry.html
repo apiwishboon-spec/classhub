@@ -64,11 +64,11 @@
                         <div>
                             <label for="inquiry-duration" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; color: var(--text-primary);">Ad Duration</label>
                             <select id="inquiry-duration" class="form-input" style="width: 100%; box-sizing: border-box;">
-                                <option value="1">1 Day (5 THB)</option>
-                                <option value="3">3 Days (10 THB)</option>
-                                <option value="7" selected>7 Days (20 THB)</option>
-                                <option value="14">14 Days (35 THB)</option>
-                                <option value="30">30 Days (50 THB)</option>
+                                <option value="1">1 Day</option>
+                                <option value="3">3 Days</option>
+                                <option value="7">7 Days</option>
+                                <option value="14">14 Days</option>
+                                <option value="30" selected>30 Days</option>
                             </select>
                         </div>
 
@@ -143,7 +143,7 @@
         import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { sanitize } from './profanity-filter.js';
 
-        const PRICING = { 1: 5, 3: 10, 7: 20, 14: 35, 30: 50 };
+        const PRICING = { 1: 5, 3: 5, 7: 5, 14: 5, 30: 5 };
         const BASE_URL = 'https://api.inwcloud.shop';
 
         function showToast(message, icon, color) {
