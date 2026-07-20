@@ -2354,3 +2354,62 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     opacity: 0.85;
 }
 
+/* Announcement Reactions */
+.ann-reactions {
+    display: flex;
+    gap: 0.3rem;
+    margin-top: 0.6rem;
+    flex-wrap: wrap;
+}
+.ann-reaction-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.25rem 0.55rem;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    background: var(--card-bg);
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+.ann-reaction-btn:hover {
+    border-color: var(--accent-color);
+    transform: scale(1.1);
+}
+.ann-reaction-btn.reacted {
+    background: var(--highlight-bg);
+    border-color: var(--accent-color);
+}
+
+/* Study Timer */
+#timer-mode-toggle .timer-mode-btn {
+    padding: 0.3rem 0.7rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+#timer-mode-toggle .timer-mode-btn.active {
+    background: var(--accent-color);
+    color: #fff;
+}
+#timer-mode-toggle .timer-mode-btn:not(.active) {
+    background: transparent;
+    color: var(--text-secondary);
+}
+#timer-display {
+    font-size: 3.5rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+}
+#timer-session-info {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+

@@ -920,6 +920,7 @@ function renderAnnouncements() {
     });
     html += '</div>';
     announcementsContainer.innerHTML = html;
+    attachReactions();
 }
 
 function getHwStatus(due) {
@@ -1871,3 +1872,209 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ==================== STUDY TIMER ====================
+(function initStudyTimer() {
+    const timerDisplay = document.getElementById('timer-display');
+    const startBtn = document.getElementById('timer-start-btn');
+    const resetBtn = document.getElementById('timer-reset-btn');
+    const sessionInfo = document.getElementById('timer-session-info');
+    const modeBtns = document.querySelectorAll('.timer-mode-btn');
+    if (!timerDisplay || !startBtn) return;
+
+    const TIMES = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
+    let currentMode = 'focus';
+    let timeLeft = TIMES.focus;
+    let isRunning = false;
+    let interval = null;
+    let session = 1;
+    let totalSessions = 4;
+
+    function updateDisplay() {
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        timerDisplay.textContent = `${m}:${s}`;
+        document.title = isRunning ? `${m}:${s} - Study Timer` : 'MyClassHub - Classroom Dashboard';
+    }
+
+    function updateSessionInfo() {
+        sessionInfo.textContent = currentMode === 'focus' ? `Session ${session} of ${totalSessions}` : currentMode === 'short' ? 'Short Break' : 'Long Break';
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        timeLeft = TIMES[mode];
+        isRunning = false;
+        clearInterval(interval);
+        interval = null;
+        startBtn.innerHTML = '<i class="ph ph-play"></i> Start';
+        modeBtns.forEach(b => {
+            b.classList.toggle('active', b.dataset.mode === mode);
+            b.style.background = b.dataset.mode === mode ? 'var(--accent-color)' : 'transparent';
+            b.style.color = b.dataset.mode === mode ? '#fff' : 'var(--text-secondary)';
+        });
+        updateDisplay();
+        updateSessionInfo();
+    }
+
+    modeBtns.forEach(btn => {
+        btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+
+    startBtn.addEventListener('click', () => {
+        if (isRunning) {
+            clearInterval(interval);
+            interval = null;
+            isRunning = false;
+            startBtn.innerHTML = '<i class="ph ph-play"></i> Start';
+        } else {
+            isRunning = true;
+            startBtn.innerHTML = '<i class="ph ph-pause"></i> Pause';
+            interval = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    interval = null;
+                    isRunning = false;
+                    if (currentMode === 'focus') {
+                        if (session >= totalSessions) {
+                            switchMode('long');
+                            session = 1;
+                        } else {
+                            switchMode('short');
+                        }
+                        session++;
+                    } else {
+                        switchMode('focus');
+                    }
+                    updateSessionInfo();
+                    try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVggoKIeGBGPnuqy8+tfGVOR3V8iY2LfnBqZ22DlqC3uq6Xc2BaaH+OkoaBe3Z3f4OEf3d1eYOGh4eEgH16fIOIiYiFgX19gYSGhYB+fH6ChYaFgX59f4KEhYJ/fX6BgoOEg4F+fX+BgoKDg4B9fX+BgoKCgX19fYCBgYGBfX19f4GBgYF9fX1/gYGBgX19fX+BgYGBfX19f4GBgYF9fX1/gYGBgQ==').play(); } catch(e) {}
+                }
+            }, 1000);
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        clearInterval(interval);
+        interval = null;
+        isRunning = false;
+        timeLeft = TIMES[currentMode];
+        startBtn.innerHTML = '<i class="ph ph-play"></i> Start';
+        document.title = 'MyClassHub - Classroom Dashboard';
+        updateDisplay();
+    });
+
+    updateDisplay();
+    updateSessionInfo();
+})();
+
+// ==================== ANNOUNCEMENT REACTIONS ====================
+(function initAnnouncementReactions() {
+    const container = document.getElementById('announcements-container');
+    if (!container) return;
+
+    const REACTIONS = ['👍', '❤️', '🔥', '😮', '😢'];
+
+    container.addEventListener('click', async (e) => {
+        const reactionBtn = e.target.closest('.ann-reaction-btn');
+        if (!reactionBtn) return;
+
+        const annId = reactionBtn.getAttribute('data-ann-id');
+        const emoji = reactionBtn.getAttribute('data-emoji');
+        if (!annId || !emoji) return;
+
+        const storageKey = `ann_reaction_${annId}`;
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const idx = saved.indexOf(emoji);
+        if (idx > -1) {
+            saved.splice(idx, 1);
+        } else {
+            saved.push(emoji);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(saved));
+
+        const countEl = reactionBtn.querySelector('.reaction-count');
+        const currentCount = parseInt(countEl.textContent) || 0;
+        const newCount = idx > -1 ? currentCount - 1 : currentCount + 1;
+        countEl.textContent = newCount > 0 ? newCount : '';
+        reactionBtn.classList.toggle('reacted', saved.includes(emoji));
+    });
+})();
+
+function attachReactions() {
+    const cards = document.querySelectorAll('.announcement-card');
+    cards.forEach(card => {
+        if (card.querySelector('.ann-reactions')) return;
+        const annId = card.getAttribute('data-ann-id') || Math.random().toString(36).slice(2, 10);
+        card.setAttribute('data-ann-id', annId);
+        const storageKey = `ann_reaction_${annId}`;
+        const saved = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        const reactions = ['👍', '❤️', '🔥', '😮', '😢'];
+        const wrap = document.createElement('div');
+        wrap.className = 'ann-reactions';
+        wrap.style.cssText = 'display:flex;gap:0.3rem;margin-top:0.6rem;flex-wrap:wrap;';
+        reactions.forEach(emoji => {
+            const btn = document.createElement('button');
+            btn.className = 'ann-reaction-btn' + (saved.includes(emoji) ? ' reacted' : '');
+            btn.setAttribute('data-ann-id', annId);
+            btn.setAttribute('data-emoji', emoji);
+            btn.style.cssText = 'display:inline-flex;align-items:center;gap:0.2rem;padding:0.2rem 0.5rem;border:1px solid var(--border-color);border-radius:20px;background:var(--card-bg);cursor:pointer;font-size:0.8rem;transition:all 0.2s;';
+            btn.innerHTML = `${emoji} <span class="reaction-count" style="font-size:0.7rem;color:var(--text-secondary);"></span>`;
+            wrap.appendChild(btn);
+        });
+        card.appendChild(wrap);
+    });
+}
+
+// ==================== DARK MODE TOGGLE ANIMATION ====================
+(function initThemeToggleAnimation() {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    toggle.addEventListener('click', () => {
+        toggle.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        toggle.style.transform = 'rotate(360deg) scale(1.2)';
+        setTimeout(() => {
+            toggle.style.transform = 'rotate(0deg) scale(1)';
+        }, 400);
+    });
+})();
+
+// ==================== KEYBOARD SHORTCUTS ====================
+(function initKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+
+        switch (e.key.toLowerCase()) {
+            case 'd':
+                e.preventDefault();
+                themeToggle?.click();
+                break;
+            case 'a':
+                e.preventDefault();
+                window.location.href = '/admin';
+                break;
+            case 'c':
+                e.preventDefault();
+                window.location.href = '/chat';
+                break;
+            case 'n':
+                e.preventDefault();
+                addNoteBtn?.click();
+                break;
+            case 'r':
+                e.preventDefault();
+                window.location.reload();
+                break;
+            case '/':
+                e.preventDefault();
+                globalSearch?.focus();
+                break;
+            case '1':
+                e.preventDefault();
+                window.location.href = '/';
+                break;
+        }
+    });
+})();
