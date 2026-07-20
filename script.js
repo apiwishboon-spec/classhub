@@ -1,5 +1,5 @@
 import { db, imgbbApiKey } from './firebase-config.js';
-import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 // DOM Elements
@@ -2047,17 +2047,7 @@ let ytPlayer = null;
 })();
 
 // ==================== ANNOUNCEMENT REACTIONS ====================
-// 1 person, 1 emoji, 1 time per emoji. Click to react, click again to unreact.
 const ANN_REACTIONS = ['👍', '❤️', '🔥', '😮', '😢'];
-
-function getVisitorId() {
-    let vid = localStorage.getItem('visitor_id');
-    if (!vid) {
-        vid = 'v_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-        localStorage.setItem('visitor_id', vid);
-    }
-    return vid;
-}
 
 function getMyReactions(annId) {
     return JSON.parse(localStorage.getItem(`ann_r_${annId}`) || '[]');
@@ -2099,8 +2089,7 @@ function updateReactionCounts(card) {
     const reactions = ann?.reactions || {};
     card.querySelectorAll('.ann-reaction-btn').forEach(btn => {
         const emoji = btn.dataset.emoji;
-        const voters = reactions[emoji] || [];
-        const count = Array.isArray(voters) ? voters.length : 0;
+        const count = typeof reactions[emoji] === 'number' ? reactions[emoji] : 0;
         btn.querySelector('.reaction-count').textContent = count > 0 ? count : '';
     });
 }
@@ -2108,7 +2097,6 @@ function updateReactionCounts(card) {
 (async function initAnnouncementReactions() {
     const container = document.getElementById('announcements-container');
     if (!container) return;
-    const visitorId = getVisitorId();
 
     container.addEventListener('click', async (e) => {
         const btn = e.target.closest('.ann-reaction-btn');
@@ -2122,14 +2110,18 @@ function updateReactionCounts(card) {
 
         const myReacted = getMyReactions(annId);
         const isReacted = myReacted.includes(emoji);
-        const annRef = doc(db, "announcements", annId);
 
         try {
+            const annRef = doc(db, "announcements", annId);
             if (isReacted) {
-                await updateDoc(annRef, { [`reactions.${emoji}`]: arrayRemove(visitorId) });
+                const ann = dashboardData.announcements.find(a => a.id === annId);
+                const currentCount = ann?.reactions?.[emoji] || 0;
+                if (currentCount > 0) {
+                    await updateDoc(annRef, { [`reactions.${emoji}`]: increment(-1) });
+                }
                 myReacted.splice(myReacted.indexOf(emoji), 1);
             } else {
-                await updateDoc(annRef, { [`reactions.${emoji}`]: arrayUnion(visitorId) });
+                await updateDoc(annRef, { [`reactions.${emoji}`]: increment(1) });
                 myReacted.push(emoji);
             }
             saveMyReactions(annId, myReacted);
