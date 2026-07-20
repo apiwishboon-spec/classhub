@@ -905,7 +905,7 @@ function renderAnnouncements() {
     let html = '<div class="announcement-list">';
     filteredAnn.forEach(ann => {
         html += `
-            <div class="announcement-card">
+            <div class="announcement-card" data-ann-id="${ann.id || ''}">
                 <div class="announcement-header">
                     <div class="announcement-title">${ann.title || 'Announcement'}</div>
                     <div class="announcement-date">${ann.date || ''}</div>
