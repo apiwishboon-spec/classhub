@@ -1873,13 +1873,31 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// ==================== STUDY TIMER ====================
+// ==================== STUDY TIMER + YOUTUBE MUSIC ====================
+let ytPlayer = null;
+
+window.onYouTubeIframeAPIReady = function () {
+    ytPlayer = new YT.Player('yt-player', {
+        height: '1',
+        width: '1',
+        videoId: 'Q5aGoc2pW04',
+        playerVars: { autoplay: 0, controls: 0, modestbranding: 1, rel: 0, loop: 1, playlist: 'Q5aGoc2pW04' },
+        events: {
+            onReady: () => {
+                ytPlayer.setVolume(30);
+                document.getElementById('music-status').textContent = 'Lo-Fi Music (Ready)';
+            }
+        }
+    });
+};
+
 (function initStudyTimer() {
     const timerDisplay = document.getElementById('timer-display');
     const startBtn = document.getElementById('timer-start-btn');
     const resetBtn = document.getElementById('timer-reset-btn');
     const sessionInfo = document.getElementById('timer-session-info');
     const modeBtns = document.querySelectorAll('.timer-mode-btn');
+    const autoCheck = document.getElementById('timer-auto-check');
     if (!timerDisplay || !startBtn) return;
 
     const TIMES = { focus: 25 * 60, short: 5 * 60, long: 15 * 60 };
@@ -1917,8 +1935,41 @@ document.head.appendChild(style);
         updateSessionInfo();
     }
 
+    function startTimer() {
+        isRunning = true;
+        startBtn.innerHTML = '<i class="ph ph-pause"></i> Pause';
+        interval = setInterval(() => {
+            timeLeft--;
+            updateDisplay();
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                interval = null;
+                isRunning = false;
+                startBtn.innerHTML = '<i class="ph ph-play"></i> Start';
+                try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVggoKIeGBGPnuqy8+tfGVOR3V8iY2LfnBqZ22DlqC3uq6Xc2BaaH+OkoaBe3Z3f4OEf3d1eYOGh4eEgH16fIOIiYiFgX19gYSGhYB+fH6ChYaFgX59f4KEhYJ/fX6BgoOEg4F+fX+BgoKDg4B9fX+BgoKCgX19fYCBgYGBfX19f4GBgYF9fX1/gYGBgX19fX+BgYGBfX19f4GBgYF9fX1/gYGBgQ==').play(); } catch (e) {}
+                if (currentMode === 'focus') {
+                    if (session >= totalSessions) {
+                        switchMode('long');
+                        session = 1;
+                    } else {
+                        switchMode('short');
+                    }
+                    session++;
+                } else {
+                    switchMode('focus');
+                }
+                updateSessionInfo();
+                if (autoCheck?.checked) {
+                    setTimeout(startTimer, 1500);
+                }
+            }
+        }, 1000);
+    }
+
     modeBtns.forEach(btn => {
-        btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+        btn.addEventListener('click', () => {
+            if (!isRunning) switchMode(btn.dataset.mode);
+        });
     });
 
     startBtn.addEventListener('click', () => {
@@ -1928,30 +1979,7 @@ document.head.appendChild(style);
             isRunning = false;
             startBtn.innerHTML = '<i class="ph ph-play"></i> Start';
         } else {
-            isRunning = true;
-            startBtn.innerHTML = '<i class="ph ph-pause"></i> Pause';
-            interval = setInterval(() => {
-                timeLeft--;
-                updateDisplay();
-                if (timeLeft <= 0) {
-                    clearInterval(interval);
-                    interval = null;
-                    isRunning = false;
-                    if (currentMode === 'focus') {
-                        if (session >= totalSessions) {
-                            switchMode('long');
-                            session = 1;
-                        } else {
-                            switchMode('short');
-                        }
-                        session++;
-                    } else {
-                        switchMode('focus');
-                    }
-                    updateSessionInfo();
-                    try { new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVggoKIeGBGPnuqy8+tfGVOR3V8iY2LfnBqZ22DlqC3uq6Xc2BaaH+OkoaBe3Z3f4OEf3d1eYOGh4eEgH16fIOIiYiFgX19gYSGhYB+fH6ChYaFgX59f4KEhYJ/fX6BgoOEg4F+fX+BgoKDg4B9fX+BgoKCgX19fYCBgYGBfX19f4GBgYF9fX1/gYGBgX19fX+BgYGBfX19f4GBgYF9fX1/gYGBgQ==').play(); } catch(e) {}
-                }
-            }, 1000);
+            startTimer();
         }
     });
 
@@ -1967,6 +1995,42 @@ document.head.appendChild(style);
 
     updateDisplay();
     updateSessionInfo();
+
+    // YouTube Music Controls
+    const musicToggle = document.getElementById('music-toggle');
+    const musicVolume = document.getElementById('music-volume');
+    const musicSpeed = document.getElementById('music-speed');
+    const musicStatus = document.getElementById('music-status');
+    let musicPlaying = false;
+
+    if (musicToggle) {
+        musicToggle.addEventListener('click', () => {
+            if (!ytPlayer) { musicStatus.textContent = 'Loading...'; return; }
+            if (musicPlaying) {
+                ytPlayer.pauseVideo();
+                musicPlaying = false;
+                musicToggle.innerHTML = '<i class="ph ph-music-note"></i>';
+                musicStatus.textContent = 'Paused';
+            } else {
+                ytPlayer.playVideo();
+                musicPlaying = true;
+                musicToggle.innerHTML = '<i class="ph ph-pause-circle"></i>';
+                musicStatus.textContent = 'Playing';
+            }
+        });
+    }
+
+    if (musicVolume) {
+        musicVolume.addEventListener('input', () => {
+            if (ytPlayer?.setVolume) ytPlayer.setVolume(parseInt(musicVolume.value));
+        });
+    }
+
+    if (musicSpeed) {
+        musicSpeed.addEventListener('change', () => {
+            if (ytPlayer?.setPlaybackRate) ytPlayer.setPlaybackRate(parseFloat(musicSpeed.value));
+        });
+    }
 })();
 
 // ==================== ANNOUNCEMENT REACTIONS ====================
