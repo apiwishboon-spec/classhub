@@ -103,9 +103,6 @@ const addHomeworkSection = document.getElementById('add-homework-section');
 const manageAnnouncementsSection = document.getElementById('manage-announcements-section');
 const manageHomeworkSection = document.getElementById('manage-homework-section');
 const manageClassBannerSection = document.getElementById('manage-class-banner-section');
-const adInquiriesSection = document.getElementById('ad-inquiries-section');
-const adInquiriesList = document.getElementById('ad-inquiries-list');
-const adInquiryCount = document.getElementById('ad-inquiry-count');
 const systemSettingsSection = document.getElementById('system-settings-section');
 const auditLogSection = document.getElementById('audit-log-section');
 const bugReportsSection = document.getElementById('bug-reports-section');
@@ -131,7 +128,6 @@ let bugListener = null;
 let systemStatesListener = null;
 let bannerListener = null;
 let featListener = null;
-let adInquiryListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -610,7 +606,6 @@ onAuthStateChanged(auth, async (user) => {
         if (feedbackListener) { feedbackListener(); feedbackListener = null; }
         if (bannerListener) { bannerListener(); bannerListener = null; }
         if (featListener) { featListener(); featListener = null; }
-        if (adInquiryListener) { adInquiryListener(); adInquiryListener = null; }
     }
 });
 
@@ -638,7 +633,6 @@ function updateAdminSectionsVisibility() {
         bugReportsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
-        if (adInquiriesSection) adInquiriesSection.style.display = 'block';
 
         loadUsers();
         loadSchedule();
@@ -651,7 +645,6 @@ function updateAdminSectionsVisibility() {
         loadAuditLog();
         loadBugReports();
         loadBannerManagement();
-        loadAdInquiries();
         performSystemCleanup();
 
         // Admins can change status
@@ -671,14 +664,12 @@ function updateAdminSectionsVisibility() {
         managePollsSection.style.display = 'block';
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
-        if (adInquiriesSection) adInquiriesSection.style.display = 'block';
 
         loadAnnouncements();
         loadHomework();
         loadPolls();
         loadFeedback();
         loadBannerManagement();
-        loadAdInquiries();
         performSystemCleanup();
 
         // Teachers can change status
@@ -702,7 +693,6 @@ function updateAdminSectionsVisibility() {
         bugReportsSection.style.display = 'none';
         feedbackInboxSection.style.display = 'none';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'none';
-        if (adInquiriesSection) adInquiriesSection.style.display = 'none';
 
         loadHomework();
 
@@ -1621,143 +1611,6 @@ logoutBtn.addEventListener('click', async () => {
                             await updateDoc(doc(db, "banners", id), { status: 'active' });
                             logAction("Approve Ad", `ID: ${id}`);
                             showToast("Ad approved!", "ph-check", "var(--success)");
-                        } catch (err) {
-                            showToast("Error: " + err.message, "ph-x", "var(--danger)");
-                        }
-                    }
-                });
-            });
-        }, (error) => {
-            list.innerHTML = `<p style="color:var(--danger)">${error.message}</p>`;
-        });
-    }
-
-    // Load Ad Inquiries (real-time)
-    function loadAdInquiries() {
-        if (adInquiryListener) { adInquiryListener(); adInquiryListener = null; }
-
-        const list = document.getElementById('ad-inquiries-list');
-        if (!list) return;
-        list.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">Loading inquiries...</p>';
-
-        adInquiryListener = onSnapshot(query(collection(db, "ad_inquiries"), orderBy("createdAt", "desc")), (snap) => {
-            if (snap.empty) {
-                list.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No inquiries yet.</p>';
-                if (adInquiryCount) adInquiryCount.textContent = '0';
-                return;
-            }
-
-            let html = '';
-            let newCount = 0;
-
-            snap.forEach(d => {
-                const data = d.data();
-                const date = data.createdAt ? data.createdAt.toDate().toLocaleString() : 'Just now';
-                const isNew = data.status === 'new';
-                if (isNew) newCount++;
-
-                // Auto-mark as seen when admin views
-                if (isNew) {
-                    updateDoc(doc(db, "ad_inquiries", d.id), { status: 'seen' });
-                }
-
-                // Build conversation thread
-                let conversationHtml = '';
-                if (data.replies && Array.isArray(data.replies)) {
-                    data.replies.forEach((reply) => {
-                        const isUser = reply.sender === 'user';
-                        const replyTime = reply.timestamp ? (reply.timestamp.toDate ? reply.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })) : '';
-                        conversationHtml += `
-                            <div style="background: ${isUser ? 'var(--highlight-bg)' : 'var(--bg-color)'}; border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'};">
-                                <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
-                                    ${isUser ? 'CUSTOMER' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
-                                </div>
-                                <div style="font-size: 0.85rem;">${reply.text}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                html += `
-                    <div class="admin-sched-card" style="border-left: 4px solid ${isNew ? 'var(--danger)' : 'var(--accent-color)'};">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
-                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date}</span>
-                            ${isNew ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">NEW</span>' : ''}
-                        </div>
-                        <div style="margin-bottom: 0.5rem;">
-                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                                <span style="font-weight:600;"><i class="ph ph-user"></i> ${data.name || 'Unknown'}</span>
-                                <span><i class="ph ph-phone"></i> ${data.contact || '—'}</span>
-                                ${data.time ? `<span><i class="ph ph-clock"></i> ${data.time}</span>` : ''}
-                            </div>
-                        </div>
-                        ${data.message ? `<div style="background: var(--bg-color); padding: 0.75rem; border-radius: 6px; margin-bottom: 0.5rem; white-space: pre-wrap;">${data.message}</div>` : ''}
-                        ${conversationHtml ? `<div style="margin-bottom: 0.5rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>${conversationHtml}</div>` : ''}
-                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="text" class="form-input ad-reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
-                            <button class="send-ad-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
-                            ${data.photoURL ? `<a href="${data.photoURL}" target="_blank" style="font-size:0.8rem; color:var(--accent-color)"><i class="ph ph-image"></i> View Picture</a>` : ''}
-                            <button class="delete-inquiry-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" style="margin-left: auto;"><i class="ph ph-trash"></i> Delete</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No inquiries yet.</p>';
-            if (adInquiryCount) adInquiryCount.textContent = newCount;
-
-            // Reply handlers
-            document.querySelectorAll('.ad-reply-input').forEach(input => {
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        const id = input.getAttribute('data-id');
-                        document.querySelector(`.send-ad-reply-btn[data-id="${id}"]`)?.click();
-                    }
-                });
-            });
-
-            document.querySelectorAll('.send-ad-reply-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const id = btn.getAttribute('data-id');
-                    const input = document.querySelector(`.ad-reply-input[data-id="${id}"]`);
-                    const replyText = sanitize(input.value.trim());
-                    if (!replyText) return;
-
-                    btn.disabled = true;
-                    try {
-                        const docSnap = await getDoc(doc(db, "ad_inquiries", id));
-                        if (docSnap.exists()) {
-                            await updateDoc(doc(db, "ad_inquiries", id), {
-                                replies: arrayUnion({
-                                    sender: 'admin',
-                                    text: replyText,
-                                    timestamp: new Date()
-                                }),
-                                status: 'replied'
-                            });
-                            showToast("Reply sent");
-                            logAction("Ad Inquiry Reply", `To: ${id}`);
-                            input.value = '';
-                        }
-                    } catch (e) {
-                        showToast("Error: " + e.message);
-                    } finally {
-                        btn.disabled = false;
-                    }
-                });
-            });
-
-            document.querySelectorAll('.delete-inquiry-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    if (await customConfirm("Confirm Action", "Delete this inquiry?")) {
-                        const id = btn.getAttribute('data-id');
-                        try {
-                            await deleteDoc(doc(db, "ad_inquiries", id));
-                            showToast("Inquiry deleted.", "ph-check", "var(--success)");
-                            logAction("Delete Ad Inquiry", `ID: ${id}`);
                         } catch (err) {
                             showToast("Error: " + err.message, "ph-x", "var(--danger)");
                         }

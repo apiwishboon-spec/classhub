@@ -1292,7 +1292,6 @@ function init() {
     fetchPolls();
     initBanner();
     initBannerUpload();
-    initMyInquiry();
     
     // Show Royal Image Modal (Once every 2 days)
     const royalModal = document.getElementById('image-modal-overlay');
@@ -1414,7 +1413,7 @@ function init() {
                                 ${linkHtml ? `<span>${linkHtml}</span>` : ''}
                             </div>
                             <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
-                                <i class="ph ph-hand-pointing"></i> Click to inquire
+                                <i class="ph ph-hand-pointing"></i> Click to view
                             </div>
                         </div>
                         ${total > 1 ? `<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;">${index + 1}/${total}</div>` : ''}
@@ -1483,117 +1482,6 @@ function init() {
 
     function initBannerUpload() {
         // Button is now a direct link to /ad-inquiry
-    }
-
-    function initMyInquiry() {
-        const section = document.getElementById('my-inquiry-section');
-        const content = document.getElementById('my-inquiry-content');
-        if (!section || !content) return;
-
-        const myIds = JSON.parse(localStorage.getItem('my_ad_inquiries') || '[]');
-        if (myIds.length === 0) {
-            section.style.display = 'none';
-            return;
-        }
-
-        section.style.display = 'block';
-        content.innerHTML = '<div class="loader"></div><p style="color: var(--text-secondary); margin-top: 0.5rem;">Loading...</p>';
-
-        let hasData = false;
-        let loadTimer = setTimeout(() => {
-            if (!hasData) {
-                content.innerHTML = '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">Could not load inquiries. They may have been removed.</p>';
-            }
-        }, 5000);
-
-        myIds.forEach((id) => {
-            const containerId = `inquiry-${id}`;
-            let container = document.getElementById(containerId);
-
-            onSnapshot(doc(db, "ad_inquiries", id), (docSnap) => {
-                if (!docSnap.exists()) return;
-                clearTimeout(loadTimer);
-                section.style.display = 'block';
-                hasData = true;
-
-                if (!container) {
-                    container = document.createElement('div');
-                    container.id = containerId;
-                    container.style.marginBottom = '1rem';
-                    content.appendChild(container);
-                }
-
-                const data = docSnap.data();
-                const dateStr = data.createdAt ? data.createdAt.toDate().toLocaleString() : '';
-                const statusColor = data.status === 'new' ? 'var(--warning)' : data.status === 'seen' ? 'var(--accent-color)' : 'var(--success)';
-                const statusLabel = data.status === 'new' ? 'Pending' : data.status === 'seen' ? 'Seen' : 'Replied';
-
-                let repliesHtml = '';
-                if (data.replies && Array.isArray(data.replies) && data.replies.length > 0) {
-                    repliesHtml = data.replies.map(r => {
-                        const isAdmin = r.sender === 'admin';
-                        const time = r.timestamp ? new Date(r.timestamp.seconds * 1000 || r.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
-                        return `
-                            <div style="background: ${isAdmin ? 'var(--bg-color)' : 'var(--highlight-bg)'}; border-radius: 8px; padding: 0.6rem 0.8rem; margin-bottom: 0.4rem; border-left: 3px solid ${isAdmin ? 'var(--accent-color)' : 'var(--text-secondary)'};">
-                                <div style="font-size: 0.65rem; font-weight: 700; color: ${isAdmin ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.2rem;">
-                                    ${isAdmin ? 'Staff' : 'You'} ${time ? '— ' + time : ''}
-                                </div>
-                                <div style="font-size: 0.85rem;">${r.text}</div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                container.innerHTML = `
-                    <div style="border: 1px solid var(--border-color); border-radius: 10px; padding: 1rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-                            <span style="font-weight: 600; font-size: 0.9rem;">${sanitize(data.name)}</span>
-                            <span style="font-size: 0.7rem; padding: 0.2rem 0.5rem; border-radius: 4px; background: ${statusColor}; color: #fff; font-weight: 600;">${statusLabel}</span>
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
-                            <i class="ph ph-phone"></i> ${sanitize(data.contact)} ${data.time ? '&middot; <i class="ph ph-clock"></i> ' + sanitize(data.time) : ''}
-                        </div>
-                        ${data.message ? `<div style="background: var(--bg-color); padding: 0.6rem 0.8rem; border-radius: 6px; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 0.5rem;">${sanitize(data.message)}</div>` : ''}
-                        ${data.photoURL ? `<div style="margin-bottom: 0.5rem;"><img src="${data.photoURL}" alt="Attached" style="max-width: 200px; max-height: 150px; border-radius: 6px; object-fit: cover;"></div>` : ''}
-                        ${dateStr ? `<div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Sent: ${dateStr}</div>` : ''}
-                        ${repliesHtml ? `<div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px solid var(--border-color);"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.4rem;">REPLIES:</div>${repliesHtml}</div>` : ''}
-                        <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem;">
-                            <input type="text" class="form-input inquiry-reply-input" placeholder="Type a reply..." data-id="${id}" style="font-size: 0.85rem; padding: 0.5rem; flex: 1;">
-                            <button class="inquiry-reply-btn" data-id="${id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem; background: var(--accent-color); color: #fff; border: none; border-radius: 6px; cursor: pointer;">Send</button>
-                        </div>
-                    </div>
-                `;
-
-                const replyBtn = container.querySelector(`.inquiry-reply-btn[data-id="${id}"]`);
-                const replyInput = container.querySelector(`.inquiry-reply-input[data-id="${id}"]`);
-                if (replyBtn && replyInput) {
-                    const sendReply = async () => {
-                        const text = sanitize(replyInput.value.trim());
-                        if (!text) return;
-                        replyBtn.disabled = true;
-                        try {
-                            await updateDoc(doc(db, "ad_inquiries", id), {
-                                replies: arrayUnion({ sender: 'user', text, timestamp: new Date() }),
-                                status: 'replied'
-                            });
-                            replyInput.value = '';
-                        } catch (e) {
-                            showToast("Error sending reply: " + e.message, "ph-x", "var(--danger)");
-                            replyBtn.disabled = false;
-                        }
-                    };
-                    replyBtn.addEventListener('click', sendReply);
-                    replyInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            sendReply();
-                        }
-                    });
-                }
-            }, (error) => {
-                console.warn("My Inquiry load failed:", error.message);
-            });
-        });
     }
 
     // Register Service Worker for PWA

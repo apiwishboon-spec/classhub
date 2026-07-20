@@ -1743,7 +1743,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 
     /* Admin feedback list mobile */
     #feedback-list-admin > div,
-    #ad-inquiries-list > div,
     #bug-reports-list > div {
         font-size: 0.8rem;
         padding: 0.6rem 0 !important;
@@ -1784,11 +1783,6 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
         margin-top: 2rem !important;
         padding: 1.5rem 0 !important;
         font-size: 0.8rem;
-    }
-
-    /* Inquiry section mobile */
-    #my-inquiry-section .card-content {
-        font-size: 0.85rem;
     }
 
     /* PWA install banner mobile */
