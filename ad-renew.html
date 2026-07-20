@@ -219,18 +219,18 @@
                         const statusText = isExpired ? 'Expired' : (daysLeft !== null ? `${daysLeft} days left` : 'Active');
 
                         html += `
-                            <div class="admin-sched-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0.75rem; cursor: pointer;" data-id="${d.id}" onclick="selectAd('${d.id}')">
+                            <div class="admin-sched-card" style="border-left: 4px solid ${statusColor}; margin-bottom: 0.75rem; cursor: pointer;" data-id="${ad.id}" onclick="selectAd('${ad.id}')">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 600; font-size: 0.85rem;">${sanitize(data.postedBy || 'Unknown')}</span>
+                                    <span style="font-weight: 600; font-size: 0.85rem;">${sanitize(ad.postedBy || 'Unknown')}</span>
                                     <span style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: ${statusColor}; color: #fff; font-weight: 600;">${statusText}</span>
                                 </div>
                                 <div style="text-align: center; margin-bottom: 0.5rem;">
-                                    <img src="${data.url}" alt="Ad" style="max-width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px;">
+                                    <img src="${ad.url}" alt="Ad" style="max-width: 100%; max-height: 80px; object-fit: cover; border-radius: 4px;">
                                 </div>
                                 <div style="font-size: 0.75rem; color: var(--text-secondary);">
-                                    ${data.caption || 'No caption'} &middot; Expires: ${expiryStr}
+                                    ${ad.caption || 'No caption'} &middot; Expires: ${expiryStr}
                                 </div>
-                                ${isExpired || (daysLeft !== null && daysLeft <= 7) ? `<button class="renew-ad-btn btn-primary" data-id="${d.id}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; font-size: 0.85rem;"><i class="ph ph-arrows-clockwise"></i> Renew (4 THB)</button>` : ''}
+                                ${isExpired || (daysLeft !== null && daysLeft <= 7) ? `<button class="renew-ad-btn btn-primary" data-id="${ad.id}" style="width: 100%; margin-top: 0.5rem; padding: 0.5rem; font-size: 0.85rem;"><i class="ph ph-arrows-clockwise"></i> Renew (4 THB)</button>` : ''}
                             </div>
                         `;
                     });
