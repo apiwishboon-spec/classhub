@@ -2,6 +2,12 @@ import { db } from './firebase-config.js';
 import { collection, doc, updateDoc, addDoc, serverTimestamp, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(str).replace(/[&<>"']/g, c => map[c]);
+}
+
 function showToast(message, icon, color) {
     const container = document.getElementById('toast-container');
     if (!container) {
@@ -113,7 +119,7 @@ async function refreshChatHistory() {
             <div class="chat-thread ${isResolved ? 'solved' : ''}" style="display: flex; flex-direction: column; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1.5rem;">
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
                     <div class="chat-bubble user">
-                        ${msg.message}
+                        ${escapeHtml(msg.message)}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You${isResolved ? ' · Solved' : ''}</span>
                     ${msg.status !== 'new' && msg.status !== 'solved' ? `<span class="seen-indicator">Seen</span>` : ''}
@@ -124,7 +130,7 @@ async function refreshChatHistory() {
             html += `
                 <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
                     <div class="chat-bubble staff">
-                        ${msg.reply}
+                        ${escapeHtml(msg.reply)}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">Staff Reply</span>
                 </div>
@@ -141,12 +147,12 @@ async function refreshChatHistory() {
                 html += `
                     <div style="display: flex; flex-direction: column; align-items: ${isUser ? 'flex-end' : 'flex-start'}; gap: 0.25rem;">
                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-direction: ${isUser ? 'row-reverse' : 'row'};">
-                            ${senderPhoto ? `<img src="${senderPhoto}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">` : ''}
+                            ${senderPhoto ? `<img src="${escapeHtml(senderPhoto)}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;">` : ''}
                             <div class="chat-bubble ${isUser ? 'user' : 'staff'}">
-                                ${reply.text}
+                                ${escapeHtml(reply.text)}
                             </div>
                         </div>
-                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${senderName}</span>
+                        <span style="font-size: 0.65rem; color: var(--text-secondary);">${replyTime ? `${replyTime} · ` : ''}${escapeHtml(senderName)}</span>
                     </div>
                 `;
             });
@@ -226,7 +232,7 @@ function listenForReplies(messageId) {
                 refreshChatHistory();
             }
             if (data.reply && !localStorage.getItem(`reply_seen_${messageId}`)) {
-                showToast(`Staff replied: "${data.reply}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                showToast(`Staff replied: "${escapeHtml(data.reply)}"`, "ph-chat-centered-dots", "var(--accent-color)");
                 localStorage.setItem(`reply_seen_${messageId}`, 'true');
             }
             if (data.replies && Array.isArray(data.replies)) {
@@ -234,7 +240,7 @@ function listenForReplies(messageId) {
                 if (lastReply && lastReply.sender === 'admin') {
                     const replyKey = `reply_seen_${messageId}_${data.replies.length - 1}`;
                     if (!localStorage.getItem(replyKey)) {
-                        showToast(`Staff replied: "${lastReply.text}"`, "ph-chat-centered-dots", "var(--accent-color)");
+                        showToast(`Staff replied: "${escapeHtml(lastReply.text)}"`, "ph-chat-centered-dots", "var(--accent-color)");
                         localStorage.setItem(replyKey, 'true');
                         if (document.getElementById('chat-page-history')) refreshChatHistory();
                     }

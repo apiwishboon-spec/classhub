@@ -57,9 +57,11 @@ service cloud.firestore {
     }
     
     // 5. FCM Tokens collection
-    // Read/Write: Anyone (so browsers can register their push notification tokens anonymously)
+    // Read: Anyone (so browsers can register their push notification tokens)
+    // Write: Anyone authenticated
     match /fcm_tokens/{token} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // 6. Audit Log collection
@@ -84,9 +86,10 @@ service cloud.firestore {
 
     // 8. Page Visits collection
     // Read: Anyone
-    // Write: Anyone
+    // Write: Authenticated users only
     match /page_visits/{pageId} {
-      allow read, write: if true;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
     // 9. Polls collection
@@ -102,7 +105,8 @@ service cloud.firestore {
     // 10. Feedback collection
     match /feedback/{id} {
       allow create: if true;
-      allow read, update: if true; // Allow anyone to read/update for conversations
+      allow read: if true;
+      allow update: if request.auth != null; // Require auth for updates
       allow delete: if request.auth != null && (
         getUserRole() == 'admin' || 
         getUserRole() == 'teacher'

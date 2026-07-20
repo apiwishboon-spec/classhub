@@ -15,6 +15,12 @@ import {
 import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(str).replace(/[&<>"']/g, c => map[c]);
+}
+
 // Helper functions
 async function uploadToImgBB(file) {
     if (!file) return null;
@@ -273,14 +279,14 @@ function loadPolls() {
                 <div class="admin-sched-card" style="border-left: 4px solid ${isOpen ? 'var(--accent-color)' : 'var(--text-secondary)'};">
                     <div class="admin-sched-card-header">
                         <div style="display:flex; flex-direction:column;">
-                            <span style="font-weight:700;">${data.question}</span>
+                            <span style="font-weight:700;">${escapeHtml(data.question)}</span>
                             <span style="font-size:0.7rem; color:var(--text-secondary);">${isOpen ? '🟢 OPEN' : '🔴 CLOSED'} — Total Votes: ${totalVotes}</span>
                         </div>
                         <div class="admin-sched-card-actions">
                             <button class="toggle-poll-btn admin-btn-icon" data-id="${d.id}" data-open="${isOpen}" title="${isOpen ? 'Close Poll' : 'Open Poll'}">
                                 <i class="ph ${isOpen ? 'ph-lock-open' : 'ph-lock'}"></i>
                             </button>
-                            <button class="qr-full-btn admin-btn-icon" data-id="${d.id}" data-question="${data.question.replace(/"/g, '&quot;')}" style="color:var(--accent-color);"><i class="ph ph-corners-out"></i></button>
+                            <button class="qr-full-btn admin-btn-icon" data-id="${d.id}" data-question="${escapeHtml(data.question)}" style="color:var(--accent-color);"><i class="ph ph-corners-out"></i></button>
                             <button class="remove-poll-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                     </div>
@@ -290,7 +296,7 @@ function loadPolls() {
                             <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.5rem;">LIVE RESULTS (Hidden from students while open):</div>
                             ${Object.entries(data.votes || {}).map(([opt, count]) => `
                                 <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:2px;">
-                                    <span>${opt}</span>
+                                    <span>${escapeHtml(opt)}</span>
                                     <span style="font-weight:700;">${count}</span>
                                 </div>
                             `).join('')}
@@ -398,7 +404,7 @@ async function loadFeedback() {
                 conversationHtml += `
                     <div style="background: var(--bg-color); border-radius: 6px; padding: 0.75rem; margin-bottom: 0.5rem; border-left: 3px solid var(--accent-color);">
                         <div style="font-size: 0.65rem; font-weight: 700; color: var(--accent-color); margin-bottom: 0.25rem;">STAFF (Admin)</div>
-                        <div style="font-size: 0.85rem;">${data.reply}</div>
+                        <div style="font-size: 0.85rem;">${escapeHtml(data.reply)}</div>
                     </div>
                 `;
             }
@@ -413,7 +419,7 @@ async function loadFeedback() {
                             <div style="font-size: 0.65rem; font-weight: 700; color: ${isUser ? 'var(--accent-color)' : 'var(--text-secondary)'}; margin-bottom: 0.25rem;">
                                 ${isUser ? 'STUDENT' : 'STAFF'} ${replyTime ? `— ${replyTime}` : ''}
                             </div>
-                            <div style="font-size: 0.85rem;">${reply.text}</div>
+                            <div style="font-size: 0.85rem;">${escapeHtml(reply.text)}</div>
                         </div>
                     `;
                 });
@@ -428,7 +434,7 @@ async function loadFeedback() {
                             ${data.urgent ? '<span style="color:var(--danger); font-size:0.7rem; font-weight:700;">🚨 URGENT</span>' : ''}
                         </div>
                     </div>
-                    <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${data.message}</div>
+                    <div style="font-size:0.9rem; margin-bottom:1rem; white-space:pre-wrap;">${escapeHtml(data.message)}</div>
                     ${conversationHtml ? `<div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>${conversationHtml}</div>` : ''}
                     
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
@@ -1108,10 +1114,10 @@ logoutBtn.addEventListener('click', async () => {
                     <div class="admin-sched-card" id="user-card-${doc.id}">
                         <div class="admin-sched-card-header">
                             <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                <img src="${escapeHtml(avatar)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                                 <div style="display: flex; flex-direction: column;">
-                                    <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${data.displayName || 'No Name'}</span>
-                                    <span style="font-size:0.7rem; color:var(--text-secondary);">${data.email}</span>
+                                    <span style="font-weight:600;font-size:0.85rem;word-break:break-all;">${escapeHtml(data.displayName || 'No Name')}</span>
+                                    <span style="font-size:0.7rem; color:var(--text-secondary);">${escapeHtml(data.email)}</span>
                                 </div>
                             </div>
                             <div style="display:flex; gap:0.25rem;">
@@ -1133,21 +1139,21 @@ logoutBtn.addEventListener('click', async () => {
                             <div class="user-info-row" style="margin-top:0.5rem;">
                                 <span class="user-info-label" style="color:var(--accent-color);">Private Admin Notes:</span>
                                 <div style="display:flex; gap:0.4rem; margin-top:0.25rem;">
-                                    <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${data.adminNote || ''}" placeholder="e.g. Likes to yap">
+                                    <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${escapeHtml(data.adminNote || '')}" placeholder="e.g. Likes to yap">
                                     <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
                                 </div>
                             </div>
                             <div class="user-info-row" style="margin-top:0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                                 <span class="user-info-label">Edit Profile:</span>
-                                <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${data.displayName || ''}" placeholder="Real Name">
+                                <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
                                 <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" accept="image/*">
                                 <button class="save-user-edit-btn btn-primary btn-full" data-uid="${doc.id}" style="margin-top:0.5rem; font-size:0.75rem; padding:0.5rem;">Save Changes</button>
                             </div>
                             <div class="user-actions-grid">
-                                <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+                                <button class="user-action-btn reset-pass-btn" data-email="${escapeHtml(data.email)}">
                                     <i class="ph ph-key"></i> Reset Pass
                                 </button>
-                                <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+                                <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" data-status="${data.disabled || false}">
                                     <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable' : 'Disable'}
                                 </button>
                             </div>
@@ -1180,10 +1186,10 @@ logoutBtn.addEventListener('click', async () => {
                 <tr id="user-row-${doc.id}">
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <img src="${avatar}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                            <img src="${escapeHtml(avatar)}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
                             <div style="display: flex; flex-direction: column;">
-                                <span style="font-weight: 600;">${data.displayName || 'No Name'}</span>
-                                <span style="font-size: 0.75rem; color: var(--text-secondary);">${data.email}</span>
+                                <span style="font-weight: 600;">${escapeHtml(data.displayName || 'No Name')}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-secondary);">${escapeHtml(data.email)}</span>
                             </div>
                         </div>
                     </td>
@@ -1211,7 +1217,7 @@ logoutBtn.addEventListener('click', async () => {
                                 <div>
                                     <div class="user-info-label" style="margin-bottom:0.5rem;">Edit Profile</div>
                                     <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                                        <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.8rem;" value="${data.displayName || ''}" placeholder="Real Name">
+                                        <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.8rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
                                         <div style="display:flex; flex-direction:column; gap:0.2rem;">
                                             <label style="font-size:0.65rem; color:var(--text-secondary);">Change Profile Pic</label>
                                             <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.8rem;" accept="image/*">
@@ -1220,10 +1226,10 @@ logoutBtn.addEventListener('click', async () => {
                                     </div>
                                 </div>
                                 <div class="user-actions-grid" style="margin-top:0;">
-                                    <button class="user-action-btn reset-pass-btn" data-email="${data.email}">
+                                    <button class="user-action-btn reset-pass-btn" data-email="${escapeHtml(data.email)}">
                                         <i class="ph ph-key"></i> Send Password Reset Email
                                     </button>
-                                    <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${data.email}" data-status="${data.disabled || false}">
+                                    <button class="user-action-btn disable-user-btn" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" data-status="${data.disabled || false}">
                                         <i class="ph ${data.disabled ? 'ph-user-plus' : 'ph-user-minus'}"></i> ${data.disabled ? 'Enable Account' : 'Disable Account'}
                                     </button>
                                     <button class="user-action-btn btn-danger-alt remove-user-btn" data-uid="${doc.id}">
@@ -1412,11 +1418,11 @@ logoutBtn.addEventListener('click', async () => {
                         { key: 'thursday', label: 'Thu', val: data.thursday || '' },
                         { key: 'friday', label: 'Fri', val: data.friday || '' },
                     ];
-                    const dayBars = days.map(d => `<span class="sched-day-bar"><span class="sched-day-label">${d.label}</span><span class="sched-day-val">${d.val || '—'}</span></span>`).join('');
+                    const dayBars = days.map(d => `<span class="sched-day-bar"><span class="sched-day-label">${d.label}</span>                    <span class="sched-day-val">${escapeHtml(d.val || '—')}</span></span>`).join('');
                     html += `
                     <div class="admin-sched-card" data-id="${data.id}">
                         <div class="admin-sched-card-header">
-                            <span class="admin-sched-time">${data.time}</span>
+                            <span class="admin-sched-time">${escapeHtml(data.time)}</span>
                             <div class="admin-sched-card-actions">
                                 <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i></button>
                                 <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i></button>
@@ -1448,12 +1454,12 @@ logoutBtn.addEventListener('click', async () => {
                 scheduleData.forEach(data => {
                     html += `
                 <tr>
-                    <td class="time-col">${data.time}</td>
-                    <td>${data.monday || ''}</td>
-                    <td>${data.tuesday || ''}</td>
-                    <td>${data.wednesday || ''}</td>
-                    <td>${data.thursday || ''}</td>
-                    <td>${data.friday || ''}</td>
+                    <td class="time-col">${escapeHtml(data.time)}</td>
+                    <td>${escapeHtml(data.monday || '')}</td>
+                    <td>${escapeHtml(data.tuesday || '')}</td>
+                    <td>${escapeHtml(data.wednesday || '')}</td>
+                    <td>${escapeHtml(data.thursday || '')}</td>
+                    <td>${escapeHtml(data.friday || '')}</td>
                     <td class="admin-action-cell">
                         <button class="edit-sched-btn admin-btn-icon" data-id="${data.id}"><i class="ph ph-note-pencil"></i> Edit</button>
                         <button class="remove-sched-btn admin-btn-danger admin-btn-icon" data-id="${data.id}"><i class="ph ph-trash"></i> Remove</button>
@@ -1533,10 +1539,10 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                     <div class="admin-sched-card" style="border-left:4px solid ${displayStatus === 'pending' ? 'var(--warning)' : displayStatus === 'expired' ? 'var(--text-secondary)' : 'var(--success)'};">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'By ' + data.postedBy : 'Contact: ' + (data.caption || 'None')}</span>
+                            <span style="font-weight:600;font-size:0.85rem;">${data.postedBy ? 'By ' + escapeHtml(data.postedBy) : 'Contact: ' + escapeHtml(data.caption || 'None')}</span>
                             <div style="display:flex;gap:0.3rem;">
                                 ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}" title="Approve"><i class="ph ph-check"></i></button>` : ''}
-                                <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${(data.caption || '').replace(/"/g, '&quot;')}" data-link="${(data.link || '').replace(/"/g, '&quot;')}" data-img="${(data.url || '').replace(/"/g, '&quot;')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                                <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${escapeHtml(data.caption || '')}" data-link="${escapeHtml(data.link || '')}" data-img="${escapeHtml(data.url || '')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
                                 <button class="ban-banner-btn admin-btn-icon" data-id="${d.id}" data-status="${status}" title="${status === 'active' ? 'Disable' : 'Enable'}"><i class="ph ph-${status === 'active' ? 'prohibit' : 'check-circle'}"></i></button>
                                 <button class="renew-banner-btn admin-btn-icon" data-id="${d.id}" title="Renew 30 days"><i class="ph ph-arrows-clockwise"></i></button>
                                 <button class="remove-banner-btn admin-btn-danger admin-btn-icon" data-id="${d.id}" title="Delete"><i class="ph ph-trash"></i></button>
@@ -1544,10 +1550,10 @@ logoutBtn.addEventListener('click', async () => {
                         </div>
                         <div style="margin-top: 0.25rem;">${statusBadge(displayStatus)}</div>
                         <div style="margin-top: 0.5rem; text-align: center;">
-                            <img src="${data.url}" alt="Ad" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
+                            <img src="${escapeHtml(data.url)}" alt="Ad" style="max-width: 100%; max-height: 100px; object-fit: cover; border-radius: 4px;">
                         </div>
                         <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.25rem;">
-                            ${data.caption || 'None'}${data.link ? ' &middot; Link: ' + data.link : ''} &middot; ${dateStr}
+                            ${escapeHtml(data.caption || 'None')}${data.link ? ' &middot; Link: ' + escapeHtml(data.link) : ''} &middot; ${dateStr}
                         </div>
                         <div style="font-size:0.7rem;color:var(--text-secondary);margin-top:0.15rem;">
                             <i class="ph ph-clock"></i> Expires: ${expiryStr} ${isExpired ? '(Expired)' : ''}
@@ -1584,20 +1590,20 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                 <tr style="${displayStatus === 'pending' ? 'background: rgba(255,193,7,0.08);' : displayStatus === 'expired' ? 'background: rgba(128,128,128,0.08);' : ''}">
                     <td>
-                        <a href="${data.url}" target="_blank">
-                            <img src="${data.url}" alt="Ad Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
+                        <a href="${escapeHtml(data.url)}" target="_blank">
+                            <img src="${escapeHtml(data.url)}" alt="Ad Thumbnail" style="width: 80px; height: 50px; object-fit: cover; border-radius: 4px; border: 1px solid var(--border-color);">
                         </a>
                     </td>
-                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.caption || 'None'}</td>
-                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.link ? `<a href="${data.link}" target="_blank" style="color:var(--accent-color)">${data.link}</a>` : '—'}</td>
-                    <td>${data.postedBy || '—'}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(data.caption || 'None')}</td>
+                    <td style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${data.link ? `<a href="${escapeHtml(data.link)}" target="_blank" style="color:var(--accent-color)">${escapeHtml(data.link)}</a>` : '—'}</td>
+                    <td>${escapeHtml(data.postedBy || '—')}</td>
                     <td>${dateStr}</td>
                     <td>${expiryStr}</td>
                     <td>${statusBadge(displayStatus)}</td>
                     <td>
                         <div style="display:flex;gap:0.3rem;">
                             ${status === 'pending' ? `<button class="approve-banner-btn admin-btn-success admin-btn-icon" data-id="${d.id}" title="Approve"><i class="ph ph-check"></i></button>` : ''}
-                            <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${(data.caption || '').replace(/"/g, '&quot;')}" data-link="${(data.link || '').replace(/"/g, '&quot;')}" data-img="${(data.url || '').replace(/"/g, '&quot;')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="edit-banner-btn admin-btn-icon" data-id="${d.id}" data-caption="${escapeHtml(data.caption || '')}" data-link="${escapeHtml(data.link || '')}" data-img="${escapeHtml(data.url || '')}" title="Edit"><i class="ph ph-pencil-simple"></i></button>
                             <button class="ban-banner-btn admin-btn-icon" data-id="${d.id}" data-status="${status}" title="${status === 'active' ? 'Disable' : 'Enable'}"><i class="ph ph-${status === 'active' ? 'prohibit' : 'check-circle'}"></i></button>
                             <button class="renew-banner-btn admin-btn-icon" data-id="${d.id}" title="Renew 30 days"><i class="ph ph-arrows-clockwise"></i></button>
                             <button class="remove-banner-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
@@ -1740,11 +1746,11 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
+                            <span style="font-weight:600;font-size:0.85rem;">${escapeHtml(data.title)}</span>
                             <button class="remove-ann-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
-                            ${data.author || ''} · ${data.date || ''}
+                            ${escapeHtml(data.author || '')} · ${data.date || ''}
                         </div>
                     </div>
                 `;
@@ -1767,8 +1773,8 @@ logoutBtn.addEventListener('click', async () => {
                     const data = d.data();
                     html += `
                 <tr>
-                    <td>${data.title}</td>
-                    <td>${data.author}</td>
+                    <td>${escapeHtml(data.title)}</td>
+                    <td>${escapeHtml(data.author)}</td>
                     <td>${data.date}</td>
                     <td>
                         <button class="remove-ann-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
@@ -1814,13 +1820,13 @@ logoutBtn.addEventListener('click', async () => {
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
                             <div style="display:flex;flex-direction:column;">
-                                <span style="font-weight:600;font-size:0.85rem;">${data.title}</span>
-                                ${data.version ? `<span class="time-badge" style="font-size:0.65rem;width:fit-content;">${data.version}</span>` : ''}
+                                <span style="font-weight:600;font-size:0.85rem;">${escapeHtml(data.title)}</span>
+                                ${data.version ? `<span class="time-badge" style="font-size:0.65rem;width:fit-content;">${escapeHtml(data.version)}</span>` : ''}
                             </div>
                             <button class="remove-feat-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
                         <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.25rem;">
-                            ${data.description} · ${data.date || ''}
+                            ${escapeHtml(data.description)} · ${data.date || ''}
                         </div>
                     </div>
                 `;
@@ -1844,9 +1850,9 @@ logoutBtn.addEventListener('click', async () => {
                     const data = d.data();
                     html += `
                 <tr>
-                    <td style="font-weight:600;">${data.title}</td>
-                    <td style="max-width:300px;white-space:normal;">${data.description}</td>
-                    <td>${data.version ? `<span class="time-badge">${data.version}</span>` : '—'}</td>
+                    <td style="font-weight:600;">${escapeHtml(data.title)}</td>
+                    <td style="max-width:300px;white-space:normal;">${escapeHtml(data.description)}</td>
+                    <td>${data.version ? `<span class="time-badge">${escapeHtml(data.version)}</span>` : '—'}</td>
                     <td>${data.date || ''}</td>
                     <td>
                         <button class="remove-feat-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
@@ -1889,11 +1895,11 @@ logoutBtn.addEventListener('click', async () => {
                     html += `
                     <div class="admin-sched-card">
                         <div class="admin-sched-card-header">
-                            <span style="font-weight:600;font-size:0.85rem;">${data.subject}</span>
+                            <span style="font-weight:600;font-size:0.85rem;">${escapeHtml(data.subject)}</span>
                             <button class="remove-hw-btn admin-btn-danger admin-btn-icon" data-id="${d.id}"><i class="ph ph-trash"></i></button>
                         </div>
-                        <div style="font-size:0.85rem;margin:0.25rem 0;">${data.homework}</div>
-                        <div style="font-size:0.75rem;color:var(--text-secondary);">Due: ${data.due || ''}</div>
+                        <div style="font-size:0.85rem;margin:0.25rem 0;">${escapeHtml(data.homework)}</div>
+                        <div style="font-size:0.75rem;color:var(--text-secondary);">Due: ${escapeHtml(data.due || '')}</div>
                     </div>
                 `;
                 });
@@ -1915,9 +1921,9 @@ logoutBtn.addEventListener('click', async () => {
                     const data = d.data();
                     html += `
                 <tr>
-                    <td>${data.subject}</td>
-                    <td>${data.homework}</td>
-                    <td>${data.due}</td>
+                    <td>${escapeHtml(data.subject)}</td>
+                    <td>${escapeHtml(data.homework)}</td>
+                    <td>${escapeHtml(data.due)}</td>
                     <td>
                         <button class="remove-hw-btn admin-btn-danger" data-id="${d.id}"><i class="ph ph-trash"></i> Delete</button>
                     </td>
@@ -2388,14 +2394,14 @@ logoutBtn.addEventListener('click', async () => {
                 html += `
                 <div style="padding: 0.75rem; border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.25rem;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${data.action}</span>
+                        <span style="font-weight: 700; font-size: 0.8rem; color: var(--text-main);">${escapeHtml(data.action)}</span>
                         <span style="color: var(--text-secondary); font-size: 0.65rem;">${date}</span>
                     </div>
                     <div style="font-size: 0.75rem; color: var(--text-secondary); font-style: italic; margin-bottom: 0.1rem;">
-                        ${data.details}
+                        ${escapeHtml(data.details)}
                     </div>
                     <div style="font-size: 0.65rem; color: var(--accent-color); font-weight: 500;">
-                        <i class="ph ph-user" style="font-size: 0.7rem;"></i> ${data.user} (${data.role})
+                        <i class="ph ph-user" style="font-size: 0.7rem;"></i> ${escapeHtml(data.user)} (${escapeHtml(data.role)})
                     </div>
                 </div>
             `;
@@ -2432,7 +2438,7 @@ logoutBtn.addEventListener('click', async () => {
                     <div class="admin-sched-card-header">
                         <div style="display:flex; flex-direction:column; gap:0.15rem;">
                             <span style="font-weight:700; font-size:0.9rem;">${escapeHtml(data.subject)}</span>
-                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date} — ${data.page || 'unknown page'}</span>
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">${date} — ${escapeHtml(data.page || 'unknown page')}</span>
                         </div>
                         <div class="admin-sched-card-actions">
                             ${isNew ? `<button class="resolve-bug-btn admin-btn-icon" data-id="${d.id}" style="color:var(--success);" title="Mark as Resolved"><i class="ph ph-check"></i></button>` : ''}
@@ -2513,7 +2519,7 @@ logoutBtn.addEventListener('click', async () => {
 
                             banner.innerHTML = `
                             <i class="${iconClass}"></i>
-                            <div class="banner-content">${data.bannerText}</div>
+                            <div class="banner-content">${escapeHtml(data.bannerText)}</div>
                         `;
                             document.body.insertBefore(banner, document.body.firstChild);
                         }

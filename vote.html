@@ -97,6 +97,12 @@
         import { db } from './firebase-config.js';
         import { doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+            return String(str).replace(/[&<>"']/g, c => map[c]);
+        }
+
         const voteUi = document.getElementById('vote-ui');
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -137,7 +143,7 @@
 
                 let html = `
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
-                        <h2 style="margin:0;">${data.question}</h2>
+                        <h2 style="margin:0;">${escapeHtml(data.question)}</h2>
                         <span class="time-badge">${totalVotes} votes</span>
                     </div>
                     ${!isOpen && !hasVoted ? `<p style="text-align:center; color:var(--danger); font-weight:600; margin-bottom:1rem;">🗳️ This poll is now CLOSED. See results below.</p>` : ''}
@@ -150,8 +156,8 @@
                     const revealStats = !isOpen || (isOpen && hasVoted);
                     
                     html += `
-                        <button class="poll-option-btn" data-option="${opt}" ${hasVoted || !isOpen ? 'disabled' : ''}>
-                            <span>${opt}</span>
+                        <button class="poll-option-btn" data-option="${escapeHtml(opt)}" ${hasVoted || !isOpen ? 'disabled' : ''}>
+                            <span>${escapeHtml(opt)}</span>
                             ${revealStats ? `<span>${percent}% (${count})</span>` : ''}
                             <div class="progress-bar" style="width: ${revealStats ? percent : 0}%"></div>
                         </button>

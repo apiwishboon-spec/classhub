@@ -2,6 +2,12 @@ import { db, imgbbApiKey } from './firebase-config.js';
 import { collection, getDocs, doc, setDoc, query, orderBy, limit, onSnapshot, updateDoc, increment, addDoc, serverTimestamp, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+    return String(str).replace(/[&<>"']/g, c => map[c]);
+}
+
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const currentTimeDisplay = document.getElementById('current-time-display');
@@ -519,7 +525,7 @@ function renderSearchSchedule() {
     });
 
     if (results.length === 0) {
-        scheduleContainer.innerHTML = `<div class="empty-notes"><i class="ph ph-magnifying-glass"></i><p>No classes matching "${searchTerm}"</p></div>`;
+        scheduleContainer.innerHTML = `<div class="empty-notes"><i class="ph ph-magnifying-glass"></i><p>No classes matching "${escapeHtml(searchTerm)}"</p></div>`;
         return;
     }
 
@@ -541,7 +547,7 @@ function renderSearchSchedule() {
     html += `</div>`;
     scheduleContainer.innerHTML = `
         <div style="margin-bottom:1rem; font-size:0.85rem; color:var(--text-secondary);">
-            Search results for "${searchTerm}":
+            Search results for "${escapeHtml(searchTerm)}":
         </div>
         ${html}
     `;
@@ -741,9 +747,9 @@ function renderMobileSchedule() {
                     <div class="sched-period">คาบที่ ${periodNum}</div>
                     <div class="sched-info">
                         <span class="sched-subject">
-                            <span class="subject-tag" style="background:${color.bg};color:${color.text};border:1px solid ${color.text}33;">${formatted.subject}</span>
+                            <span class="subject-tag" style="background:${color.bg};color:${color.text};border:1px solid ${color.text}33;">${escapeHtml(formatted.subject)}</span>
                         </span>
-                        ${formatted.teacher ? `<span class="sched-teacher">${formatted.teacher}</span>` : ''}
+                        ${formatted.teacher ? `<span class="sched-teacher">${escapeHtml(formatted.teacher)}</span>` : ''}
                     </div>
                     ${countdownHtml}
                 </div>
@@ -835,9 +841,9 @@ function renderDesktopSchedule() {
         const cleaned = text.replace(/\b\d{4}\b/g, '').trim();
         const match = cleaned.match(/^(\S+)\s+(.+)$/);
         if (match) {
-            return `<span class="cell-subject">${match[1]}</span><span class="cell-teacher">${match[2].trim()}</span>`;
+            return `<span class="cell-subject">${escapeHtml(match[1])}</span><span class="cell-teacher">${escapeHtml(match[2].trim())}</span>`;
         }
-        return `<span class="cell-subject">${cleaned}</span>`;
+        return `<span class="cell-subject">${escapeHtml(cleaned)}</span>`;
     }
 
     const periodNums = dashboardData.schedule.map((_, i) => i + 1);
@@ -905,15 +911,15 @@ function renderAnnouncements() {
     let html = '<div class="announcement-list">';
     filteredAnn.forEach(ann => {
         html += `
-            <div class="announcement-card" data-ann-id="${ann.id || ''}">
+            <div class="announcement-card" data-ann-id="${escapeHtml(ann.id || '')}">
                 <div class="announcement-header">
-                    <div class="announcement-title">${ann.title || 'Announcement'}</div>
-                    <div class="announcement-date">${ann.date || ''}</div>
+                    <div class="announcement-title">${escapeHtml(ann.title || 'Announcement')}</div>
+                    <div class="announcement-date">${escapeHtml(ann.date || '')}</div>
                 </div>
-                <div class="announcement-message">${ann.message || ''}</div>
+                <div class="announcement-message">${escapeHtml(ann.message || '')}</div>
                 <div class="announcement-author" style="display: flex; justify-content: space-between; align-items: center;">
-                    <span><i class="ph ph-user-circle"></i> ${ann.author || 'Teacher'}</span>
-                    ${ann.posterName ? `<span style="font-size: 0.7rem; opacity: 0.7;">Posted by: ${ann.posterName}</span>` : ''}
+                    <span><i class="ph ph-user-circle"></i> ${escapeHtml(ann.author || 'Teacher')}</span>
+                    ${ann.posterName ? `<span style="font-size: 0.7rem; opacity: 0.7;">Posted by: ${escapeHtml(ann.posterName)}</span>` : ''}
                 </div>
             </div>
         `;
@@ -1042,13 +1048,13 @@ function renderHomework() {
                 </div>
                 <div class="hw-content">
                     <div class="hw-subject">
-                        <span class="subject-tag" style="background:${hwColor.bg};color:${hwColor.text};border:1px solid ${hwColor.text}33;font-size:0.7rem;">${hw.subject || 'Subject'}</span>
+                        <span class="subject-tag" style="background:${hwColor.bg};color:${hwColor.text};border:1px solid ${hwColor.text}33;font-size:0.7rem;">${escapeHtml(hw.subject || 'Subject')}</span>
                         ${statusTag}
                     </div>
-                    <div class="hw-title">${hw.homework || 'Task'}</div>
+                    <div class="hw-title">${escapeHtml(hw.homework || 'Task')}</div>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <div class="hw-due"><i class="ph ph-clock-circle"></i> Due: ${formatDueDate(hw.due)}</div>
-                        ${hw.posterName ? `<span style="font-size: 0.65rem; opacity: 0.6; font-style: italic;">By: ${hw.posterName}</span>` : ''}
+                        ${hw.posterName ? `<span style="font-size: 0.65rem; opacity: 0.6; font-style: italic;">By: ${escapeHtml(hw.posterName)}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -1162,15 +1168,15 @@ function renderNotes() {
         const typeIcon = note.type === 'formula' ? 'ph-function' : (note.type === 'task' ? 'ph-check-square' : 'ph-push-pin');
         
         html += `
-            <div class="note-card ${pinnedClass}" data-id="${note.id}">
+            <div class="note-card ${pinnedClass}" data-id="${escapeHtml(note.id)}">
                 <div class="note-header">
-                    <span class="note-type"><i class="ph ${typeIcon}"></i> ${note.type}</span>
+                    <span class="note-type"><i class="ph ${typeIcon}"></i> ${escapeHtml(note.type)}</span>
                     <div class="note-actions">
                         <button class="note-btn toggle-pin ${pinActive}" title="Pin Note"><i class="ph ph-push-pin"></i></button>
                         <button class="note-btn delete-note" title="Delete Note"><i class="ph ph-trash"></i></button>
                     </div>
                 </div>
-                <div class="note-content" contenteditable="true" spellcheck="false">${note.content}</div>
+                <div class="note-content" contenteditable="true" spellcheck="false">${escapeHtml(note.content)}</div>
             </div>
         `;
     });
