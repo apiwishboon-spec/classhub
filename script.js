@@ -1381,7 +1381,7 @@ function init() {
         let rotationTimer = null;
         let bannerListener = null;
 
-        function renderAd(index) {
+        function renderAd(index, animate) {
             if (!ads.length) {
                 bannerContainer.innerHTML = `
                     <div style="padding: 2.5rem; text-align: center; color: var(--text-secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.8rem; background: linear-gradient(135deg, var(--hover-color) 0%, var(--bg-color) 100%); width: 100%; box-sizing: border-box;">
@@ -1393,41 +1393,60 @@ function init() {
                 return;
             }
 
-            const data = ads[index];
-            const url = data.url;
-            const contact = sanitize(data.caption || 'Contact us for more info');
-            const link = sanitize(data.link || '');
-            const postedBy = sanitize(data.postedBy || '');
-            const total = ads.length;
+            function renderAdContent() {
+                const data = ads[index];
+                const url = data.url;
+                const contact = sanitize(data.caption || 'Contact us for more info');
+                const link = sanitize(data.link || '');
+                const postedBy = sanitize(data.postedBy || '');
+                const total = ads.length;
 
-            const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
+                const linkHtml = link ? `<a href="${link}" target="_blank" rel="noopener" style="color: #4fc3f7; text-decoration: underline; font-size: 0.85rem;" onclick="event.stopPropagation()"><i class="ph ph-link"></i> ${link}</a>` : '';
 
-            bannerContainer.innerHTML = `
-                <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer;">
-                    <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
-                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
-                        <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
-                            ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
-                            ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                bannerContainer.innerHTML = `
+                    <div id="ad-clickable" style="position: relative; width: 100%; min-height: 200px; max-height: 350px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; opacity: 0; transition: opacity 0.4s ease;">
+                        <img src="${url}" alt="Ad" style="width: 100%; height: 100%; min-height: 200px; max-height: 350px; object-fit: cover; display: block; opacity: 0.9;">
+                        <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 70%, transparent 100%); padding: 1.5rem 1rem 1rem 1rem; color: #fff; text-align: left; box-sizing: border-box;">
+                            <p style="margin: 0; font-size: 1rem; font-weight: 600; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">${contact}</p>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.25rem;">
+                                ${postedBy ? `<span style="font-size: 0.8rem; opacity: 0.9;"><i class="ph ph-building"></i> ${postedBy}</span>` : ''}
+                                ${linkHtml ? `<span>${linkHtml}</span>` : ''}
+                            </div>
+                            <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
+                                <i class="ph ph-hand-pointing"></i> Click to inquire
+                            </div>
                         </div>
-                        <div style="margin-top: 0.5rem; font-size: 0.75rem; opacity: 0.8; display: flex; align-items: center; gap: 0.3rem;">
-                            <i class="ph ph-hand-pointing"></i> Click to inquire
-                        </div>
+                        ${total > 1 ? `<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;">${index + 1}/${total}</div>` : ''}
                     </div>
-                    ${total > 1 ? `<div style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px;">${index + 1}/${total}</div>` : ''}
-                </div>
-            `;
+                `;
 
-            const adEl = document.getElementById('ad-clickable');
-            if (adEl) {
-                adEl.addEventListener('click', () => {
-                    if (link) {
-                        window.open(link, '_blank', 'noopener');
+                const adEl = document.getElementById('ad-clickable');
+                if (adEl) {
+                    if (animate) {
+                        requestAnimationFrame(() => { adEl.style.opacity = '1'; });
                     } else {
-                        window.location.href = '/ad-inquiry';
+                        adEl.style.opacity = '1';
                     }
-                });
+                    adEl.addEventListener('click', () => {
+                        if (link) {
+                            window.open(link, '_blank', 'noopener');
+                        } else {
+                            window.location.href = '/ad-inquiry';
+                        }
+                    });
+                }
+            }
+
+            if (animate) {
+                const current = bannerContainer.querySelector('#ad-clickable');
+                if (current) {
+                    current.style.opacity = '0';
+                    setTimeout(renderAdContent, 400);
+                } else {
+                    renderAdContent();
+                }
+            } else {
+                renderAdContent();
             }
         }
 
@@ -1436,7 +1455,7 @@ function init() {
             if (ads.length <= 1) return;
             rotationTimer = setInterval(() => {
                 currentIndex = (currentIndex + 1) % ads.length;
-                renderAd(currentIndex);
+                renderAd(currentIndex, true);
             }, 5000);
         }
 
