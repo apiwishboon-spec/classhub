@@ -2424,6 +2424,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
     to { opacity: 1; }
 }
 
+/* Dashboard grid cards — staggered cascade */
 .dashboard-grid .dashboard-card {
     animation: cardFadeIn 0.45s cubic-bezier(0.2, 0, 0.38, 0.9) both;
 }
@@ -2438,6 +2439,7 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator {
 .dashboard-grid .dashboard-card:nth-child(9) { animation-delay: 0.48s; }
 .dashboard-grid .dashboard-card:nth-child(10) { animation-delay: 0.54s; }
 
+/* Single-column pages: ad-inquiry, ad-renew sections */
 main > .dashboard-card,
 main > section {
     animation: cardFadeIn 0.45s cubic-bezier(0.2, 0, 0.38, 0.9) both;
@@ -2453,5 +2455,12 @@ main > section:nth-child(4) { animation-delay: 0.24s; }
 
 main {
     animation: sectionFadeIn 0.3s ease both;
+}
+
+/* Standalone pages: pass-change, vote, chat containers */
+.pass-change-container,
+.vote-container,
+.chat-container {
+    animation: cardFadeIn 0.5s cubic-bezier(0.2, 0, 0.38, 0.9) both;
 }
 
