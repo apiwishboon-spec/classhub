@@ -1669,25 +1669,20 @@ async function syncSystemStates() {
                     const now = new Date();
                     const diffMs = schedTime - now;
 
-                    // If 1 min before maintenance time and not already on maintenance page, redirect
-                    if (diffMs > 0 && diffMs <= 60000 && !window.location.pathname.startsWith('/maintenance')) {
-                        window.location.href = '/maintenance';
-                        return;
-                    }
-
-                    // If maintenance time has passed and not on maintenance page, redirect
-                    if (diffMs <= 0 && !window.location.pathname.startsWith('/maintenance')) {
-                        window.location.href = '/maintenance';
-                        return;
-                    }
-
-                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                    const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
                     if (diffMs > 0) {
+                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                        const diffSecs = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+                        // Redirect to maintenance page when <= 1 min left
+                        if (diffMs <= 60000 && !window.location.pathname.startsWith('/maintenance')) {
+                            window.location.href = '/maintenance';
+                            return;
+                        }
+
                         const timeStr = diffHours > 0
-                            ? `in ${diffHours}h ${diffMins}m`
-                            : `in ${diffMins}m`;
+                            ? `${diffHours}h ${diffMins}m ${diffSecs}s`
+                            : `${diffMins}m ${diffSecs}s`;
 
                         if (existingSched) {
                             const titleEl = existingSched.querySelector('.sched-maintenance-title');
@@ -1714,7 +1709,7 @@ async function syncSystemStates() {
                                     <div class="sched-maintenance-title" style="font-weight: 700; margin-bottom: 0.25rem;">${data.schedMaintenanceTitle}</div>
                                     <div class="sched-maintenance-msg" style="font-size: 0.85rem; opacity: 0.9;">${data.schedMaintenanceMessage}</div>
                                     <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.7;">
-                                        <i class="ph ph-clock-countdown"></i> <span class="sched-maintenance-countdown">${timeStr}</span>
+                                        <i class="ph ph-clock-countdown"></i> Starts in <span class="sched-maintenance-countdown">${timeStr}</span>
                                     </div>
                                 </div>
                                 <button onclick="this.closest('#sched-maintenance-banner').remove()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;margin-left:auto;color:#000;">&times;</button>
@@ -1722,7 +1717,7 @@ async function syncSystemStates() {
                             document.body.appendChild(banner);
                         }
 
-                        // Update countdown every 30s
+                        // Update countdown every second
                         if (!window._schedCountdownInterval) {
                             window._schedCountdownInterval = setInterval(() => {
                                 const b = document.getElementById('sched-maintenance-banner');
@@ -1730,20 +1725,26 @@ async function syncSystemStates() {
                                     const cd = b.querySelector('.sched-maintenance-countdown');
                                     if (cd) {
                                         const remaining = new Date(data.schedMaintenanceTime) - new Date();
-                                        if (remaining <= 0) {
-                                            b.remove();
-                                            clearInterval(window._schedCountdownInterval);
-                                            window._schedCountdownInterval = null;
-                                        } else {
-                                            const h = Math.floor(remaining / (1000 * 60 * 60));
-                                            const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
-                                            cd.textContent = h > 0 ? `in ${h}h ${m}m` : `in ${m}m`;
+                                        if (remaining <= 60000) {
+                                            window.location.href = '/maintenance';
+                                            return;
                                         }
+                                        const h = Math.floor(remaining / (1000 * 60 * 60));
+                                        const m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                                        const s = Math.floor((remaining % (1000 * 60)) / 1000);
+                                        cd.textContent = h > 0 ? `${h}h ${m}m ${s}s` : `${m}m ${s}s`;
                                     }
+                                } else {
+                                    clearInterval(window._schedCountdownInterval);
+                                    window._schedCountdownInterval = null;
                                 }
-            }, 10000);
+                            }, 1000);
                         }
                     } else {
+                        // Maintenance time passed — redirect if not already there
+                        if (!window.location.pathname.startsWith('/maintenance')) {
+                            window.location.href = '/maintenance';
+                        }
                         if (existingSched) existingSched.remove();
                         if (window._schedCountdownInterval) {
                             clearInterval(window._schedCountdownInterval);
