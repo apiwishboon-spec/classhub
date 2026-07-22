@@ -193,14 +193,12 @@
                         if (!maintenanceComplete) {
                             maintenanceComplete = true;
                             document.getElementById('countdown-box').innerHTML =
-                                '<p style="font-size:1.1rem;font-weight:600;color:var(--success);margin:0;">Maintenance complete! The site will be back shortly.</p>' +
-                                '<button onclick="window.location.href=\'/\'" style="margin-top:1rem;padding:0.6rem 1.5rem;background:var(--accent-color);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;">Back to Site</button>';
-                            // Auto-disable after 30s
-                            setTimeout(async () => {
-                                try {
-                                    await setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true });
-                                } catch(e) { console.error("Auto-disable failed:", e); }
-                            }, 30000);
+                                '<p style="font-size:0.95rem;font-weight:500;color:var(--text-secondary);margin:0;">Maintenance over. Please wait...</p>' +
+                                '<a href="/" style="margin-top:0.75rem;font-size:0.7rem;color:var(--text-secondary);text-decoration:underline;opacity:0.5;">back</a>';
+                            // Auto-disable immediately
+                            setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true }).catch(() => {});
+                            // Fallback redirect
+                            setTimeout(() => { window.location.href = '/'; }, 3000);
                         }
                         return;
                     }
