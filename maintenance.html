@@ -146,7 +146,7 @@
 
     <script type="module">
         import { db } from './firebase-config.js';
-        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         (function() {
             var saved = localStorage.getItem('theme');
@@ -154,6 +154,8 @@
             var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
             if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
         })();
+
+        let maintenanceComplete = false;
 
         onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
             if (!docSnap.exists()) {
@@ -181,10 +183,15 @@
                 function updateCountdown() {
                     const diff = target - new Date();
                     if (diff <= 0) {
-                        document.getElementById('countdown-box').innerHTML =
-                            '<p style="font-size:1rem;font-weight:600;color:var(--success);">Maintenance complete! The site may take a moment to refresh.</p>';
-                        // Refresh every 10s to check if admin disabled maintenance
-                        setTimeout(() => location.reload(), 10000);
+                        if (!maintenanceComplete) {
+                            maintenanceComplete = true;
+                            document.getElementById('countdown-box').innerHTML =
+                                '<p style="font-size:1rem;font-weight:600;color:var(--success);">Maintenance complete! Redirecting...</p>';
+                            // Auto-disable after 2 min to let students back in
+                            setTimeout(() => {
+                                setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true });
+                            }, 120000);
+                        }
                         return;
                     }
                     const h = Math.floor(diff / 3600000);
