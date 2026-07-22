@@ -67,6 +67,10 @@
         "destination": "/vote.html"
       },
       {
+        "source": "/export",
+        "destination": "/export.html"
+      },
+      {
         "source": "**",
         "destination": "/404.html"
       }

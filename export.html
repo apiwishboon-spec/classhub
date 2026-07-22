@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Export - MyClassHub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body { margin: 0; background: var(--bg-color); color: var(--text-main); font-family: 'IBM Plex Sans', sans-serif; }
+        .export-container { max-width: 680px; margin: 2rem auto; padding: 0 1.25rem; }
+        .export-card { background: var(--card-bg); border: 1px solid var(--border-color); padding: 2rem; margin-bottom: 1.25rem; }
+        .export-card h2 { font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem; display: flex; align-items: center; gap: 0.5rem; }
+        .export-card p { font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.5; }
+        .option-group { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .option-row { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; transition: border-color 0.15s; }
+        .option-row:hover { border-color: var(--accent-color); }
+        .option-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-color); cursor: pointer; flex-shrink: 0; }
+        .option-label { flex: 1; }
+        .option-label strong { display: block; font-size: 0.9rem; color: var(--text-main); }
+        .option-label span { font-size: 0.78rem; color: var(--text-secondary); }
+        .option-badge { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: var(--highlight-bg); color: var(--accent-color); font-weight: 600; flex-shrink: 0; }
+        .format-row { display: flex; gap: 0.75rem; margin-bottom: 1.5rem; }
+        .format-btn { flex: 1; padding: 0.75rem; border: 2px solid var(--border-color); border-radius: 4px; background: var(--card-bg); color: var(--text-main); font-family: inherit; font-size: 0.85rem; font-weight: 600; cursor: pointer; text-align: center; transition: all 0.15s; }
+        .format-btn:hover { border-color: var(--accent-color); }
+        .format-btn.active { border-color: var(--accent-color); background: var(--highlight-bg); color: var(--accent-color); }
+        .format-btn small { display: block; font-weight: 400; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .btn-export { width: 100%; padding: 0.85rem; background: var(--accent-color); color: #fff; border: none; border-radius: 4px; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.15s; }
+        .btn-export:hover { background: var(--accent-hover); }
+        .btn-export:disabled { opacity: 0.5; cursor: not-allowed; }
+        .preview-section { margin-top: 1.5rem; display: none; }
+        .preview-section.visible { display: block; }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+        .preview-header h3 { font-size: 0.9rem; font-weight: 600; margin: 0; }
+        .preview-count { font-size: 0.78rem; color: var(--text-secondary); }
+        .preview-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        .preview-table th { text-align: left; padding: 0.5rem 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); font-weight: 600; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .preview-table td { padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); color: var(--text-main); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .preview-table tr:hover td { background: var(--highlight-bg); }
+        .status-bar { margin-top: 1rem; padding: 0.75rem 1rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.8rem; color: var(--text-secondary); display: none; }
+        .status-bar.visible { display: flex; align-items: center; gap: 0.5rem; }
+        .status-bar.success { border-color: var(--success); color: var(--success); }
+        .status-bar.error { border-color: var(--danger); color: var(--danger); }
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color); background: var(--card-bg); }
+        .top-nav h1 { font-size: 1.125rem; font-weight: 600; margin: 0; color: var(--accent-color); }
+        .nav-links { display: flex; gap: 0.75rem; align-items: center; }
+        .nav-links a, .nav-links button { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.1rem; padding: 0.4rem; border-radius: 4px; transition: color 0.15s; text-decoration: none; }
+        .nav-links a:hover, .nav-links button:hover { color: var(--accent-color); }
+        .warning-box { padding: 0.75rem 1rem; background: rgba(241,194,27,0.08); border: 1px solid var(--warning); border-radius: 4px; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.5rem; }
+        .warning-box i { color: var(--warning); flex-shrink: 0; margin-top: 0.1rem; }
+    </style>
+</head>
+<body>
+    <header class="top-nav">
+        <div class="nav-brand">
+            <a href="/" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="ph ph-arrow-left" style="color: var(--accent-color); font-size: 1.2rem;"></i>
+                <h1 style="color: var(--accent-color); font-size: 1.25rem;">Data Export</h1>
+            </a>
+        </div>
+        <div class="nav-links">
+            <button id="theme-toggle" aria-label="Toggle Dark Mode"><i class="ph ph-moon"></i></button>
+            <a href="/" aria-label="Home"><i class="ph ph-house"></i></a>
+        </div>
+    </header>
+
+    <div class="export-container">
+        <div class="export-card" style="animation: cardFadeIn 0.4s cubic-bezier(0.2,0,0.38,0.9) both;">
+            <h2><i class="ph ph-database"></i> Select Data</h2>
+            <p>Choose which collections to export. Data is fetched live from Firestore and compiled into a single download.</p>
+
+            <div class="warning-box">
+                <i class="ph ph-warning"></i>
+                <span>This feature is intended for advanced users. Exported data may contain sensitive information. Handle with care.</span>
+            </div>
+
+            <div class="option-group">
+                <label class="option-row">
+                    <input type="checkbox" id="exp-schedule" checked>
+                    <div class="option-label">
+                        <strong>Schedule</strong>
+                        <span>Weekly class timetable with time slots</span>
+                    </div>
+                    <span class="option-badge" id="badge-schedule">--</span>
+                </label>
+                <label class="option-row">
+                    <input type="checkbox" id="exp-homework" checked>
+                    <div class="option-label">
+                        <strong>Homework</strong>
+                        <span>All assignments with subjects, tasks, and due dates</span>
+                    </div>
+                    <span class="option-badge" id="badge-homework">--</span>
+                </label>
+                <label class="option-row">
+                    <input type="checkbox" id="exp-announcements" checked>
+                    <div class="option-label">
+                        <strong>Announcements</strong>
+                        <span>All posts with titles, messages, and authors</span>
+                    </div>
+                    <span class="option-badge" id="badge-announcements">--</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="export-card" style="animation: cardFadeIn 0.4s 0.06s cubic-bezier(0.2,0,0.38,0.9) both;">
+            <h2><i class="ph ph-file-code"></i> Export Format</h2>
+            <p>JSON preserves full data structure. CSV is spreadsheet-friendly (one table per file in ZIP).</p>
+
+            <div class="format-row">
+                <button class="format-btn active" data-format="json" onclick="selectFormat('json')">
+                    JSON
+                    <small>Raw structured data</small>
+                </button>
+                <button class="format-btn" data-format="csv" onclick="selectFormat('csv')">
+                    CSV
+                    <small>Spreadsheet compatible</small>
+                </button>
+            </div>
+
+            <button id="export-btn" class="btn-export" onclick="runExport()">
+                <i class="ph ph-download-simple"></i> Export Data
+            </button>
+
+            <div class="status-bar" id="status-bar"></div>
+
+            <div class="preview-section" id="preview-section">
+                <div class="preview-header">
+                    <h3>Preview</h3>
+                    <span class="preview-count" id="preview-count"></span>
+                </div>
+                <div id="preview-content" style="overflow-x: auto; border: 1px solid var(--border-color); border-radius: 4px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        let selectedFormat = 'json';
+        let cachedData = { schedule: [], homework: [], announcements: [] };
+
+        window.selectFormat = function(fmt) {
+            selectedFormat = fmt;
+            document.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-format="${fmt}"]`).classList.add('active');
+        };
+
+        async function fetchAllData() {
+            const status = document.getElementById('status-bar');
+            status.className = 'status-bar visible';
+            status.innerHTML = '<i class="ph ph-circle-notch ph-spin"></i> Fetching data from Firestore...';
+            status.style.color = 'var(--accent-color)';
+
+            try {
+                if (document.getElementById('exp-schedule').checked) {
+                    const snap = await getDocs(collection(db, 'schedule'));
+                    cachedData.schedule = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                }
+                if (document.getElementById('exp-homework').checked) {
+                    const snap = await getDocs(query(collection(db, 'homework'), orderBy('timestamp', 'desc')));
+                    cachedData.homework = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                }
+                if (document.getElementById('exp-announcements').checked) {
+                    const snap = await getDocs(query(collection(db, 'announcements'), orderBy('timestamp', 'desc')));
+                    cachedData.announcements = snap.docs.map(d => {
+                        const data = d.data();
+                        if (data.timestamp && data.timestamp.toDate) {
+                            data.timestamp = data.timestamp.toDate().toISOString();
+                        }
+                        if (data.reactions) {
+                            const r = {};
+                            for (const [k, v] of Object.entries(data.reactions)) {
+                                r[k] = typeof v === 'object' ? Object.keys(v) : v;
+                            }
+                            data.reactions = r;
+                        }
+                        return { id: d.id, ...data };
+                    });
+                }
+
+                updateBadges();
+                showPreview();
+                status.innerHTML = '<i class="ph ph-check-circle"></i> Data fetched successfully. Ready to export.';
+                status.className = 'status-bar visible success';
+            } catch (err) {
+                status.innerHTML = `<i class="ph ph-x-circle"></i> Error: ${err.message}`;
+                status.className = 'status-bar visible error';
+            }
+        }
+
+        function updateBadges() {
+            document.getElementById('badge-schedule').textContent = `${cachedData.schedule.length} rows`;
+            document.getElementById('badge-homework').textContent = `${cachedData.homework.length} items`;
+            document.getElementById('badge-announcements').textContent = `${cachedData.announcements.length} posts`;
+        }
+
+        function showPreview() {
+            const section = document.getElementById('preview-section');
+            const content = document.getElementById('preview-content');
+            const count = document.getElementById('preview-count');
+            section.classList.add('visible');
+
+            let total = cachedData.schedule.length + cachedData.homework.length + cachedData.announcements.length;
+            count.textContent = `${total} total records`;
+
+            let html = '';
+
+            if (cachedData.schedule.length > 0) {
+                html += `<div style="margin-bottom: 1rem;"><div style="font-size:0.8rem;font-weight:600;padding:0.5rem 0.75rem;background:var(--bg-color);border:1px solid var(--border-color);border-bottom:none;">Schedule (${cachedData.schedule.length})</div>`;
+                html += '<table class="preview-table"><tr><th>Time</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th></tr>';
+                cachedData.schedule.forEach(row => {
+                    html += `<tr><td>${esc(row.time||'')}</td><td>${esc(row.monday||'')}</td><td>${esc(row.tuesday||'')}</td><td>${esc(row.wednesday||'')}</td><td>${esc(row.thursday||'')}</td><td>${esc(row.friday||'')}</td></tr>`;
+                });
+                html += '</table></div>';
+            }
+
+            if (cachedData.homework.length > 0) {
+                html += `<div style="margin-bottom: 1rem;"><div style="font-size:0.8rem;font-weight:600;padding:0.5rem 0.75rem;background:var(--bg-color);border:1px solid var(--border-color);border-bottom:none;">Homework (${cachedData.homework.length})</div>`;
+                html += '<table class="preview-table"><tr><th>Subject</th><th>Task</th><th>Due</th></tr>';
+                cachedData.homework.forEach(row => {
+                    html += `<tr><td>${esc(row.subject||'')}</td><td>${esc(row.homework||'')}</td><td>${esc(row.due||'')}</td></tr>`;
+                });
+                html += '</table></div>';
+            }
+
+            if (cachedData.announcements.length > 0) {
+                html += `<div><div style="font-size:0.8rem;font-weight:600;padding:0.5rem 0.75rem;background:var(--bg-color);border:1px solid var(--border-color);border-bottom:none;">Announcements (${cachedData.announcements.length})</div>`;
+                html += '<table class="preview-table"><tr><th>Title</th><th>Author</th><th>Date</th><th>Message</th></tr>';
+                cachedData.announcements.forEach(row => {
+                    html += `<tr><td>${esc(row.title||'')}</td><td>${esc(row.author||'')}</td><td>${esc(row.date||'')}</td><td title="${esc(row.message||'')}">${esc((row.message||'').substring(0, 60))}${(row.message||'').length > 60 ? '...' : ''}</td></tr>`;
+                });
+                html += '</table></div>';
+            }
+
+            content.innerHTML = html || '<p style="padding:1rem;text-align:center;color:var(--text-secondary);">No data to preview.</p>';
+        }
+
+        function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+
+        window.runExport = async function() {
+            const anyChecked = document.getElementById('exp-schedule').checked ||
+                              document.getElementById('exp-homework').checked ||
+                              document.getElementById('exp-announcements').checked;
+            if (!anyChecked) {
+                const s = document.getElementById('status-bar');
+                s.className = 'status-bar visible error';
+                s.innerHTML = '<i class="ph ph-warning"></i> Select at least one data collection.';
+                return;
+            }
+
+            await fetchAllData();
+
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const exportObj = {};
+            if (document.getElementById('exp-schedule').checked) exportObj.schedule = cachedData.schedule;
+            if (document.getElementById('exp-homework').checked) exportObj.homework = cachedData.homework;
+            if (document.getElementById('exp-announcements').checked) exportObj.announcements = cachedData.announcements;
+            exportObj.exportedAt = new Date().toISOString();
+            exportObj.exportedBy = 'MyClassHub Data Export';
+
+            if (selectedFormat === 'json') {
+                downloadJSON(exportObj, `myclasshub-export-${timestamp}.json`);
+            } else {
+                downloadCSV(exportObj, timestamp);
+            }
+
+            const s = document.getElementById('status-bar');
+            s.className = 'status-bar visible success';
+            s.innerHTML = `<i class="ph ph-check-circle"></i> Export downloaded as ${selectedFormat.toUpperCase()}.`;
+        };
+
+        function downloadJSON(obj, filename) {
+            const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = filename; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadCSV(obj, timestamp) {
+            let allCSV = '';
+
+            if (obj.schedule && obj.schedule.length > 0) {
+                allCSV += '--- SCHEDULE ---\n';
+                allCSV += 'Time,Monday,Tuesday,Wednesday,Thursday,Friday\n';
+                obj.schedule.forEach(row => {
+                    allCSV += csvRow([row.time, row.monday, row.tuesday, row.wednesday, row.thursday, row.friday]);
+                });
+                allCSV += '\n';
+            }
+
+            if (obj.homework && obj.homework.length > 0) {
+                allCSV += '--- HOMEWORK ---\n';
+                allCSV += 'Subject,Task,Due Date\n';
+                obj.homework.forEach(row => {
+                    allCSV += csvRow([row.subject, row.homework, row.due]);
+                });
+                allCSV += '\n';
+            }
+
+            if (obj.announcements && obj.announcements.length > 0) {
+                allCSV += '--- ANNOUNCEMENTS ---\n';
+                allCSV += 'Title,Author,Date,Message\n';
+                obj.announcements.forEach(row => {
+                    allCSV += csvRow([row.title, row.author, row.date, row.message]);
+                });
+                allCSV += '\n';
+            }
+
+            allCSV += `--- EXPORTED ---\n${obj.exportedAt}\n`;
+
+            const blob = new Blob([allCSV], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `myclasshub-export-${timestamp}.csv`; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function csvRow(fields) {
+            return fields.map(f => {
+                const v = (f || '').toString().replace(/"/g, '""');
+                return `"${v}"`;
+            }).join(',') + '\n';
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAllData();
+
+            const toggle = document.getElementById('theme-toggle');
+            const saved = localStorage.getItem('theme');
+            const hour = new Date().getHours();
+            const isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) { document.documentElement.setAttribute('data-theme', 'dark'); toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            toggle.addEventListener('click', () => {
+                const dark = document.documentElement.hasAttribute('data-theme');
+                if (dark) { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'light'); toggle.innerHTML = '<i class="ph ph-moon"></i>'; }
+                else { document.documentElement.setAttribute('data-theme', 'dark'); localStorage.setItem('theme', 'dark'); toggle.innerHTML = '<i class="ph ph-sun"></i>'; }
+            });
+        });
+    </script>
+</body>
+</html>
