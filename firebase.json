@@ -68,7 +68,7 @@
       },
       {
         "source": "**",
-        "destination": "/"
+        "destination": "/404.html"
       }
     ]
   }

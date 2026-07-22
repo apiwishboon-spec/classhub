@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - MyClassHub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: orbFloat 12s ease-in-out infinite alternate;
+        }
+        .orb-1 {
+            width: 400px; height: 400px;
+            background: var(--accent-color, #4fc3f7);
+            top: -10%; left: -5%;
+            animation-delay: 0s;
+        }
+        .orb-2 {
+            width: 350px; height: 350px;
+            background: #a78bfa;
+            bottom: -10%; right: -5%;
+            animation-delay: -4s;
+        }
+        .orb-3 {
+            width: 250px; height: 250px;
+            background: #f472b6;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -8s;
+        }
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(30px, -30px) scale(1.1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            max-width: 500px;
+        }
+
+        .glitch-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        .glitch-number {
+            font-size: clamp(8rem, 20vw, 14rem);
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, var(--accent-color, #4fc3f7), #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: glitchPulse 3s ease-in-out infinite;
+            position: relative;
+        }
+        .glitch-number::before,
+        .glitch-number::after {
+            content: '404';
+            position: absolute;
+            top: 0; left: 0;
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0;
+        }
+        .glitch-number::before {
+            animation: glitch1 3s ease-in-out infinite;
+        }
+        .glitch-number::after {
+            animation: glitch2 3s ease-in-out infinite;
+        }
+        @keyframes glitchPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        @keyframes glitch1 {
+            0%, 85%, 100% { opacity: 0; transform: translate(0); }
+            86% { opacity: 0.6; transform: translate(-4px, -2px); }
+            88% { opacity: 0; transform: translate(0); }
+            90% { opacity: 0.4; transform: translate(3px, 1px); }
+            92% { opacity: 0; }
+        }
+        @keyframes glitch2 {
+            0%, 87%, 100% { opacity: 0; transform: translate(0); }
+            88% { opacity: 0.5; transform: translate(4px, 2px); }
+            90% { opacity: 0; transform: translate(0); }
+            91% { opacity: 0.3; transform: translate(-3px, -1px); }
+            93% { opacity: 0; }
+        }
+
+        .emoji-float {
+            position: absolute;
+            font-size: 2rem;
+            animation: floatUp 4s ease-in-out infinite;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .emoji-float:nth-child(2) { left: 5%; animation-delay: 0s; animation-duration: 5s; }
+        .emoji-float:nth-child(3) { right: 10%; animation-delay: -1.5s; animation-duration: 4.5s; }
+        .emoji-float:nth-child(4) { left: 15%; animation-delay: -3s; animation-duration: 5.5s; }
+        .emoji-float:nth-child(5) { right: 20%; animation-delay: -2s; animation-duration: 4s; }
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        p {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+        p strong {
+            color: var(--accent-color, #4fc3f7);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--accent-color, #4fc3f7);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(79, 195, 247, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(79, 195, 247, 0.45);
+        }
+        .btn-secondary {
+            background: var(--hover-color, rgba(255,255,255,0.08));
+            color: var(--text-primary);
+            border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+        }
+        .btn-secondary:hover {
+            background: var(--border-color, rgba(255,255,255,0.15));
+            transform: translateY(-2px);
+        }
+
+        .footer-hint {
+            margin-top: 3rem;
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+        .footer-hint a {
+            color: var(--accent-color, #4fc3f7);
+            text-decoration: none;
+        }
+        .footer-hint a:hover {
+            text-decoration: underline;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-color, #4fc3f7);
+            border-radius: 50%;
+            opacity: 0;
+            animation: particleDrift 8s ease-in-out infinite;
+        }
+        .particle:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 30%; top: 70%; animation-delay: -2s; }
+        .particle:nth-child(3) { left: 50%; top: 40%; animation-delay: -4s; }
+        .particle:nth-child(4) { left: 70%; top: 80%; animation-delay: -1s; }
+        .particle:nth-child(5) { left: 85%; top: 30%; animation-delay: -3s; }
+        .particle:nth-child(6) { left: 20%; top: 90%; animation-delay: -5s; }
+        .particle:nth-child(7) { left: 60%; top: 15%; animation-delay: -6s; }
+        .particle:nth-child(8) { left: 90%; top: 60%; animation-delay: -7s; }
+        @keyframes particleDrift {
+            0%, 100% { opacity: 0; transform: translateY(0) scale(1); }
+            20% { opacity: 0.4; }
+            50% { opacity: 0.2; transform: translateY(-40px) scale(1.5); }
+            80% { opacity: 0.4; }
+        }
+
+        @media (max-width: 500px) {
+            .glitch-number { font-size: 7rem; }
+            .actions { flex-direction: column; }
+            .btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="glitch-wrapper">
+            <div class="glitch-number">404</div>
+            <span class="emoji-float">&#x1F3EB;</span>
+            <span class="emoji-float">&#x1F4D6;</span>
+            <span class="emoji-float">&#x1F914;</span>
+            <span class="emoji-float">&#x1F6B6;</span>
+        </div>
+        <h1>Oops! This page wandered off</h1>
+        <p>
+            Looks like this page took a <strong>study break</strong> and never came back.
+            Don't worry though — your dashboard is just a click away!
+        </p>
+        <div class="actions">
+            <a href="/" class="btn btn-primary">
+                <i class="ph ph-house"></i> Back to Dashboard
+            </a>
+            <button class="btn btn-secondary" onclick="history.back()">
+                <i class="ph ph-arrow-left"></i> Go Back
+            </button>
+        </div>
+        <div class="footer-hint">
+            Still lost? Try the <a href="/chat">chat</a> or <a href="/contact">contact</a> page.
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme');
+            var hour = new Date().getHours();
+            var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+    </script>
+</body>
+</html>
