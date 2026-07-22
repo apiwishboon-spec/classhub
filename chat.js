@@ -1,5 +1,5 @@
 import { db } from './firebase-config.js';
-import { collection, doc, updateDoc, addDoc, serverTimestamp, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, doc, updateDoc, addDoc, serverTimestamp, getDoc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { sanitize } from './profanity-filter.js';
 
 function escapeHtml(str) {
@@ -39,6 +39,29 @@ async function initChatPage() {
     if (!historyContainer) return;
 
     await refreshChatHistory();
+
+    // Typing indicator — user tells staff they're typing
+    let typingTimeout = null;
+    inputField.addEventListener('input', () => {
+        setDoc(doc(db, "typing_status", "user"), {
+            typing: true,
+            timestamp: new Date()
+        });
+        clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            setDoc(doc(db, "typing_status", "user"), { typing: false, timestamp: new Date() });
+        }, 3000);
+    });
+
+    // Listen for staff typing status
+    const staffTypingEl = document.getElementById('staff-typing-indicator');
+    onSnapshot(doc(db, "typing_status", "admin"), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().typing) {
+            staffTypingEl?.classList.add('visible');
+        } else {
+            staffTypingEl?.classList.remove('visible');
+        }
+    });
 
     sendBtn.addEventListener('click', async () => {
         const text = sanitize(inputField.value.trim());
@@ -122,7 +145,8 @@ async function refreshChatHistory() {
                         ${escapeHtml(msg.message)}
                     </div>
                     <span style="font-size: 0.65rem; color: var(--text-secondary);">${date} · You${isResolved ? ' · Solved' : ''}</span>
-                    ${msg.status !== 'new' && msg.status !== 'solved' ? `<span class="seen-indicator">Seen</span>` : ''}
+                    ${msg.status !== 'new' && msg.status !== 'solved' ? `<span class="seen-indicator"><i class="ph ph-checks"></i> Seen</span>` : ''}
+                    ${msg.lastReadBy ? `<span class="read-receipt"><i class="ph ph-checks"></i> Read ${msg.lastReadBy.toDate ? msg.lastReadBy.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}</span>` : ''}
                 </div>
         `;
 

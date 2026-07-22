@@ -71,6 +71,10 @@
         "destination": "/export.html"
       },
       {
+        "source": "/maintenance",
+        "destination": "/maintenance.html"
+      },
+      {
         "source": "**",
         "destination": "/404.html"
       }

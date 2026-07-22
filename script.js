@@ -1668,6 +1668,23 @@ async function syncSystemStates() {
                     const schedTime = new Date(data.schedMaintenanceTime);
                     const now = new Date();
                     const diffMs = schedTime - now;
+
+                    // If maintenance time has arrived and we're not already on maintenance page, redirect
+                    if (diffMs <= 0 && !window.location.pathname.startsWith('/maintenance')) {
+                        // Give 2 min buffer after scheduled time for maintenance window
+                        const elapsed = Math.abs(diffMs);
+                        if (elapsed < 120000) {
+                            window.location.href = '/maintenance';
+                            return;
+                        }
+                        // Past buffer — auto-disable scheduled maintenance
+                        if (elapsed >= 120000 && elapsed < 180000) {
+                            try {
+                                setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true });
+                            } catch(e) {}
+                        }
+                    }
+
                     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
                     const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'classhub-v35';
+const CACHE_NAME = 'classhub-v36';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -17,6 +17,7 @@ const STATIC_ASSETS = [
   '/terms.html',
   '/vote.html',
   '/export.html',
+  '/maintenance.html',
   '/game.js',
   '/chess-game.js',
   '/help.js',

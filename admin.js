@@ -123,6 +123,7 @@ const cleanupToggle = document.getElementById('cleanup-toggle');
 
 const addFeatureSection = document.getElementById('add-feature-section');
 const manageFeaturesSection = document.getElementById('manage-features-section');
+const importHomeworkSection = document.getElementById('import-homework-section');
 
 let pollListener = null;
 let feedbackListener = null;
@@ -392,7 +393,13 @@ async function loadFeedback() {
 
             // Mark as 'seen' if currently 'new'
             if (data.status === 'new') {
-                updateDoc(doc(db, "feedback", d.id), { status: 'seen' });
+                updateDoc(doc(db, "feedback", d.id), { 
+                    status: 'seen',
+                    lastReadBy: serverTimestamp()
+                });
+            } else if (data.status !== 'resolved') {
+                // Update lastReadBy even if already seen
+                updateDoc(doc(db, "feedback", d.id), { lastReadBy: serverTimestamp() });
             }
 
             // Build conversation thread
@@ -453,6 +460,7 @@ async function loadFeedback() {
         list.innerHTML = html || '<p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>';
 
         // Attach listeners (Reply, Resolve, Remove)
+        let adminTypingTimeout = null;
         document.querySelectorAll('.reply-input').forEach(input => {
             input.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
@@ -464,7 +472,23 @@ async function loadFeedback() {
             input.addEventListener('input', () => {
                 input.style.height = 'auto';
                 input.style.height = (input.scrollHeight) + 'px';
+                // Typing indicator — tell student staff is typing
+                setDoc(doc(db, "typing_status", "admin"), { typing: true, timestamp: new Date() });
+                clearTimeout(adminTypingTimeout);
+                adminTypingTimeout = setTimeout(() => {
+                    setDoc(doc(db, "typing_status", "admin"), { typing: false, timestamp: new Date() });
+                }, 3000);
             });
+        });
+
+        // Listen for student typing indicator
+        const studentTypingEl = document.getElementById('student-typing-indicator');
+        onSnapshot(doc(db, "typing_status", "user"), (snap) => {
+            if (snap.exists() && snap.data().typing) {
+                studentTypingEl?.classList.add('visible');
+            } else {
+                studentTypingEl?.classList.remove('visible');
+            }
         });
 
         document.querySelectorAll('.send-reply-btn').forEach(btn => {
@@ -628,6 +652,7 @@ function updateAdminSectionsVisibility() {
         manageScheduleSection.style.display = 'block';
         addAnnouncementSection.style.display = 'block';
         addHomeworkSection.style.display = 'block';
+        if (importHomeworkSection) importHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
         addFeatureSection.style.display = 'block';
@@ -662,6 +687,7 @@ function updateAdminSectionsVisibility() {
         manageScheduleSection.style.display = 'none';
         addAnnouncementSection.style.display = 'block';
         addHomeworkSection.style.display = 'block';
+        if (importHomeworkSection) importHomeworkSection.style.display = 'block';
         manageAnnouncementsSection.style.display = 'block';
         manageHomeworkSection.style.display = 'block';
         addFeatureSection.style.display = 'none';
@@ -979,6 +1005,89 @@ logoutBtn.addEventListener('click', async () => {
             showToast("Error: " + error.message);
         } finally {
             btn.textContent = 'Post Homework';
+            btn.disabled = false;
+        }
+    });
+
+    // Import Homework — Parse bulk input
+    function parseImportLines(text) {
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+        const regex = /^([^:]+):\s*(.+?)(?:\s+due\s+(.+))?$/i;
+        const results = [];
+        lines.forEach(line => {
+            const match = line.match(regex);
+            if (match) {
+                let due = (match[3] || '').trim();
+                if (due && !/^\d{4}-\d{2}-\d{2}$/.test(due)) {
+                    if (due.toLowerCase() === 'tomorrow') {
+                        const t = new Date(); t.setDate(t.getDate() + 1);
+                        due = t.toISOString().split('T')[0];
+                    } else if (due.toLowerCase() === 'today') {
+                        due = new Date().toISOString().split('T')[0];
+                    } else {
+                        due = '';
+                    }
+                }
+                results.push({ subject: match[1].trim(), task: match[2].trim(), due });
+            }
+        });
+        return results;
+    }
+
+    document.getElementById('import-hw-preview-btn')?.addEventListener('click', () => {
+        const text = document.getElementById('import-hw-input').value;
+        const items = parseImportLines(text);
+        const preview = document.getElementById('import-hw-preview');
+        if (items.length === 0) {
+            preview.innerHTML = '<div class="import-preview-row" style="color:var(--text-secondary);">No valid lines found. Use format: Subject: Task due Date</div>';
+            preview.style.display = 'block';
+            return;
+        }
+        let html = '';
+        items.forEach(item => {
+            html += `<div class="import-preview-row"><span class="ip-subject">${escapeHtml(item.subject)}</span><span class="ip-task">${escapeHtml(item.task)}</span><span class="ip-due">${item.due || 'No due'}</span></div>`;
+        });
+        preview.innerHTML = html;
+        preview.style.display = 'block';
+    });
+
+    document.getElementById('import-hw-btn')?.addEventListener('click', async () => {
+        const text = document.getElementById('import-hw-input').value;
+        const items = parseImportLines(text);
+        const status = document.getElementById('import-hw-status');
+
+        if (items.length === 0) {
+            status.innerHTML = '<span style="color:var(--danger);">No valid lines to import.</span>';
+            return;
+        }
+
+        const btn = document.getElementById('import-hw-btn');
+        btn.textContent = `Importing ${items.length}...`;
+        btn.disabled = true;
+        status.innerHTML = '';
+
+        try {
+            let count = 0;
+            for (const item of items) {
+                await addDoc(collection(db, "homework"), {
+                    subject: item.subject,
+                    homework: item.task,
+                    due: item.due,
+                    posterName: auth.currentUser.email.split('@')[0],
+                    posterEmail: auth.currentUser.email,
+                    timestamp: new Date()
+                });
+                count++;
+            }
+            status.innerHTML = `<span style="color:var(--success);">Successfully imported ${count} homework items.</span>`;
+            logAction("Import Homework", `Bulk import: ${count} items`);
+            document.getElementById('import-hw-input').value = '';
+            document.getElementById('import-hw-preview').style.display = 'none';
+            showToast(`Imported ${count} homework items!`, "ph-check", "var(--success)");
+        } catch (e) {
+            status.innerHTML = `<span style="color:var(--danger);">Error: ${e.message}</span>`;
+        } finally {
+            btn.textContent = 'Import All';
             btn.disabled = false;
         }
     });
@@ -2482,6 +2591,66 @@ logoutBtn.addEventListener('click', async () => {
                 });
             });
         });
+    }
+
+    // Class Statistics
+    async function loadClassStats() {
+        try {
+            const [usersSnap, hwSnap, annSnap, msgSnap, pollsSnap, bugsSnap, adsSnap, visitsSnap] = await Promise.all([
+                getDocs(collection(db, "users")),
+                getDocs(collection(db, "homework")),
+                getDocs(collection(db, "announcements")),
+                getDocs(query(collection(db, "feedback"), where("status", "!=", "resolved"))),
+                getDocs(collection(db, "polls")),
+                getDocs(query(collection(db, "bugs"), where("status", "==", "new"))),
+                getDocs(query(collection(db, "banners"), where("status", "==", "active"))),
+                getDocs(collection(db, "page_visits"))
+            ]);
+
+            document.getElementById('stat-students').textContent = usersSnap.size;
+            document.getElementById('stat-homework').textContent = hwSnap.size;
+            document.getElementById('stat-announcements').textContent = annSnap.size;
+            document.getElementById('stat-messages').textContent = msgSnap.size;
+            document.getElementById('stat-polls').textContent = pollsSnap.size;
+            document.getElementById('stat-bugs').textContent = bugsSnap.size;
+            document.getElementById('stat-ads').textContent = adsSnap.size;
+
+            // Total visits
+            let totalVisits = 0;
+            visitsSnap.forEach(d => { totalVisits += (d.data().count || 0); });
+            document.getElementById('stat-visits').textContent = totalVisits.toLocaleString();
+
+            // Extra stats
+            const extra = document.getElementById('stats-extra');
+            const hwDocs = hwSnap.docs.map(d => d.data());
+            const overdue = hwDocs.filter(h => {
+                if (!h.due) return false;
+                const d = new Date(h.due);
+                return d < new Date() && h.due !== '';
+            }).length;
+            const annDocs = annSnap.docs.map(d => d.data());
+            const topAuthor = {};
+            annDocs.forEach(a => { const k = a.author || 'Unknown'; topAuthor[k] = (topAuthor[k] || 0) + 1; });
+            const sorted = Object.entries(topAuthor).sort((a, b) => b[1] - a[1]);
+            const topName = sorted.length > 0 ? sorted[0][0] : '--';
+
+            extra.innerHTML = `
+                <span><strong>${overdue}</strong> overdue homework items</span>
+                <span>Top announcement author: <strong>${escapeHtml(topName)}</strong></span>
+                <span>Active banners: <strong>${adsSnap.size}</strong></span>
+                <span>Total page views: <strong>${totalVisits.toLocaleString()}</strong></span>
+            `;
+        } catch (e) {
+            console.error("Error loading stats:", e);
+        }
+    }
+
+    document.getElementById('refresh-stats-btn')?.addEventListener('click', loadClassStats);
+
+    // Show stats section for admin
+    if (currentUserRole === 'admin') {
+        document.getElementById('class-stats-section').style.display = 'block';
+        loadClassStats();
     }
 
     // Initialization

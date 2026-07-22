@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Maintenance - MyClassHub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            padding: 2rem;
+        }
+        .maint-card {
+            max-width: 480px;
+            text-align: center;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 3rem 2rem;
+            animation: cardFadeIn 0.5s cubic-bezier(0.2, 0, 0.38, 0.9) both;
+        }
+        .maint-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+            background: var(--highlight-bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .maint-icon i {
+            font-size: 1.75rem;
+            color: var(--warning);
+        }
+        h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+        }
+        .maint-msg {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0 0 2rem;
+        }
+        .countdown-box {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .countdown-unit {
+            text-align: center;
+        }
+        .countdown-num {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+        .countdown-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+        .maint-divider {
+            width: 48px;
+            height: 2px;
+            background: var(--accent-color);
+            margin: 0 auto 1.5rem;
+        }
+        .maint-footer {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 1.5rem;
+            padding: 0.6rem 1.5rem;
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .back-btn:hover { background: var(--accent-hover); }
+        @media (max-width: 480px) {
+            .maint-card { padding: 2rem 1.25rem; }
+            .countdown-num { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="maint-card">
+        <div class="maint-icon">
+            <i class="ph ph-wrench"></i>
+        </div>
+        <h1 id="maint-title">Scheduled Maintenance</h1>
+        <div class="maint-divider"></div>
+        <p class="maint-msg" id="maint-msg">MyClassHub is currently undergoing scheduled maintenance. We'll be back shortly.</p>
+        <div class="countdown-box" id="countdown-box">
+            <div class="countdown-unit">
+                <div class="countdown-num" id="cd-hours">00</div>
+                <div class="countdown-label">Hours</div>
+            </div>
+            <div class="countdown-unit">
+                <div class="countdown-num" id="cd-mins">00</div>
+                <div class="countdown-label">Minutes</div>
+            </div>
+            <div class="countdown-unit">
+                <div class="countdown-num" id="cd-secs">00</div>
+                <div class="countdown-label">Seconds</div>
+            </div>
+        </div>
+        <button class="back-btn" onclick="location.reload()">
+            <i class="ph ph-arrows-clockwise"></i> Check Again
+        </button>
+        <div class="maint-footer" style="margin-top: 2rem;">
+            MyClassHub &mdash; We'll be back soon
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        (function() {
+            var saved = localStorage.getItem('theme');
+            var hour = new Date().getHours();
+            var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+
+        onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
+            if (!docSnap.exists()) {
+                window.location.href = '/';
+                return;
+            }
+            const data = docSnap.data();
+
+            // If maintenance is disabled, go back to main site
+            if (data.schedMaintenanceEnabled === false) {
+                window.location.href = '/';
+                return;
+            }
+
+            if (data.schedMaintenanceTitle) {
+                document.getElementById('maint-title').textContent = data.schedMaintenanceTitle;
+            }
+            if (data.schedMaintenanceMessage) {
+                document.getElementById('maint-msg').textContent = data.schedMaintenanceMessage;
+            }
+
+            if (data.schedMaintenanceTime) {
+                const target = new Date(data.schedMaintenanceTime);
+
+                function updateCountdown() {
+                    const diff = target - new Date();
+                    if (diff <= 0) {
+                        document.getElementById('countdown-box').innerHTML =
+                            '<p style="font-size:1rem;font-weight:600;color:var(--success);">Maintenance complete! The site may take a moment to refresh.</p>';
+                        // Refresh every 10s to check if admin disabled maintenance
+                        setTimeout(() => location.reload(), 10000);
+                        return;
+                    }
+                    const h = Math.floor(diff / 3600000);
+                    const m = Math.floor((diff % 3600000) / 60000);
+                    const s = Math.floor((diff % 60000) / 1000);
+                    document.getElementById('cd-hours').textContent = String(h).padStart(2, '0');
+                    document.getElementById('cd-mins').textContent = String(m).padStart(2, '0');
+                    document.getElementById('cd-secs').textContent = String(s).padStart(2, '0');
+                }
+
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -139,6 +139,26 @@
                 </div>
             </section>
 
+            <!-- Import Homework (Bulk) -->
+            <section class="dashboard-card" id="import-homework-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-filecsv"></i> Import Homework</h2>
+                </div>
+                <div class="card-content admin-form-stack">
+                    <div style="padding: 0.75rem; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 4px; font-size: 0.8rem; color: var(--text-secondary);">
+                        <strong style="color: var(--text-main);">Format:</strong> One per line — <code style="background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">Subject: Task due YYYY-MM-DD</code><br>
+                        Example: <code style="background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">Math: Page 42 due 2026-07-25</code>
+                    </div>
+                    <textarea id="import-hw-input" class="import-area" placeholder="Math: Page 42 due 2026-07-25&#10;Science: Lab report due 2026-07-28&#10;English: Essay Chapter 3"></textarea>
+                    <div id="import-hw-preview" class="import-preview" style="display: none;"></div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="import-hw-preview-btn" class="btn-secondary" style="flex: 1; padding: 0.6rem;"><i class="ph ph-eye"></i> Preview</button>
+                        <button id="import-hw-btn" class="btn-primary" style="flex: 1; padding: 0.6rem;"><i class="ph ph-file-arrow-down"></i> Import All</button>
+                    </div>
+                    <div id="import-hw-status" style="font-size: 0.8rem; color: var(--text-secondary);"></div>
+                </div>
+            </section>
+
             <!-- Manage Polls -->
             <section class="dashboard-card" id="manage-polls-section">
                 <div class="card-header">
@@ -162,6 +182,10 @@
                     <h2><i class="ph ph-tray"></i> Student Messages</h2>
                 </div>
                 <div class="card-content">
+                    <div id="student-typing-indicator" class="typing-indicator" style="margin-bottom: 0.75rem;">
+                        <div class="typing-dots"><span></span><span></span><span></span></div>
+                        <span>Student is typing...</span>
+                    </div>
                     <div id="feedback-list-admin" style="display: flex; flex-direction: column; gap: 1rem;">
                         <p style="text-align: center; color: var(--text-secondary); font-size: 0.85rem;">No new messages.</p>
                     </div>
@@ -362,7 +386,28 @@
                 </div>
             </section>
 
-
+            <!-- Class Statistics (Admin Only) -->
+            <section class="dashboard-card" id="class-stats-section" style="display: none;">
+                <div class="card-header">
+                    <h2><i class="ph ph-chart-line-up"></i> Class Statistics</h2>
+                    <button id="refresh-stats-btn" class="btn-secondary" style="padding: 0.3rem 0.7rem; font-size: 0.75rem; min-height: auto;"><i class="ph ph-arrows-clockwise"></i> Refresh</button>
+                </div>
+                <div class="card-content">
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-card"><div class="stat-value" id="stat-students">--</div><div class="stat-label">Students</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-homework">--</div><div class="stat-label">Homework</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-announcements">--</div><div class="stat-label">Announcements</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-messages">--</div><div class="stat-label">Messages</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-polls">--</div><div class="stat-label">Polls</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-bugs">--</div><div class="stat-label">Bug Reports</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-ads">--</div><div class="stat-label">Active Ads</div></div>
+                        <div class="stat-card"><div class="stat-value" id="stat-visits">--</div><div class="stat-label">Page Visits</div></div>
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <div id="stats-extra" style="font-size: 0.8rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.4rem;"></div>
+                    </div>
+                </div>
+            </section>
 
             <!-- Bug Reports (Admin Only) -->
             <section class="dashboard-card card-scrollable" id="bug-reports-section" style="display: none;">
