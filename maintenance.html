@@ -156,6 +156,15 @@
         })();
 
         let maintenanceComplete = false;
+        let countdownInterval = null;
+
+        function checkAndRedirect(data) {
+            if (!data.schedMaintenanceEnabled) {
+                window.location.href = '/';
+                return true;
+            }
+            return false;
+        }
 
         onSnapshot(doc(db, "settings", "maintenance"), (docSnap) => {
             if (!docSnap.exists()) {
@@ -164,11 +173,7 @@
             }
             const data = docSnap.data();
 
-            // If maintenance is disabled, go back to main site
-            if (data.schedMaintenanceEnabled === false) {
-                window.location.href = '/';
-                return;
-            }
+            if (checkAndRedirect(data)) return;
 
             if (data.schedMaintenanceTitle) {
                 document.getElementById('maint-title').textContent = data.schedMaintenanceTitle;
@@ -180,17 +185,22 @@
             if (data.schedMaintenanceTime) {
                 const target = new Date(data.schedMaintenanceTime);
 
+                if (countdownInterval) clearInterval(countdownInterval);
+
                 function updateCountdown() {
                     const diff = target - new Date();
                     if (diff <= 0) {
                         if (!maintenanceComplete) {
                             maintenanceComplete = true;
                             document.getElementById('countdown-box').innerHTML =
-                                '<p style="font-size:1rem;font-weight:600;color:var(--success);">Maintenance complete! Redirecting...</p>';
-                            // Auto-disable after 2 min to let students back in
-                            setTimeout(() => {
-                                setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true });
-                            }, 120000);
+                                '<p style="font-size:1.1rem;font-weight:600;color:var(--success);margin:0;">Maintenance complete! The site will be back shortly.</p>' +
+                                '<button onclick="window.location.href=\'/\'" style="margin-top:1rem;padding:0.6rem 1.5rem;background:var(--accent-color);color:#fff;border:none;border-radius:4px;font-family:inherit;font-size:0.85rem;font-weight:600;cursor:pointer;">Back to Site</button>';
+                            // Auto-disable after 30s
+                            setTimeout(async () => {
+                                try {
+                                    await setDoc(doc(db, "settings", "maintenance"), { schedMaintenanceEnabled: false }, { merge: true });
+                                } catch(e) { console.error("Auto-disable failed:", e); }
+                            }, 30000);
                         }
                         return;
                     }
@@ -203,7 +213,7 @@
                 }
 
                 updateCountdown();
-                setInterval(updateCountdown, 1000);
+                countdownInterval = setInterval(updateCountdown, 1000);
             }
         });
     </script>
