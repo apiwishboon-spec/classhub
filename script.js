@@ -1741,10 +1741,7 @@ async function syncSystemStates() {
                             }, 1000);
                         }
                     } else {
-                        // Maintenance time passed — redirect if not already there
-                        if (!window.location.pathname.startsWith('/maintenance')) {
-                            window.location.href = '/maintenance';
-                        }
+                        // Maintenance time passed — just clean up the banner
                         if (existingSched) existingSched.remove();
                         if (window._schedCountdownInterval) {
                             clearInterval(window._schedCountdownInterval);
