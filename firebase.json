@@ -75,6 +75,10 @@
         "destination": "/maintenance.html"
       },
       {
+        "source": "/camo",
+        "destination": "/camo.html"
+      },
+      {
         "source": "**",
         "destination": "/404.html"
       }

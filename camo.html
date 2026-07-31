@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Overlay</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            background: transparent;
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        body.light { color: #1a1a1a; }
+        body.dark  { color: #ffffff; }
+
+        .overlay {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            padding: 12px;
+        }
+
+        .panel {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(10, 10, 20, 0.55);
+            border-radius: 14px;
+            padding: 12px 14px 14px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+        }
+        body.light .panel {
+            background: rgba(255, 255, 255, 0.65);
+            border-color: rgba(0, 0, 0, 0.10);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+        }
+        body.plain .panel {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .overlay-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .overlay-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .overlay-clock {
+            font-size: 0.85rem;
+            font-weight: 600;
+            opacity: 0.85;
+            font-variant-numeric: tabular-nums;
+        }
+        .overlay-rule {
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent, #4f8ef7), transparent);
+            margin-bottom: 10px;
+        }
+
+        .period {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            margin-bottom: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        body.light .period {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.06);
+        }
+        .period.past { opacity: 0.45; }
+        .period.current {
+            background: rgba(79, 142, 247, 0.22);
+            border: 1px solid rgba(79, 142, 247, 0.55);
+            box-shadow: 0 0 0 1px rgba(79, 142, 247, 0.25);
+        }
+        .period.empty { opacity: 0.4; }
+
+        .period-time {
+            flex-shrink: 0;
+            width: 88px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            opacity: 0.9;
+            font-variant-numeric: tabular-nums;
+        }
+        .period-subject {
+            flex: 1;
+            min-width: 0;
+            font-size: 1rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .period-subject .teacher {
+            font-weight: 400;
+            font-size: 0.8rem;
+            opacity: 0.75;
+            margin-left: 8px;
+        }
+        .period-free {
+            flex: 1;
+            font-size: 0.85rem;
+            font-style: italic;
+            opacity: 0.7;
+        }
+        .period-badge {
+            flex-shrink: 0;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 999px;
+            letter-spacing: 0.04em;
+        }
+        .period-badge.now {
+            background: #4f8ef7;
+            color: #fff;
+        }
+        .period-badge.minutes-left {
+            background: rgba(79, 142, 247, 0.18);
+            color: inherit;
+            border: 1px solid rgba(79, 142, 247, 0.4);
+        }
+
+        .empty-state {
+            font-size: 0.95rem;
+            opacity: 0.75;
+            padding: 10px 4px;
+        }
+        .loading { opacity: 0.7; font-size: 0.9rem; padding: 10px 4px; }
+
+        @media (max-width: 480px) {
+            .period-time { width: 76px; }
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="overlay">
+        <div class="panel" id="panel">
+            <div class="overlay-header">
+                <div class="overlay-title"><span id="overlay-day">Schedule</span></div>
+                <div class="overlay-clock" id="overlay-clock">--:--</div>
+            </div>
+            <div class="overlay-rule" id="overlay-rule"></div>
+            <div id="period-list">
+                <div class="loading">Loading schedule...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const params = new URLSearchParams(location.search);
+        const forcedDay = params.get('day');
+        const useThai = params.get('lang') === 'th';
+        const accent = params.get('accent') || '#4f8ef7';
+
+        if (params.get('light') === '1') {
+            document.body.classList.remove('dark');
+            document.body.classList.add('light');
+        }
+        if (params.get('plain') === '1') {
+            document.body.classList.add('plain');
+        }
+        document.documentElement.style.setProperty('--accent', accent);
+
+        const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+        const DAY_LABELS = useThai
+            ? { monday: 'จันทร์', tuesday: 'อังคาร', wednesday: 'พุธ', thursday: 'พฤหัสฯ', friday: 'ศุกร์', saturday: 'เสาร์', sunday: 'อาทิตย์' }
+            : { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
+
+        let schedule = [];
+        let selectedDay = null;
+
+        const periodList = document.getElementById('period-list');
+        const dayEl = document.getElementById('overlay-day');
+
+        function todayKey() {
+            const now = new Date();
+            const d = now.getDay();
+            if (d === 0) return 'sunday';
+            if (d === 6) return 'saturday';
+            return DAYS[d - 1];
+        }
+
+        function parseMin(str) {
+            const p = str.split(/[:.]/).map(Number);
+            return p[0] * 60 + (p[1] || 0);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function currentPeriodIndex() {
+            const now = new Date();
+            const mins = now.getHours() * 60 + now.getMinutes();
+            for (let i = 0; i < schedule.length; i++) {
+                const parts = (schedule[i].time || '').split('-');
+                if (parts.length !== 2) continue;
+                const start = parseMin(parts[0]);
+                const end = parseMin(parts[1]);
+                if (mins >= start && mins <= end) return i;
+            }
+            return -1;
+        }
+
+        function render() {
+            if (!selectedDay) selectedDay = forcedDay || todayKey();
+
+            const now = new Date();
+            const isToday = selectedDay === todayKey();
+            const currentMins = now.getHours() * 60 + now.getMinutes();
+
+            dayEl.textContent = DAY_LABELS[selectedDay] || 'Schedule';
+
+            const weekend = selectedDay === 'saturday' || selectedDay === 'sunday';
+            if (weekend) {
+                periodList.innerHTML = `<div class="empty-state">${useThai ? 'วันหยุดสุดสัปดาห์ 🎉' : 'It\'s the weekend — no classes today 🎉'}</div>`;
+                return;
+            }
+
+            if (!schedule.length) {
+                periodList.innerHTML = `<div class="empty-state">${useThai ? 'ไม่มีตารางเรียน' : 'No schedule available'}</div>`;
+                return;
+            }
+
+            const activeIdx = isToday ? currentPeriodIndex() : -1;
+
+            let html = '';
+            schedule.forEach((col, i) => {
+                const raw = (col[selectedDay] || '').trim();
+                const timeStr = col.time || '';
+                const periodNum = i + 1;
+
+                if (!raw) {
+                    html += `<div class="period empty">
+                        <div class="period-time">${escapeHtml(timeStr)}</div>
+                        <div class="period-free">${useThai ? 'ว่าง' : 'Free period'}</div>
+                    </div>`;
+                    return;
+                }
+
+                const cleaned = raw.replace(/\b\d{4}\b/g, '').trim();
+                const match = cleaned.match(/^(\S+)\s+(.+)$/);
+                const subject = match ? match[1] : cleaned;
+                const teacher = match ? match[2].trim() : '';
+
+                let badge = '';
+                let cls = 'period';
+                if (activeIdx === i) {
+                    const parts = timeStr.split('-');
+                    const end = parts.length === 2 ? parseMin(parts[1]) : 0;
+                    const minsLeft = end - currentMins;
+                    cls += ' current';
+                    badge = `<span class="period-badge minutes-left">${useThai ? `เหลือ ${minsLeft} นาที` : `${minsLeft} min left`}</span>`;
+                } else if (isToday && i < activeIdx) {
+                    cls += ' past';
+                } else if (i === activeIdx + 1 && activeIdx >= 0) {
+                    badge = `<span class="period-badge now">${useThai ? 'ถัดไป' : 'Next'}</span>`;
+                }
+
+                html += `<div class="${cls}">
+                    <div class="period-time">${escapeHtml(timeStr)}</div>
+                    <div class="period-subject">
+                        ${escapeHtml(subject)}
+                        ${teacher ? `<span class="teacher">${escapeHtml(teacher)}</span>` : ''}
+                    </div>
+                    ${badge}
+                </div>`;
+            });
+
+            periodList.innerHTML = html;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const t = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            document.getElementById('overlay-clock').textContent = t;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+        setInterval(render, 30000);
+
+        if (db && db.app && db.app.options && db.app.options.apiKey && db.app.options.apiKey !== "YOUR_API_KEY") {
+            onSnapshot(collection(db, "schedule"), (snap) => {
+                const data = snap.docs.map(doc => doc.data());
+                data.sort((a, b) => {
+                    const timeA = a.time.split('-')[0].trim();
+                    const timeB = b.time.split('-')[0].trim();
+                    return parseMin(timeA) - parseMin(timeB);
+                });
+                schedule = data;
+                render();
+            }, (error) => {
+                console.error('Schedule overlay error:', error);
+                periodList.innerHTML = `<div class="empty-state">Failed to load schedule.</div>`;
+            });
+        } else {
+            schedule = [
+                { time: "08:00-08:50", monday: "Math", tuesday: "Physics", wednesday: "English", thursday: "Biology", friday: "Chemistry" },
+                { time: "09:00-09:50", monday: "History", tuesday: "Math", wednesday: "PE", thursday: "Physics", friday: "English" },
+                { time: "10:00-10:50", monday: "Biology", tuesday: "Chemistry", wednesday: "Math", thursday: "English", friday: "History" }
+            ];
+            render();
+        }
+    </script>
+</body>
+</html>
