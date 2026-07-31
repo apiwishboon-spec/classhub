@@ -186,7 +186,7 @@
             if (isNaN(seconds) || seconds < 0) seconds = 30;
 
             var el = document.getElementById('cooldown');
-            el.textContent = seconds + '<small> s</small>';
+            el.innerHTML = seconds + '<small> s</small>';
 
             var timer = setInterval(function() {
                 seconds--;
@@ -197,7 +197,7 @@
                     if (btn) btn.style.display = 'inline-flex';
                     return;
                 }
-                el.textContent = seconds + '<small> s</small>';
+                el.innerHTML = seconds + '<small> s</small>';
             }, 1000);
 
             var saved = localStorage.getItem('theme');
