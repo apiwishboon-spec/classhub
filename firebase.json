@@ -79,6 +79,18 @@
         "destination": "/camo.html"
       },
       {
+        "source": "/camo-chat",
+        "destination": "/camo-chat.html"
+      },
+      {
+        "source": "/camo-admin",
+        "destination": "/camo-admin.html"
+      },
+      {
+        "source": "/camochat",
+        "destination": "/camochat.html"
+      },
+      {
         "source": "**",
         "destination": "/404.html"
       }

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat Overlay</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            background: transparent;
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+        body.light { color: #1a1a1a; }
+        body.dark  { color: #ffffff; }
+
+        .overlay {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            padding: 14px;
+        }
+        .pos-bl { align-items: flex-end; justify-content: flex-start; }
+        .pos-br { align-items: flex-end; justify-content: flex-end; }
+        .pos-tl { align-items: flex-start; justify-content: flex-start; }
+        .pos-tr { align-items: flex-start; justify-content: flex-end; }
+        .pos-c  { align-items: center; justify-content: center; }
+
+        .panel {
+            width: 100%;
+            max-width: 420px;
+            max-height: 72vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(10, 10, 20, 0.5);
+            border-radius: 14px;
+            padding: 12px 14px;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+        }
+        body.light .panel {
+            background: rgba(255, 255, 255, 0.68);
+            border-color: rgba(0, 0, 0, 0.10);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+        }
+        body.plain .panel {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+        }
+
+        .overlay-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+        .overlay-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4f8ef7;
+            box-shadow: 0 0 8px var(--accent, #4f8ef7);
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .overlay-rule {
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--accent, #4f8ef7), transparent);
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+
+        #messages {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            overflow: hidden;
+        }
+
+        .msg {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding: 7px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+            animation: slideIn 0.35s ease;
+        }
+        body.light .msg {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.07);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .msg.fading { opacity: 0; transition: opacity 1.2s ease; }
+
+        .msg.admin {
+            background: rgba(79, 142, 247, 0.16);
+            border: 1px solid rgba(79, 142, 247, 0.55);
+        }
+        body.light .msg.admin {
+            background: rgba(79, 142, 247, 0.12);
+        }
+
+        .msg-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .msg-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            opacity: 0.85;
+            letter-spacing: 0.03em;
+        }
+        .msg.admin .msg-name { color: var(--accent, #4f8ef7); opacity: 1; }
+        .msg-admin-badge {
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 1px 7px;
+            border-radius: 999px;
+            background: var(--accent, #4f8ef7);
+            color: #fff;
+            letter-spacing: 0.05em;
+        }
+        .msg-time {
+            margin-left: auto;
+            font-size: 0.62rem;
+            opacity: 0.55;
+            font-variant-numeric: tabular-nums;
+        }
+        .msg-text {
+            font-size: 0.92rem;
+            font-weight: 500;
+            line-height: 1.35;
+            word-wrap: break-word;
+        }
+        .msg.admin .msg-text { font-size: 1rem; font-weight: 600; }
+
+        .empty-state {
+            font-size: 0.85rem;
+            opacity: 0.6;
+            font-style: italic;
+            padding: 6px 2px;
+        }
+    </style>
+</head>
+<body class="dark">
+    <div class="overlay pos-bl">
+        <div class="panel">
+            <div class="overlay-header">
+                <div class="overlay-title"><span class="live-dot"></span> Live Chat</div>
+            </div>
+            <div class="overlay-rule"></div>
+            <div id="messages">
+                <div class="empty-state">Waiting for messages...</div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from "./firebase-config.js";
+        import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const params = new URLSearchParams(location.search);
+        const accent = params.get('accent') || '#4f8ef7';
+        const maxMsg = Math.min(10, Math.max(1, parseInt(params.get('max') || '6', 10)));
+        const showTime = params.get('time') !== '0';
+
+        if (params.get('light') === '1') {
+            document.body.classList.remove('dark');
+            document.body.classList.add('light');
+        }
+        if (params.get('plain') === '1') {
+            document.body.classList.add('plain');
+        }
+        const pos = params.get('pos');
+        const overlayEl = document.querySelector('.overlay');
+        if (['bl', 'br', 'tl', 'tr', 'c'].includes(pos)) {
+            overlayEl.className = 'overlay pos-' + pos;
+        }
+        document.documentElement.style.setProperty('--accent', accent);
+
+        const messagesEl = document.getElementById('messages');
+        const rendered = new Map();
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+            return String(str).replace(/[&<>"']/g, c => map[c]);
+        }
+
+        function fmtTime(ts) {
+            if (!ts) return '';
+            const d = ts.toDate ? ts.toDate() : new Date(ts);
+            return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+        }
+
+        function render(id, data) {
+            if (!data || !data.text) return;
+            const isAdmin = !!data.isAdmin;
+            const name = data.sender || (isAdmin ? 'ME' : 'Friend');
+
+            if (rendered.has(id)) return;
+
+            let node = messagesEl.querySelector('.empty-state');
+            if (node) node.remove();
+
+            const div = document.createElement('div');
+            div.className = 'msg' + (isAdmin ? ' admin' : '');
+            div.innerHTML = `
+                <div class="msg-head">
+                    ${isAdmin ? '<span class="msg-admin-badge">ME</span>' : ''}
+                    <span class="msg-name">${escapeHtml(name)}</span>
+                    ${showTime ? `<span class="msg-time">${fmtTime(data.createdAt)}</span>` : ''}
+                </div>
+                <div class="msg-text">${escapeHtml(data.text)}</div>
+            `;
+            messagesEl.appendChild(div);
+            rendered.set(id, div);
+
+            while (rendered.size > maxMsg) {
+                const oldest = [...rendered.entries()].find(([, el]) => el.isConnected && !el.classList.contains('fading'));
+                if (!oldest) break;
+                const [, oldestEl] = oldest;
+                rendered.delete(oldest[0]);
+                oldestEl.classList.add('fading');
+                setTimeout(() => oldestEl.remove(), 1300);
+            }
+        }
+
+        if (db && db.app && db.app.options && db.app.options.apiKey && db.app.options.apiKey !== "YOUR_API_KEY") {
+            onSnapshot(
+                query(collection(db, "camochat"), orderBy("createdAt", "desc"), limit(50)),
+                (snap) => {
+                    const items = [];
+                    snap.forEach(doc => items.push({ id: doc.id, data: doc.data() }));
+                    items.reverse().forEach(({ id, data }) => render(id, data));
+                },
+                (error) => console.error('Live chat overlay error:', error)
+            );
+        }
+    </script>
+</body>
+</html>

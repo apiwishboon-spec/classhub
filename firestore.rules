@@ -155,9 +155,31 @@ service cloud.firestore {
     match /ad_inquiries/{id} {
       allow create: if true;
       allow read, update, delete: if request.auth != null && (
-        getUserRole() == 'admin' || 
+        getUserRole() == 'admin' ||
         getUserRole() == 'teacher'
       );
+    }
+
+    // 16. Live Chat (Camo overlay) collection
+    // Read: Anyone (overlay + friends page)
+    // Create: Anyone unauthenticated as a non-admin, OR an authenticated admin
+    // Delete: Admins only
+    match /camochat/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.text is string
+        && request.resource.data.text.size() >= 1
+        && request.resource.data.text.size() <= 500
+        && request.resource.data.sender is string
+        && request.resource.data.sender.size() >= 1
+        && request.resource.data.sender.size() <= 40
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.isAdmin is bool
+        && request.resource.data.keys().hasOnly(['text', 'sender', 'isAdmin', 'createdAt'])
+        && (
+          (request.auth == null && request.resource.data.isAdmin == false) ||
+          (request.auth != null && getUserRole() == 'admin')
+        );
+      allow delete: if request.auth != null && getUserRole() == 'admin';
     }
   }
 }
