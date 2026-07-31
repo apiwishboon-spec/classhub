@@ -2519,7 +2519,7 @@ logoutBtn.addEventListener('click', async () => {
             btn.addEventListener('click', async () => {
                 const path = btn.getAttribute('data-path');
                 try {
-                    await updateDoc(legalBlocksDoc, { paths: arrayRemove(path) });
+                    await setDoc(legalBlocksDoc, { paths: arrayRemove(path) }, { merge: true });
                     showToast(`Unblocked ${path}`, "ph-check", "var(--success)");
                     logAction("Legal Block (451)", `Unblocked ${path}`);
                     loadLegalBlocks();
@@ -2551,7 +2551,7 @@ logoutBtn.addEventListener('click', async () => {
             }
             const normalized = path.startsWith('/') ? path : '/' + path;
             try {
-                await updateDoc(legalBlocksDoc, { paths: arrayUnion(normalized) });
+                await setDoc(legalBlocksDoc, { paths: arrayUnion(normalized) }, { merge: true });
                 document.getElementById('legal-block-custom').value = '';
                 document.getElementById('legal-block-select').value = '';
                 showToast(`Blocked ${normalized} (451)`, "ph-check", "var(--success)");
