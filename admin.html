@@ -375,6 +375,33 @@
                         </div>
                     </div>
 
+                    <!-- Legal Block (451) -->
+                    <div style="padding: 1rem 0; border-bottom: 1px solid var(--border-color);">
+                        <div style="font-weight: 600; display: flex; align-items: center; gap: 0.4rem;"><i class="ph ph-scales" style="color: var(--danger);"></i> Legal Block (451)</div>
+                        <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Block a page by law — visitors are auto-redirected to the 451 page</div>
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                            <select id="legal-block-select" class="form-input" style="max-width: 200px; margin: 0;">
+                                <option value="">Pick a page...</option>
+                                <option value="/">Home (/)</option>
+                                <option value="/chat">Message Staff (/chat)</option>
+                                <option value="/vote">Polls (/vote)</option>
+                                <option value="/contact">Contact (/contact)</option>
+                                <option value="/export">Export Data (/export)</option>
+                                <option value="/pass-change">Change Password (/pass-change)</option>
+                                <option value="/ad-inquiry">Post an Ad (/ad-inquiry)</option>
+                                <option value="/privacy">Privacy Policy (/privacy)</option>
+                                <option value="/terms">Terms of Service (/terms)</option>
+                                <option value="/admin">Admin Panel (/admin)</option>
+                                <option value="/live/camochat">Live Chat (/live/camochat)</option>
+                            </select>
+                            <input type="text" id="legal-block-custom" placeholder="or type a path like /vote" class="form-input" style="flex: 1; min-width: 160px; margin: 0;">
+                            <button id="legal-block-add" class="btn-primary" style="padding: 0.6rem 1rem; flex-shrink: 0;"><i class="ph ph-plus"></i> Add</button>
+                        </div>
+                        <div id="legal-block-list" style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            <span style="font-size: 0.78rem; color: var(--text-secondary);">No pages blocked.</span>
+                        </div>
+                    </div>
+
                     <!-- Ad Space Visibility Settings -->
                     <div style="padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
                         <div>
@@ -570,5 +597,6 @@
 
             
 
+    <script type="module" src="legal-block.js"></script>
 </body>
 </html>

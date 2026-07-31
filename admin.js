@@ -12,7 +12,7 @@ import {
     signInWithEmailLink,
     sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, addDoc, getDoc, doc, setDoc, getDocs, deleteDoc, serverTimestamp, query, orderBy, limit, onSnapshot, updateDoc, increment, where, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 
 function escapeHtml(str) {
@@ -2498,6 +2498,72 @@ logoutBtn.addEventListener('click', async () => {
             showToast("Error saving banner settings: " + e.message);
         }
     });
+
+    // ===== Legal Block (451) =====
+    const legalBlocksDoc = doc(db, "settings", "legal_blocks");
+
+    function renderLegalBlocks(paths) {
+        const listEl = document.getElementById('legal-block-list');
+        if (!listEl) return;
+        if (!paths.length) {
+            listEl.innerHTML = '<span style="font-size: 0.78rem; color: var(--text-secondary);">No pages blocked.</span>';
+            return;
+        }
+        listEl.innerHTML = paths.map(p => `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.5rem 0.75rem;">
+                <span style="font-size: 0.85rem; font-weight: 600;"><i class="ph ph-prohibit" style="color: var(--danger); margin-right: 0.4rem;"></i>${escapeHtml(p)}</span>
+                <button class="legal-block-remove btn-danger" data-path="${escapeHtml(p)}" style="font-size: 0.7rem; padding: 0.3rem 0.7rem;"><i class="ph ph-trash"></i> Remove</button>
+            </div>
+        `).join('');
+        listEl.querySelectorAll('.legal-block-remove').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                const path = btn.getAttribute('data-path');
+                try {
+                    await updateDoc(legalBlocksDoc, { paths: arrayRemove(path) });
+                    showToast(`Unblocked ${path}`, "ph-check", "var(--success)");
+                    logAction("Legal Block (451)", `Unblocked ${path}`);
+                    loadLegalBlocks();
+                } catch (e) {
+                    showToast("Error: " + e.message, "ph-x", "var(--danger)");
+                }
+            });
+        });
+    }
+
+    async function loadLegalBlocks() {
+        try {
+            const snap = await getDoc(legalBlocksDoc);
+            const paths = snap.exists() && Array.isArray(snap.data().paths) ? snap.data().paths : [];
+            renderLegalBlocks(paths);
+        } catch (e) {
+            console.error("Failed to load legal blocks:", e);
+        }
+    }
+
+    const legalBlockAddBtn = document.getElementById('legal-block-add');
+    if (legalBlockAddBtn) {
+        legalBlockAddBtn.addEventListener('click', async () => {
+            const selPath = document.getElementById('legal-block-select').value.trim();
+            const customPath = document.getElementById('legal-block-custom').value.trim();
+            const path = customPath || selPath;
+            if (!path) {
+                return showToast("Pick a page or type a path", "ph-info", "var(--accent-color)");
+            }
+            const normalized = path.startsWith('/') ? path : '/' + path;
+            try {
+                await updateDoc(legalBlocksDoc, { paths: arrayUnion(normalized) });
+                document.getElementById('legal-block-custom').value = '';
+                document.getElementById('legal-block-select').value = '';
+                showToast(`Blocked ${normalized} (451)`, "ph-check", "var(--success)");
+                logAction("Legal Block (451)", `Blocked ${normalized}`);
+                loadLegalBlocks();
+            } catch (e) {
+                showToast("Error: " + e.message, "ph-x", "var(--danger)");
+            }
+        });
+    }
+
+    loadLegalBlocks();
 
     async function loadAuditLog() {
         const list = document.getElementById('audit-log-list');
