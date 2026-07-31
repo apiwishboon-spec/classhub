@@ -76,7 +76,7 @@
       },
       {
         "source": "/camo",
-        "destination": "/camo.html"
+        "destination": "/live/camo.html"
       },
       {
         "source": "/camo-chat",
