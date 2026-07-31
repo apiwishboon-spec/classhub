@@ -3,3 +3,6 @@
 /camo-chat  /live/camo-chat  301
 /camochat   /live/camochat   301
 /camo-admin /live/camo-admin 301
+
+# 4xx error pages (served by the dynamic 404.html template)
+/error/*  /404.html?code=:splat  200

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found - MyClassHub</title>
+    <title>Error - MyClassHub</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
@@ -27,7 +27,8 @@
         }
 
         .error-container {
-            max-width: 480px;
+            max-width: 520px;
+            width: 100%;
             text-align: center;
             animation: carbonFadeIn 0.5s cubic-bezier(0.2, 0, 0.38, 0.9);
         }
@@ -68,10 +69,37 @@
         }
 
         .error-desc {
-            font-size: 0.9rem;
-            line-height: 1.6;
+            font-size: 0.92rem;
+            line-height: 1.7;
             color: var(--text-secondary);
-            margin: 0 0 2.5rem;
+            margin: 0 0 1.25rem;
+        }
+
+        .error-category {
+            display: inline-block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.8rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            margin-bottom: 0.9rem;
+        }
+
+        .error-select-wrap {
+            margin-bottom: 2.25rem;
+        }
+        .error-select {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
         }
 
         .error-actions {
@@ -147,12 +175,14 @@
 </head>
 <body>
     <div class="error-container">
-        <div class="error-code">404</div>
+        <div class="error-code" id="error-code">404</div>
         <div class="error-divider"></div>
-        <h1 class="error-title">Page not found</h1>
-        <p class="error-desc">
-            The requested page could not be located. It may have been moved or is temporarily unavailable.
-        </p>
+        <div class="error-category" id="error-category">4xx · Client Error</div>
+        <h1 class="error-title" id="error-title">Not Found</h1>
+        <p class="error-desc" id="error-desc"></p>
+        <div class="error-select-wrap">
+            <select class="error-select" id="error-select" aria-label="Browse error codes"></select>
+        </div>
         <div class="error-actions">
             <a href="/" class="carbon-btn carbon-btn-primary">
                 <i class="ph ph-arrow-left"></i> Back to Dashboard
@@ -170,6 +200,78 @@
     </div>
 
     <script>
+        const ERRORS = {
+            400: { title: "Bad Request", th: "คำขอมีรูปแบบไม่ถูกต้อง เซิร์ฟเวอร์เลยประมวลผลให้ไม่ได้" },
+            401: { title: "Unauthorized", th: "ต้องยืนยันตัวตนก่อน (เช่น ต้องล็อกอินก่อนถึงจะเข้าถึงได้)" },
+            402: { title: "Payment Required", th: "สงวนไว้ใช้ในอนาคต (เดิมทีตั้งใจให้ใช้กับระบบชำระเงิน)" },
+            403: { title: "Forbidden", th: "เซิร์ฟเวอร์เข้าใจคำขอนะ แต่ไม่อนุญาตให้เข้าถึง (ห้ามเข้า)" },
+            404: { title: "Not Found", th: "หาหน้าเว็บหรือไฟล์ที่เรียกไม่เจอ (ลิงก์ตาย หรือพิมพ์ URL ผิด)" },
+            405: { title: "Method Not Allowed", th: "เมธอดที่ใช้ส่งคำขอ (เช่น GET, POST) ไม่ได้รับอนุญาตให้ใช้กับทรัพยากรนี้" },
+            406: { title: "Not Acceptable", th: "เซิร์ฟเวอร์ไม่สามารถแสดงผลในรูปแบบที่เบราว์เซอร์ฝั่งเราต้องการได้" },
+            407: { title: "Proxy Authentication Required", th: "ต้องยืนยันตัวตนผ่าน Proxy ก่อน" },
+            408: { title: "Request Timeout", th: "หมดเวลารอคำขอ ฝั่งเซิร์ฟเวอร์รอนานเกินไปจนตัดการเชื่อมต่อ" },
+            409: { title: "Conflict", th: "เกิดความขัดแย้งกันของข้อมูลในระบบ (เช่น กำลังแก้ไขข้อมูลชนกัน)" },
+            410: { title: "Gone", th: "ทรัพยากรนี้ถูกลบถาวรไปแล้วและจะไม่มีวันกลับมา" },
+            411: { title: "Length Required", th: "เซิร์ฟเวอร์ไม่รับคำขอถ้าไม่มีการระบุขนาดความยาวข้อมูล (Content-Length)" },
+            412: { title: "Precondition Failed", th: "เงื่อนไขล่วงหน้าบางอย่างที่ระบุใน Header ไม่ตรงตามที่เซิร์ฟเวอร์กำหนด" },
+            413: { title: "Payload Too Large", th: "ข้อมูลที่ส่งมาใหญ่เกินกว่าที่เซิร์ฟเวอร์จะรับไหว" },
+            414: { title: "URI Too Long", th: "ลิงก์ (URL) ยาวเกินไปจนเซิร์ฟเวอร์ประมวลผลไม่ไหว" },
+            415: { title: "Unsupported Media Type", th: "รูปแบบไฟล์หรือประเภทข้อมูลที่ส่งไปไม่รองรับ" },
+            416: { title: "Range Not Satisfiable", th: "ช่วงข้อมูล (Range) ที่ขอมาไม่สามารถจัดสรรให้ได้" },
+            417: { title: "Expectation Failed", th: "ความคาดหวังที่ระบุใน Expect Header ไม่สามารถทำตามได้" },
+            418: { title: "I'm a Teapot", th: "มุกตลกวันเมษาหน้าโง่ (April Fools) ของมาตรฐาน HTTP เซิร์ฟเวอร์ปฏิเสธการชงกาแฟเพราะตัวเองเป็น \"กาน้ำชา\"" },
+            421: { title: "Misdirected Request", th: "คำหันเหถูกส่งไปยังเซิร์ฟเวอร์ที่ไม่สามารถตอบกลับได้" },
+            422: { title: "Unprocessable Content", th: "คำขอถูกต้องตามหลัก syntax แต่มีข้อผิดพลาดทางด้านความหมาย ทำให้ประมวลผลต่อไม่ได้" },
+            423: { title: "Locked", th: "ข้อมูลหรือทรัพยากรที่พยายามเข้าถึงกำลังถูกล็อกอยู่" },
+            424: { title: "Failed Dependency", th: "คำขอล้มเหลวเพราะดันไปอิงกับคำขอก่อนหน้าที่ทำพังไปก่อนหน้านี้" },
+            425: { title: "Too Early", th: "เซิร์ฟเวอร์ยังไม่พร้อมเสี่ยงประมวลผลคำขอเพราะกลัวเป็นคำขอซ้ำ" },
+            426: { title: "Upgrade Required", th: "เซิร์ฟเวอร์ปฏิเสธโปรโตคอลปัจจุบัน ต้องอัปเกรดโปรโตคอลก่อนถึงจะทำต่อได้" },
+            428: { title: "Precondition Required", th: "เซิร์ฟเวอร์บังคับว่าคำขอต้องมีเงื่อนไข (Conditional) แนบมาด้วย" },
+            429: { title: "Too Many Requests", th: "ส่งคำขอเข้ามาถี่เกินไปหรือรัวเกินกำหนด (Rate Limiting)" },
+            431: { title: "Request Header Fields Too Large", th: "ข้อมูลส่วน Header ของคำขอมีขนาดใหญ่เกินไป" },
+            451: { title: "Unavailable For Legal Reasons", th: "เซิร์ฟเวอร์ปฏิเสธการเข้าถึงเนื่องจากติดข้อกฎหมายหรือคำสั่งศาล" }
+        };
+
+        const codeEl = document.getElementById('error-code');
+        const catEl = document.getElementById('error-category');
+        const titleEl = document.getElementById('error-title');
+        const descEl = document.getElementById('error-desc');
+        const selectEl = document.getElementById('error-select');
+
+        function render(code) {
+            const entry = ERRORS[code];
+            if (!entry) return false;
+            codeEl.textContent = code;
+            catEl.textContent = Math.floor(code / 100) + 'xx · Client Error';
+            titleEl.textContent = entry.title;
+            descEl.textContent = entry.th;
+            selectEl.value = String(code);
+            document.title = entry.title + ' (' + code + ') - MyClassHub';
+            return true;
+        }
+
+        // Build the code picker
+        Object.keys(ERRORS).forEach(code => {
+            const opt = document.createElement('option');
+            opt.value = code;
+            opt.textContent = code + ' ' + ERRORS[code].title;
+            selectEl.appendChild(opt);
+        });
+
+        // Read ?code= from URL, else default to 404 (also used by the automatic CF 404 page)
+        const codeParam = parseInt(new URLSearchParams(location.search).get('code'), 10);
+        if (!render(codeParam) && !render(404)) {
+            codeEl.textContent = '?';
+            titleEl.textContent = 'Unknown Error';
+            descEl.textContent = 'รหัสข้อผิดพลาดนี้ไม่รู้จัก';
+        }
+
+        selectEl.addEventListener('change', () => {
+            const code = parseInt(selectEl.value, 10);
+            render(code);
+            history.replaceState(null, '', '/error/' + code);
+        });
+
         (function() {
             var saved = localStorage.getItem('theme');
             var hour = new Date().getHours();
