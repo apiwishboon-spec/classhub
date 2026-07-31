@@ -192,6 +192,7 @@
         const accent = params.get('accent') || '#4f8ef7';
         const maxMsg = Math.min(10, Math.max(1, parseInt(params.get('max') || '6', 10)));
         const showTime = params.get('time') !== '0';
+        const dismissMs = Math.max(3, parseInt(params.get('show') || '8', 10)) * 1000;
 
         if (params.get('light') === '1') {
             document.body.classList.remove('dark');
@@ -244,6 +245,21 @@
             `;
             messagesEl.appendChild(div);
             rendered.set(id, div);
+
+            setTimeout(() => {
+                if (!div.isConnected || div.classList.contains('fading')) return;
+                rendered.delete(id);
+                div.classList.add('fading');
+                setTimeout(() => {
+                    div.remove();
+                    if (!messagesEl.querySelector('.msg')) {
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-state';
+                        empty.textContent = 'Waiting for messages...';
+                        messagesEl.appendChild(empty);
+                    }
+                }, 1300);
+            }, dismissMs);
 
             while (rendered.size > maxMsg) {
                 const oldest = [...rendered.entries()].find(([, el]) => el.isConnected && !el.classList.contains('fading'));
