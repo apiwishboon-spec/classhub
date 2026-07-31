@@ -1,0 +1,4 @@
+# Old live chat URLs -> moved into /live/ folder
+/camo-chat  /live/camo-chat  301
+/camochat   /live/camochat   301
+/camo-admin /live/camo-admin 301

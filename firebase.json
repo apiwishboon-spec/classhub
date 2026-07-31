@@ -80,15 +80,15 @@
       },
       {
         "source": "/camo-chat",
-        "destination": "/camo-chat.html"
+        "destination": "/live/camo-chat.html"
       },
       {
         "source": "/camo-admin",
-        "destination": "/camo-admin.html"
+        "destination": "/live/camo-admin.html"
       },
       {
         "source": "/camochat",
-        "destination": "/camochat.html"
+        "destination": "/live/camochat.html"
       },
       {
         "source": "**",
