@@ -179,7 +179,11 @@ service cloud.firestore {
           (request.auth == null && request.resource.data.isAdmin == false) ||
           (request.auth != null && getUserRole() == 'admin')
         );
-      allow delete: if request.auth != null && getUserRole() == 'admin';
+      allow delete: if
+        (request.auth != null && getUserRole() == 'admin') ||
+        // Auto-cleanup: anyone can delete a message older than 60 minutes
+        (resource.data.createdAt is timestamp &&
+         request.time - resource.data.createdAt >= duration.value(60, 'm'));
     }
   }
 }

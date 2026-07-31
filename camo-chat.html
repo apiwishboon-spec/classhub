@@ -184,7 +184,9 @@
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, query, orderBy, limit, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const MSG_TTL = 60 * 60 * 1000; // messages older than this are auto-cleared
 
         const params = new URLSearchParams(location.search);
         const accent = params.get('accent') || '#4f8ef7';
@@ -260,6 +262,14 @@
                     const items = [];
                     snap.forEach(doc => items.push({ id: doc.id, data: doc.data() }));
                     items.reverse().forEach(({ id, data }) => render(id, data));
+
+                    const now = Date.now();
+                    items.forEach(({ id, data }) => {
+                        const ts = data.createdAt ? (data.createdAt.toMillis ? data.createdAt.toMillis() : new Date(data.createdAt).getTime()) : 0;
+                        if (ts && now - ts >= MSG_TTL) {
+                            deleteDoc(doc(db, "camochat", id)).catch(() => {});
+                        }
+                    });
                 },
                 (error) => console.error('Live chat overlay error:', error)
             );

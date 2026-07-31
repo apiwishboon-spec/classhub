@@ -66,8 +66,10 @@
 
     <script type="module">
         import { db } from "./firebase-config.js";
-        import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { collection, addDoc, query, orderBy, limit, onSnapshot, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { sanitize } from "./profanity-filter.js";
+
+        const MSG_TTL = 60 * 60 * 1000; // auto-clear messages older than this
 
         const history = document.getElementById('chat-history');
         const nameInput = document.getElementById('name-input');
@@ -97,6 +99,14 @@
                 const items = [];
                 snap.forEach(d => items.push({ id: d.id, data: d.data() }));
                 items.reverse();
+
+                const now = Date.now();
+                items.forEach(({ id, data }) => {
+                    const ts = data.createdAt ? (data.createdAt.toMillis ? data.createdAt.toMillis() : new Date(data.createdAt).getTime()) : 0;
+                    if (ts && now - ts >= MSG_TTL) {
+                        deleteDoc(doc(db, "camochat", id)).catch(() => {});
+                    }
+                });
 
                 history.innerHTML = items.map(({ data }) => {
                     const admin = !!data.isAdmin;
