@@ -113,22 +113,6 @@
             color: var(--text-main);
         }
 
-        .book-note {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.78rem;
-            color: var(--text-secondary);
-            background: var(--highlight-bg);
-            border: 1px dashed var(--border-color);
-            border-radius: 8px;
-            padding: 0.5rem 0.9rem;
-            margin-bottom: 2rem;
-        }
-        .book-note i {
-            color: var(--accent-color);
-        }
-
         .error-actions {
             display: flex;
             gap: 1rem;
@@ -207,8 +191,8 @@
         <div class="error-divider"></div>
         <h1 class="error-title">Unavailable For Legal Reasons</h1>
         <p class="error-desc">
-            This content has been blocked due to a legal requirement or a court order.
-            The server refuses to serve it for reasons beyond our control.
+            This content is unavailable due to a legal requirement or a court order.
+            The server is required by law to refuse access to this resource.
         </p>
         <div class="blocked-card" id="blocked-card" style="display: none;">
             <i class="ph ph-prohibit"></i>
@@ -216,10 +200,6 @@
                 <div class="blocked-label" id="blocked-label">Blocked URL</div>
                 <div class="blocked-value" id="blocked-value"></div>
             </div>
-        </div>
-        <div class="book-note">
-            <i class="ph ph-book-open-text"></i>
-            <span>Knowledge must not be burned. &mdash; a nod to <strong>Fahrenheit 451</strong></span>
         </div>
         <div class="error-actions">
             <a href="/" class="carbon-btn carbon-btn-primary">
@@ -254,16 +234,6 @@
                 card.style.display = 'flex';
             } else if (reason) {
                 value.textContent = reason;
-                label.textContent = 'Reason';
-                card.style.display = 'flex';
-            } else {
-                var reasons = [
-                    'Blocked by a court order',
-                    'Restricted under local censorship law',
-                    'Content removed at the request of a legal authority',
-                    'Withdrawn due to a copyright takedown notice'
-                ];
-                value.textContent = reasons[Math.floor(Math.random() * reasons.length)];
                 label.textContent = 'Reason';
                 card.style.display = 'flex';
             }
