@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Too Many Requests - MyClassHub</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon.png">
+    <link rel="apple-touch-icon" href="favicon.png">
+    <link rel="stylesheet" href="style.css?v=34">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'IBM Plex Sans', -apple-system, sans-serif;
+            padding: 2rem;
+        }
+
+        .error-container {
+            max-width: 480px;
+            text-align: center;
+            animation: carbonFadeIn 0.5s cubic-bezier(0.2, 0, 0.38, 0.9);
+        }
+
+        @keyframes carbonFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .error-icon {
+            font-size: 4rem;
+            color: var(--accent-color);
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .error-code {
+            font-size: 8rem;
+            font-weight: 300;
+            letter-spacing: -4px;
+            line-height: 1;
+            color: var(--accent-color);
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .error-divider {
+            width: 64px;
+            height: 2px;
+            background: var(--accent-color);
+            margin: 0 auto 2rem;
+            animation: carbonExpand 0.6s 0.2s both cubic-bezier(0.2, 0, 0.38, 0.9);
+        }
+
+        @keyframes carbonExpand {
+            from { width: 0; opacity: 0; }
+            to { width: 64px; opacity: 1; }
+        }
+
+        .error-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0 0 0.75rem;
+            color: var(--text-main);
+        }
+
+        .error-desc {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            margin: 0 0 1.25rem;
+        }
+
+        .cooldown {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 2.5rem;
+        }
+        .cooldown small {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .carbon-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 2rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.15s, border-color 0.15s;
+        }
+
+        .carbon-btn-primary {
+            background: var(--accent-color);
+            color: #fff;
+            border: none;
+        }
+        .carbon-btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .carbon-btn-secondary {
+            background: transparent;
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            display: none;
+        }
+        .carbon-btn-secondary:hover {
+            background: var(--highlight-bg);
+        }
+
+        .error-footer {
+            margin-top: 4rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        .error-footer a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+        .error-footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .error-code { font-size: 5rem; }
+            .error-actions { flex-direction: column; }
+            .carbon-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <i class="ph ph-hourglass-high error-icon"></i>
+        <div class="error-code">429</div>
+        <div class="error-divider"></div>
+        <h1 class="error-title">Too Many Requests</h1>
+        <p class="error-desc">
+            You're sending requests too fast. Take it easy and wait a moment
+            before trying again. Spamming the button or API won't make it go faster.
+        </p>
+        <div class="cooldown" id="cooldown">--<small> s</small></div>
+        <div class="error-actions">
+            <a href="/" class="carbon-btn carbon-btn-primary">
+                <i class="ph ph-arrow-left"></i> Back to Dashboard
+            </a>
+            <button class="carbon-btn carbon-btn-secondary" onclick="location.reload()">
+                <i class="ph ph-arrow-clockwise"></i> Retry Now
+            </button>
+        </div>
+        <div class="error-footer">
+            MyClassHub &mdash; Built for students, by students
+        </div>
+    </div>
+
+    <script>
+        // Countdown before the user can retry (default 30s, override with ?wait=seconds)
+        (function() {
+            var seconds = parseInt(new URLSearchParams(location.search).get('wait'), 10);
+            if (isNaN(seconds) || seconds < 0) seconds = 30;
+
+            var el = document.getElementById('cooldown');
+            el.textContent = seconds + '<small> s</small>';
+
+            var timer = setInterval(function() {
+                seconds--;
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    el.textContent = 'Ready!';
+                    var btn = document.querySelector('.carbon-btn-secondary');
+                    if (btn) btn.style.display = 'inline-flex';
+                    return;
+                }
+                el.textContent = seconds + '<small> s</small>';
+            }, 1000);
+
+            var saved = localStorage.getItem('theme');
+            var hour = new Date().getHours();
+            var isDark = saved === 'dark' || (saved !== 'light' && (hour < 6 || hour > 18));
+            if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+    </script>
+</body>
+</html>
