@@ -61,6 +61,8 @@ async function initChatPage() {
         } else {
             staffTypingEl?.classList.remove('visible');
         }
+    }, (error) => {
+        console.error("Typing status listener failed:", error);
     });
 
     sendBtn.addEventListener('click', async () => {

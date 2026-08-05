@@ -113,6 +113,13 @@ service cloud.firestore {
       );
     }
 
+    // 10.5 Typing Status collection
+    // Read: Anyone (students see if staff is typing, staff see if students are typing)
+    // Write: Anyone (non-sensitive typing indicator flag)
+    match /typing_status/{id} {
+      allow read, write: if true;
+    }
+
     // 11. Bug Reports collection
     //  Create: Anyone (students and staff)
     //  Read/Update/Delete: Admins only

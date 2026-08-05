@@ -134,6 +134,7 @@ let bugListener = null;
 let systemStatesListener = null;
 let bannerListener = null;
 let featListener = null;
+let studentTypingListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -481,15 +482,19 @@ async function loadFeedback() {
             });
         });
 
-        // Listen for student typing indicator
+        // Listen for student typing indicator (attach once to avoid duplicate listeners)
         const studentTypingEl = document.getElementById('student-typing-indicator');
-        onSnapshot(doc(db, "typing_status", "user"), (snap) => {
-            if (snap.exists() && snap.data().typing) {
-                studentTypingEl?.classList.add('visible');
-            } else {
-                studentTypingEl?.classList.remove('visible');
-            }
-        });
+        if (!studentTypingListener) {
+            studentTypingListener = onSnapshot(doc(db, "typing_status", "user"), (snap) => {
+                if (snap.exists() && snap.data().typing) {
+                    studentTypingEl?.classList.add('visible');
+                } else {
+                    studentTypingEl?.classList.remove('visible');
+                }
+            }, (error) => {
+                console.error("Typing status listener failed:", error);
+            });
+        }
 
         document.querySelectorAll('.send-reply-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
