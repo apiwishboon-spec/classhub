@@ -1041,7 +1041,7 @@ function renderHomework() {
         html += `
             <div class="homework-item ${finishedClass}" data-id="${hwId}" style="border-left: 3px solid ${isFinished ? 'var(--border-color)' : hwColor.text};">
                 <div class="hw-checkbox">
-                    <input type="checkbox" class="hw-check-input" id="check-${hwId}" ${checked}>
+                    <input type="checkbox" class="hw-check-input" id="check-${hwId}" name="check-${hwId}" ${checked}>
                 </div>
                 <div class="hw-icon" style="color:${isFinished ? 'var(--text-secondary)' : hwColor.text};">
                     <i class="ph ph-book-open"></i>
@@ -1807,7 +1807,7 @@ function showLockoutOverlay(correctPasscode) {
             <p>This portal is currently under active development. Enter the developer passcode to access.</p>
             
             <div class="lockout-input-wrapper">
-                <input type="password" id="dev-passcode-input" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
+                <input type="password" id="dev-passcode-input" name="dev-passcode-input" autocomplete="off" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
             </div>
             <div id="dev-passcode-error" class="lockout-error">❌ Incorrect passcode. Please try again.</div>
             

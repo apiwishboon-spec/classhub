@@ -33,8 +33,8 @@
             <h2 style="margin-bottom: 1.5rem; text-align: center;">Staff Login</h2>
             
             <div id="password-login-fields">
-                <input type="email" id="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
-                <input type="password" id="password" placeholder="Password" class="form-input" style="margin-bottom: 0.5rem;">
+                <input type="email" id="email" name="email" autocomplete="email" placeholder="Email" class="form-input" style="margin-bottom: 1rem;">
+                <input type="password" id="password" name="password" autocomplete="current-password" placeholder="Password" class="form-input" style="margin-bottom: 0.5rem;">
                 <div style="text-align: right; margin-bottom: 1.5rem;">
                     <a href="#" id="forgot-pass-link" style="font-size: 0.8rem; color: var(--accent-color); text-decoration: none;">Forgot Password?</a>
                 </div>
@@ -47,7 +47,7 @@
             </div>
 
             <div id="email-link-login-fields">
-                <input type="email" id="email-link-input" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;">
+                <input type="email" id="email-link-input" name="email-link-input" autocomplete="email" placeholder="Email for login link" class="form-input" style="margin-bottom: 1rem;">
                 <button id="send-link-btn" class="btn-primary btn-full">Send Login Link</button>
             </div>
 
@@ -66,7 +66,7 @@
                 <h1 style="color: var(--accent-color);">Admin Panel</h1>
             </div>
             <div class="admin-header-actions">
-                <select id="staff-status-toggle" class="time-badge" style="background: var(--bg-color); border: 1px solid var(--border-color); cursor: pointer; padding: 2px 8px;">
+                <select id="staff-status-toggle" name="staff-status-toggle" class="time-badge" style="background: var(--bg-color); border: 1px solid var(--border-color); cursor: pointer; padding: 2px 8px;">
                     <option value="online">🟢 Available</option>
                     <option value="busy">🔴 Busy</option>
                     <option value="offline">⚪ Offline</option>
@@ -96,9 +96,9 @@
                     <h2><i class="ph ph-megaphone"></i> Post Announcement</h2>
                 </div>
                 <div class="card-content admin-form-stack">
-                    <input type="text" id="ann-title" placeholder="Title" class="form-input">
-                    <textarea id="ann-message" placeholder="Message" class="form-input" rows="3"></textarea>
-                    <input type="text" id="ann-author" placeholder="Author Name" class="form-input">
+                    <input type="text" id="ann-title" name="ann-title" placeholder="Title" class="form-input">
+                    <textarea id="ann-message" name="ann-message" placeholder="Message" class="form-input" rows="3"></textarea>
+                    <input type="text" id="ann-author" name="ann-author" autocomplete="name" placeholder="Author Name" class="form-input">
                     <button id="add-ann-btn" class="btn-primary btn-full">Post Announcement</button>
                 </div>
             </section>
@@ -109,9 +109,9 @@
                     <h2><i class="ph ph-rocket-launch"></i> Post Feature Update</h2>
                 </div>
                 <div class="card-content admin-form-stack">
-                    <input type="text" id="feat-title" placeholder="Title (e.g. New Dark Mode!)" class="form-input">
-                    <textarea id="feat-description" placeholder="Description of what's new..." class="form-input" rows="3"></textarea>
-                    <input type="text" id="feat-version" placeholder="Version (optional, e.g. v3.3.0)" class="form-input">
+                    <input type="text" id="feat-title" name="feat-title" placeholder="Title (e.g. New Dark Mode!)" class="form-input">
+                    <textarea id="feat-description" name="feat-description" placeholder="Description of what's new..." class="form-input" rows="3"></textarea>
+                    <input type="text" id="feat-version" name="feat-version" placeholder="Version (optional, e.g. v3.3.0)" class="form-input">
                     <button id="add-feat-btn" class="btn-primary btn-full">Post Feature Update</button>
                 </div>
             </section>
@@ -124,15 +124,15 @@
                 <div class="card-content admin-form-stack">
                     <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px; margin-bottom: 0.5rem;">
                         <label style="font-size:0.75rem; font-weight:700; color:var(--accent-color); text-transform:uppercase;">⚡ Quick Add</label>
-                        <input type="text" id="hw-quick-add" placeholder="e.g. Math: Page 42 due Friday" class="form-input" style="border-bottom-color: var(--accent-color);">
+                        <input type="text" id="hw-quick-add" name="hw-quick-add" placeholder="e.g. Math: Page 42 due Friday" class="form-input" style="border-bottom-color: var(--accent-color);">
                         <p style="font-size:0.65rem; color:var(--text-secondary); margin-top:0.25rem;">Format: Subject: Task due Date</p>
                     </div>
 
                     <div id="manual-hw-fields">
-                        <input type="text" id="hw-subject" placeholder="Subject" class="form-input">
-                        <textarea id="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
+                        <input type="text" id="hw-subject" name="hw-subject" placeholder="Subject" class="form-input">
+                        <textarea id="hw-task" name="hw-task" placeholder="Task Description" class="form-input" rows="3"></textarea>
                         <label style="font-size:0.8rem;color:var(--text-secondary);margin-top:-0.5rem;">Due Date</label>
-                        <input type="date" id="hw-due" class="form-input">
+                        <input type="date" id="hw-due" name="hw-due" class="form-input">
                     </div>
                     
                     <button id="add-hw-btn" class="btn-primary btn-full">Post Homework</button>
@@ -149,7 +149,7 @@
                         <strong style="color: var(--text-main);">Format:</strong> One per line — <code style="background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">Subject: Task due YYYY-MM-DD</code><br>
                         Example: <code style="background:var(--card-bg);padding:0.1rem 0.3rem;border-radius:2px;">Math: Page 42 due 2026-07-25</code>
                     </div>
-                    <textarea id="import-hw-input" class="import-area" placeholder="Math: Page 42 due 2026-07-25&#10;Science: Lab report due 2026-07-28&#10;English: Essay Chapter 3"></textarea>
+                    <textarea id="import-hw-input" name="import-hw-input" class="import-area" placeholder="Math: Page 42 due 2026-07-25&#10;Science: Lab report due 2026-07-28&#10;English: Essay Chapter 3"></textarea>
                     <div id="import-hw-preview" class="import-preview" style="display: none;"></div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button id="import-hw-preview-btn" class="btn-secondary" style="flex: 1; padding: 0.6rem;"><i class="ph ph-eye"></i> Preview</button>
@@ -166,8 +166,8 @@
                 </div>
                 <div class="card-content admin-form-stack">
                     <div style="padding: 1rem; background: var(--bg-color); border-radius: 4px;">
-                        <input type="text" id="poll-question" placeholder="Ask a question..." class="form-input" style="margin-bottom: 0.5rem;">
-                        <input type="text" id="poll-options" placeholder="Options (comma separated: Yes, No, Maybe)" class="form-input">
+                        <input type="text" id="poll-question" name="poll-question" placeholder="Ask a question..." class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="poll-options" name="poll-options" placeholder="Options (comma separated: Yes, No, Maybe)" class="form-input">
                         <button id="create-poll-btn" class="btn-primary btn-full" style="margin-top: 1rem;">Create Poll & QR</button>
                     </div>
                     <div id="active-polls-list" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
@@ -200,10 +200,10 @@
                 <div class="card-content">
                     <div class="admin-form-stack" style="margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color);">
                         <div style="font-weight: 600; margin-bottom: 0.8rem;">Add New Ad</div>
-                        <input type="file" id="ad-image-input" class="form-input" accept="image/*" style="margin-bottom: 0.5rem;">
-                        <input type="text" id="ad-contact-input" placeholder="Ads description" class="form-input" style="margin-bottom: 0.5rem;">
-                        <input type="text" id="ad-link-input" placeholder="Link URL (optional)" class="form-input" style="margin-bottom: 0.5rem;">
-                        <input type="text" id="ad-posted-by-input" placeholder="Posted By (optional)" class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="file" id="ad-image-input" name="ad-image-input" class="form-input" accept="image/*" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-contact-input" name="ad-contact-input" placeholder="Ads description" class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-link-input" name="ad-link-input" placeholder="Link URL (optional)" class="form-input" style="margin-bottom: 0.5rem;">
+                        <input type="text" id="ad-posted-by-input" name="ad-posted-by-input" autocomplete="name" placeholder="Posted By (optional)" class="form-input" style="margin-bottom: 0.5rem;">
                         <button id="add-ad-btn" class="btn-primary btn-full"><i class="ph ph-upload-simple"></i> Upload Ad</button>
                     </div>
                     <div id="banner-list-admin" class="overflow-x-auto">
@@ -259,14 +259,14 @@
                 </div>
                 <div class="card-content">
                     <div class="admin-user-form">
-                        <input type="email" id="new-user-email" placeholder="New User Email" class="form-input">
-                        <input type="text" id="new-user-name" placeholder="Real Name" class="form-input">
-                        <input type="password" id="new-user-pass" placeholder="Password" class="form-input">
+                        <input type="email" id="new-user-email" name="new-user-email" autocomplete="email" placeholder="New User Email" class="form-input">
+                        <input type="text" id="new-user-name" name="new-user-name" autocomplete="name" placeholder="Real Name" class="form-input">
+                        <input type="password" id="new-user-pass" name="new-user-pass" autocomplete="new-password" placeholder="Password" class="form-input">
                         <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem;">
                             <label style="font-size: 0.8rem; color: var(--text-secondary);">Profile Picture</label>
-                            <input type="file" id="new-user-pic" class="form-input" accept="image/*">
+                            <input type="file" id="new-user-pic" name="new-user-pic" class="form-input" accept="image/*">
                         </div>
-                        <select id="new-user-role" class="form-input">
+                        <select id="new-user-role" name="new-user-role" class="form-input">
                             <option value="teacher">Teacher</option>
                             <option value="ta">TA</option>
                             <option value="admin">Admin</option>
@@ -302,10 +302,10 @@
                             <button id="sched-maintenance-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
                         </div>
                         <div id="sched-maintenance-config" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;">
-                            <input type="text" id="sched-maintenance-title" placeholder="Title (e.g. Scheduled System Update)" class="form-input" style="margin: 0;">
-                            <textarea id="sched-maintenance-msg" placeholder="Message (e.g. The system will be temporarily down for improvements)" class="form-input" rows="2" style="margin: 0;"></textarea>
+                            <input type="text" id="sched-maintenance-title" name="sched-maintenance-title" placeholder="Title (e.g. Scheduled System Update)" class="form-input" style="margin: 0;">
+                            <textarea id="sched-maintenance-msg" name="sched-maintenance-msg" placeholder="Message (e.g. The system will be temporarily down for improvements)" class="form-input" rows="2" style="margin: 0;"></textarea>
                             <label style="font-size: 0.8rem; color: var(--text-secondary);">Scheduled Date & Time</label>
-                            <input type="datetime-local" id="sched-maintenance-time" class="form-input" style="margin: 0;">
+                            <input type="datetime-local" id="sched-maintenance-time" name="sched-maintenance-time" class="form-input" style="margin: 0;">
                             <button id="save-sched-maintenance-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-calendar-check"></i> Save Schedule</button>
                         </div>
                     </div>
@@ -320,7 +320,7 @@
                             <button id="lockout-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
                         </div>
                         <div id="lockout-config-container" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
-                            <input type="password" id="lockout-passcode-input" placeholder="Developer Passcode" class="form-input" style="max-width: 250px; margin: 0;">
+                            <input type="password" id="lockout-passcode-input" name="lockout-passcode-input" autocomplete="off" placeholder="Developer Passcode" class="form-input" style="max-width: 250px; margin: 0;">
                             <button id="save-lockout-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-floppy-disk"></i> Save Passcode</button>
                         </div>
                     </div>
@@ -335,9 +335,9 @@
                             <button id="banner-toggle" class="btn-secondary" style="min-width: 80px;">OFF</button>
                         </div>
                         <div id="banner-config-container" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.5rem;">
-                            <input type="text" id="banner-text-input" placeholder="Urgent announcement message..." class="form-input" style="margin: 0;">
+                            <input type="text" id="banner-text-input" name="banner-text-input" placeholder="Urgent announcement message..." class="form-input" style="margin: 0;">
                             <div style="display: flex; gap: 0.5rem;">
-                                <select id="banner-type-select" class="form-input" style="max-width: 150px; margin: 0;">
+                                <select id="banner-type-select" name="banner-type-select" class="form-input" style="max-width: 150px; margin: 0;">
                                     <option value="info">Info (Blue)</option>
                                     <option value="warning">Warning (Amber)</option>
                                     <option value="danger">Danger (Red)</option>
@@ -369,7 +369,7 @@
                         </div>
                         <div id="archive-config-container" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
                             <label style="font-size: 0.8rem;">Show for:</label>
-                            <input type="number" id="archive-days-input" value="7" class="form-input" style="max-width: 80px; margin: 0; text-align: center;">
+                            <input type="number" id="archive-days-input" name="archive-days-input" value="7" class="form-input" style="max-width: 80px; margin: 0; text-align: center;">
                             <span style="font-size: 0.8rem;">days</span>
                             <button id="save-archive-btn" class="btn-primary" style="padding: 0.6rem 1rem;"><i class="ph ph-floppy-disk"></i> Save</button>
                         </div>
@@ -380,7 +380,7 @@
                         <div style="font-weight: 600; display: flex; align-items: center; gap: 0.4rem;"><i class="ph ph-scales" style="color: var(--danger);"></i> Legal Block (451)</div>
                         <div style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Block a page by law — visitors are auto-redirected to the 451 page</div>
                         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                            <select id="legal-block-select" class="form-input" style="max-width: 200px; margin: 0;">
+                            <select id="legal-block-select" name="legal-block-select" class="form-input" style="max-width: 200px; margin: 0;">
                                 <option value="">Pick a page...</option>
                                 <option value="/">Home (/)</option>
                                 <option value="/chat">Message Staff (/chat)</option>
@@ -394,7 +394,7 @@
                                 <option value="/admin">Admin Panel (/admin)</option>
                                 <option value="/live/camochat">Live Chat (/live/camochat)</option>
                             </select>
-                            <input type="text" id="legal-block-custom" placeholder="or type a path like /vote" class="form-input" style="flex: 1; min-width: 160px; margin: 0;">
+                            <input type="text" id="legal-block-custom" name="legal-block-custom" placeholder="or type a path like /vote" class="form-input" style="flex: 1; min-width: 160px; margin: 0;">
                             <button id="legal-block-add" class="btn-primary" style="padding: 0.6rem 1rem; flex-shrink: 0;"><i class="ph ph-plus"></i> Add</button>
                         </div>
                         <div id="legal-block-list" style="display: flex; flex-direction: column; gap: 0.4rem;">
@@ -492,10 +492,10 @@
         <div id="profile-edit-modal-card" class="modal-card" style="display: none;">
             <h3>Edit Profile</h3>
             <div class="admin-form-stack">
-                <input type="text" id="my-real-name" placeholder="Your Real Name" class="form-input">
+                <input type="text" id="my-real-name" name="my-real-name" autocomplete="name" placeholder="Your Real Name" class="form-input">
                 <div style="display: flex; flex-direction: column; gap: 0.5rem; text-align: left;">
                     <label style="font-size: 0.8rem; color: var(--text-secondary);">Update Profile Picture</label>
-                    <input type="file" id="my-profile-pic-input" class="form-input" accept="image/*">
+                    <input type="file" id="my-profile-pic-input" name="my-profile-pic-input" class="form-input" accept="image/*">
                 </div>
                 <div class="modal-actions">
                     <button class="btn-secondary close-modal">Cancel</button>
@@ -508,13 +508,13 @@
         <div id="sched-modal-card" class="modal-card" style="display: none;">
             <h3>Manage Time Slot</h3>
             <div class="admin-form-stack">
-                <input type="hidden" id="sched-id">
-                <input type="text" id="sched-time" placeholder="Time (08:00-08:50)" class="form-input">
-                <input type="text" id="sched-mon" placeholder="Monday" class="form-input">
-                <input type="text" id="sched-tue" placeholder="Tuesday" class="form-input">
-                <input type="text" id="sched-wed" placeholder="Wednesday" class="form-input">
-                <input type="text" id="sched-thu" placeholder="Thursday" class="form-input">
-                <input type="text" id="sched-fri" placeholder="Friday" class="form-input">
+                <input type="hidden" id="sched-id" name="sched-id">
+                <input type="text" id="sched-time" name="sched-time" placeholder="Time (08:00-08:50)" class="form-input">
+                <input type="text" id="sched-mon" name="sched-mon" placeholder="Monday" class="form-input">
+                <input type="text" id="sched-tue" name="sched-tue" placeholder="Tuesday" class="form-input">
+                <input type="text" id="sched-wed" name="sched-wed" placeholder="Wednesday" class="form-input">
+                <input type="text" id="sched-thu" name="sched-thu" placeholder="Thursday" class="form-input">
+                <input type="text" id="sched-fri" name="sched-fri" placeholder="Friday" class="form-input">
                 <div class="modal-actions">
                     <button class="btn-secondary close-modal">Cancel</button>
                     <button id="add-sched-btn" class="btn-primary">Save Changes</button>
@@ -539,18 +539,18 @@
                 <img id="edit-ad-img" src="" alt="Ad" style="width: 100%; max-height: 180px; object-fit: cover;">
             </div>
             <div class="admin-form-stack" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                <input type="hidden" id="edit-ad-id">
+                <input type="hidden" id="edit-ad-id" name="edit-ad-id">
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-secondary);">Caption</label>
-                    <input type="text" id="edit-ad-caption" placeholder="Ad caption..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="200">
+                    <input type="text" id="edit-ad-caption" name="edit-ad-caption" placeholder="Ad caption..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="200">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-secondary);">Link URL</label>
-                    <input type="text" id="edit-ad-link" placeholder="https://..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="500">
+                    <input type="text" id="edit-ad-link" name="edit-ad-link" placeholder="https://..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="500">
                 </div>
                 <div>
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-secondary);">Posted By</label>
-                    <input type="text" id="edit-ad-postedby" placeholder="Name..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="100">
+                    <input type="text" id="edit-ad-postedby" name="edit-ad-postedby" autocomplete="name" placeholder="Name..." class="form-input" style="width: 100%; box-sizing: border-box;" maxlength="100">
                 </div>
                 <div class="modal-actions">
                     <button class="btn-secondary close-modal">Cancel</button>

@@ -187,7 +187,7 @@ async function refreshChatHistory() {
         if (!isResolved) {
             html += `
                 <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; max-width: 100%;">
-                    <input type="text" class="form-input feedback-reply-input" placeholder="Reply to staff..." style="font-size: 0.85rem; padding: 0.6rem; flex: 1; border-radius: 20px;" data-id="${msg.id}">
+                    <input type="text" id="feedback-reply-input-${msg.id}" name="feedback-reply-input-${msg.id}" class="form-input feedback-reply-input" autocomplete="off" placeholder="Reply to staff..." style="font-size: 0.85rem; padding: 0.6rem; flex: 1; border-radius: 20px;" data-id="${msg.id}">
                     <button class="send-feedback-reply-btn btn-primary" data-id="${msg.id}" style="padding: 0 1.25rem; min-height: auto; font-size: 0.8rem; border-radius: 20px;">
                         <i class="ph ph-paper-plane-right"></i>
                     </button>

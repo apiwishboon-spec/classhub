@@ -467,7 +467,7 @@ async function loadFeedback() {
                     ${conversationHtml ? `<div style="margin-bottom: 1rem; padding: 0.5rem; background: var(--highlight-bg); border-radius: 8px;"><div style="font-size: 0.7rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.5rem;">CONVERSATION:</div>${conversationHtml}</div>` : ''}
                     
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <input type="text" class="form-input reply-input" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
+                        <input type="text" id="reply-input-${d.id}" name="reply-input-${d.id}" class="form-input reply-input" autocomplete="off" placeholder="Type a reply..." style="font-size: 0.85rem; padding: 0.5rem; flex: 1;" data-id="${d.id}">
                         <button class="send-reply-btn btn-primary" data-id="${d.id}" style="padding: 0 1rem; min-height: auto; font-size: 0.8rem;">Reply</button>
                     </div>
                     <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
@@ -1286,14 +1286,14 @@ logoutBtn.addEventListener('click', async () => {
                             <div class="user-info-row" style="margin-top:0.5rem;">
                                 <span class="user-info-label" style="color:var(--accent-color);">Private Admin Notes:</span>
                                 <div style="display:flex; gap:0.4rem; margin-top:0.25rem;">
-                                    <input type="text" id="admin-note-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${escapeHtml(data.adminNote || '')}" placeholder="e.g. Likes to yap">
+                                    <input type="text" id="admin-note-${doc.id}" name="admin-note-${doc.id}" autocomplete="off" class="form-input" style="font-size:0.75rem; padding:0.3rem;" value="${escapeHtml(data.adminNote || '')}" placeholder="e.g. Likes to yap">
                                     <button class="save-note-btn admin-btn-icon" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="background:var(--accent-color); color:white; border:none;"><i class="ph ph-floppy-disk"></i></button>
                                 </div>
                             </div>
                             <div class="user-info-row" style="margin-top:0.5rem; border-top: 1px solid var(--border-color); padding-top: 0.5rem;">
                                 <span class="user-info-label">Edit Profile:</span>
-                                <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
-                                <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" accept="image/*">
+                                <input type="text" id="edit-name-${doc.id}" name="edit-name-${doc.id}" autocomplete="name" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
+                                <input type="file" id="edit-pic-${doc.id}" name="edit-pic-${doc.id}" class="form-input" style="font-size:0.75rem; padding:0.3rem; margin-top:0.25rem;" accept="image/*">
                                 <button class="save-user-edit-btn btn-primary btn-full" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="margin-top:0.5rem; font-size:0.75rem; padding:0.5rem;">Save Changes</button>
                             </div>
                             <div class="user-actions-grid">
@@ -1364,10 +1364,10 @@ logoutBtn.addEventListener('click', async () => {
                                 <div>
                                     <div class="user-info-label" style="margin-bottom:0.5rem;">Edit Profile</div>
                                     <div style="display:flex; flex-direction:column; gap:0.5rem;">
-                                        <input type="text" id="edit-name-${doc.id}" class="form-input" style="font-size:0.8rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
+                                        <input type="text" id="edit-name-${doc.id}" name="edit-name-${doc.id}" autocomplete="name" class="form-input" style="font-size:0.8rem;" value="${escapeHtml(data.displayName || '')}" placeholder="Real Name">
                                         <div style="display:flex; flex-direction:column; gap:0.2rem;">
                                             <label style="font-size:0.65rem; color:var(--text-secondary);">Change Profile Pic</label>
-                                            <input type="file" id="edit-pic-${doc.id}" class="form-input" style="font-size:0.8rem;" accept="image/*">
+                                            <input type="file" id="edit-pic-${doc.id}" name="edit-pic-${doc.id}" class="form-input" style="font-size:0.8rem;" accept="image/*">
                                         </div>
                                         <button class="save-user-edit-btn btn-primary" data-uid="${doc.id}" data-email="${escapeHtml(data.email)}" style="font-size:0.8rem; padding:0.5rem;">Save Changes</button>
                                     </div>
@@ -2837,7 +2837,7 @@ logoutBtn.addEventListener('click', async () => {
             <p>This portal is currently under active development. Enter the developer passcode to access.</p>
             
             <div class="lockout-input-wrapper">
-                <input type="password" id="dev-passcode-input" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
+                <input type="password" id="dev-passcode-input" name="dev-passcode-input" autocomplete="off" placeholder="Enter Passcode..." class="form-input" style="width: 100%; box-sizing: border-box; text-align: center;">
             </div>
             <div id="dev-passcode-error" class="lockout-error">❌ Incorrect passcode. Please try again.</div>
             

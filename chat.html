@@ -61,10 +61,10 @@
                             <span>Staff is typing...</span>
                         </div>
                         <div class="admin-form-stack">
-                            <textarea id="chat-page-input" placeholder="Type a new message to staff..." class="form-input" rows="3" style="border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.95rem; resize: none;"></textarea>
+                            <textarea id="chat-page-input" name="chat-page-input" autocomplete="off" placeholder="Type a new message to staff..." class="form-input" rows="3" style="border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.95rem; resize: none;"></textarea>
                             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                                 <div style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <input type="checkbox" id="chat-page-urgent">
+                                    <input type="checkbox" id="chat-page-urgent" name="chat-page-urgent">
                                     <label for="chat-page-urgent" style="font-size: 0.85rem; color: var(--danger); font-weight: 600; cursor: pointer;">Mark as Urgent</label>
                                 </div>
                                 <button class="btn-primary" id="chat-page-send" style="padding: 0.75rem 2rem; display: flex; align-items: center; gap: 0.5rem;">
