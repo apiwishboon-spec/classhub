@@ -1,4 +1,4 @@
-const CACHE_NAME = 'classhub-v36';
+const CACHE_NAME = 'classhub-v37';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

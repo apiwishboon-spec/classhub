@@ -930,7 +930,7 @@ logoutBtn.addEventListener('click', async () => {
                 posterName: auth.currentUser.email.split('@')[0],
                 posterEmail: auth.currentUser.email,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                timestamp: new Date(),
+                timestamp: serverTimestamp(),
                 reactions: {}
             });
             showToast("Announcement added!");
@@ -965,7 +965,7 @@ logoutBtn.addEventListener('click', async () => {
                 posterName: auth.currentUser.email.split('@')[0],
                 posterEmail: auth.currentUser.email,
                 date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-                timestamp: new Date()
+                timestamp: serverTimestamp()
             });
             showToast("Feature update posted!");
             logAction("Add Feature Update", `Title: ${title}${version ? ' (' + version + ')' : ''}`);
@@ -997,7 +997,7 @@ logoutBtn.addEventListener('click', async () => {
                 subject, homework: task, due,
                 posterName: auth.currentUser.email.split('@')[0],
                 posterEmail: auth.currentUser.email,
-                timestamp: new Date()
+                timestamp: serverTimestamp()
             });
             showToast("Homework added!");
             logAction("Add Homework", `Subject: ${subject}, Task: ${task}`);
@@ -1080,7 +1080,7 @@ logoutBtn.addEventListener('click', async () => {
                     due: item.due,
                     posterName: auth.currentUser.email.split('@')[0],
                     posterEmail: auth.currentUser.email,
-                    timestamp: new Date()
+                    timestamp: serverTimestamp()
                 });
                 count++;
             }
@@ -1858,7 +1858,7 @@ logoutBtn.addEventListener('click', async () => {
         const list = document.getElementById('announcements-list-admin');
         list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
 
-        annListener = onSnapshot(collection(db, "announcements"), (snap) => {
+        annListener = onSnapshot(query(collection(db, "announcements"), orderBy("timestamp", "desc")), (snap) => {
             const isMobile = window.innerWidth <= 768;
             let html = '';
 
@@ -1931,7 +1931,7 @@ logoutBtn.addEventListener('click', async () => {
         const list = document.getElementById('features-list-admin');
         list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
 
-        featListener = onSnapshot(collection(db, "feature_updates"), (snap) => {
+        featListener = onSnapshot(query(collection(db, "feature_updates"), orderBy("timestamp", "desc")), (snap) => {
             const isMobile = window.innerWidth <= 768;
             let html = '';
 
@@ -2007,7 +2007,7 @@ logoutBtn.addEventListener('click', async () => {
         const list = document.getElementById('homework-list-admin');
         list.innerHTML = '<div class="loading-placeholder"><div class="loader"></div></div>';
 
-        hwListener = onSnapshot(collection(db, "homework"), (snap) => {
+        hwListener = onSnapshot(query(collection(db, "homework"), orderBy("timestamp", "desc")), (snap) => {
             const isMobile = window.innerWidth <= 768;
             let html = '';
 
