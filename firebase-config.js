@@ -9,11 +9,16 @@ export const firebaseConfig = {
 };
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, initializeFirestore } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
+// Force long-polling transport: WebChannel streaming gets ERR_ABORTED 400 / connection
+// resets on some networks (school wifi, mobile carriers), which breaks all Firestore sync.
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+  experimentalAutoDetectLongPolling: false
+});
 export const auth = getAuth(app);
 export const imgbbApiKey = "d851661ef4c88b4f97ee8b6857c184a7";
 export const paymentApiKey = "inwcloud_live_fde0a8bb3d4e5858215342b46dc8417bdcfbc63d";

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'classhub-v37';
+const CACHE_NAME = 'classhub-v38';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -93,6 +93,23 @@ self.addEventListener('fetch', event => {
   }
 
   let path = url.pathname;
+
+  // Always fetch config fresh from network (no stale-while-revalidate):
+  // a stale firebase-config.js breaks all Firestore sync.
+  if (path === '/firebase-config.js') {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response.ok && response.type === 'basic') {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => {
+        return caches.match(event.request).then(cached => cached || new Response('Offline', { status: 503 }));
+      })
+    );
+    return;
+  }
 
   if (path.endsWith('.html')) {
     const cleanPath = path.slice(0, -5);

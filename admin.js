@@ -21,6 +21,27 @@ function escapeHtml(str) {
     return String(str).replace(/[&<>"']/g, c => map[c]);
 }
 
+// Surface any runtime error visibly so admin changes that fail to sync are not silent
+window.addEventListener('error', (e) => {
+    console.error('[Admin] Uncaught error:', e.error || e.message);
+    showErrorBanner('Runtime error: ' + (e.error ? e.error.message : e.message));
+});
+window.addEventListener('unhandledrejection', (e) => {
+    console.error('[Admin] Unhandled rejection:', e.reason);
+    showErrorBanner('Unhandled error: ' + (e.reason && e.reason.message ? e.reason.message : String(e.reason)));
+});
+
+let errorBannerEl = null;
+function showErrorBanner(message) {
+    if (!errorBannerEl) {
+        errorBannerEl = document.createElement('div');
+        errorBannerEl.id = 'admin-error-banner';
+        errorBannerEl.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#d32f2f;color:#fff;padding:10px 14px;font-size:13px;font-weight:600;text-align:center;';
+        document.body.appendChild(errorBannerEl);
+    }
+    errorBannerEl.textContent = message;
+}
+
 // Helper functions
 async function uploadToImgBB(file) {
     if (!file) return null;
@@ -135,6 +156,7 @@ let systemStatesListener = null;
 let bannerListener = null;
 let featListener = null;
 let studentTypingListener = null;
+let settingsListener = null;
 
 async function performSystemCleanup() {
     const settingsSnap = await getDoc(doc(db, "settings", "maintenance"));
@@ -643,6 +665,18 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+function safeLoad(name, fn) {
+    try {
+        Promise.resolve().then(() => fn()).catch(e => {
+            console.error(`[Admin] ${name} section failed to load:`, e);
+            showErrorBanner(`${name} section failed to load: ${e.message}`);
+        });
+    } catch (e) {
+        console.error(`[Admin] ${name} section failed to load:`, e);
+        showErrorBanner(`${name} section failed to load: ${e.message}`);
+    }
+}
+
 function updateAdminSectionsVisibility() {
     const statusToggle = document.getElementById('staff-status-toggle');
 
@@ -669,20 +703,18 @@ function updateAdminSectionsVisibility() {
         feedbackInboxSection.style.display = 'block';
         if (manageClassBannerSection) manageClassBannerSection.style.display = 'block';
 
-        loadUsers();
-        loadSchedule();
-        loadAnnouncements();
-        loadFeatures();
-        loadHomework();
-        loadPolls();
-        loadFeedback();
-        loadSettings();
-        loadAuditLog();
-        loadBugReports();
-        loadBannerManagement();
-        performSystemCleanup();
-
-        // Admins can change status
+        safeLoad('users', loadUsers);
+        safeLoad('schedule', loadSchedule);
+        safeLoad('announcements', loadAnnouncements);
+        safeLoad('features', loadFeatures);
+        safeLoad('homework', loadHomework);
+        safeLoad('polls', loadPolls);
+        safeLoad('feedback', loadFeedback);
+        safeLoad('settings', loadSettings);
+        safeLoad('audit-log', loadAuditLog);
+        safeLoad('bug-reports', loadBugReports);
+        safeLoad('banners', loadBannerManagement);
+        try { performSystemCleanup(); } catch (e) { console.error('Cleanup failed:', e); }
         if (statusToggle) {
             statusToggle.disabled = false;
             syncStatusToggle();
@@ -2104,8 +2136,9 @@ logoutBtn.addEventListener('click', async () => {
 
     async function loadSettings() {
         const docRef = doc(db, "settings", "maintenance");
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
+        if (settingsListener) return;
+        settingsListener = onSnapshot(docRef, (docSnap) => {
+            if (!docSnap.exists()) return;
             const data = docSnap.data();
 
             // 1. Maintenance Mode
@@ -2220,7 +2253,7 @@ logoutBtn.addEventListener('click', async () => {
                 const pad = (n) => n.toString().padStart(2, '0');
                 schedTime.value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
             }
-        }
+        });
     }
 
     // Cleanup Toggle
